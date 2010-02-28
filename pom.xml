@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.purview</groupId>
+    <artifactId>purview</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0-SNAPSHOT</version>
+
+    <name>Purview</name>
+    <description>A framework for detecting digital image forgery</description>
+    <developers>
+        <developer>
+            <id>dflemstr</id>
+            <name>David Flemström</name>
+            <roles>
+                <role>developer</role>
+                <role>architect</role>
+            </roles>
+            <timezone>-1</timezone>
+        </developer>
+        <developer>
+            <id>mroth</id>
+            <name>Moritz Roth</name>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>-1</timezone>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>Apache License version 2.0</name>
+            <url>http://www.apache.org/licenses/</url>
+            <distribution>repo</distribution>
+            <comments>An open source license that is well-suited for distributed development.</comments>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:git://github.com/dflemstr/purview.git</connection>
+        <developerConnection>scm:git:git@github.com:dflemstr/purview.git</developerConnection>
+        <url>http://github.com/dflemstr/pandora-libraries/tree/develop/</url>
+    </scm>
+
+    <modules>
+        <module>purview-core</module>
+        <module>purview-analysers</module>
+        <module>purview-stages</module>
+        <module>purview-debug</module>
+        <module>purview-ui</module>
+    </modules>
+
+    <properties>
+        <java.version>1.5</java.version>
+        <scala.version>2.8.0-SNAPSHOT</scala.version>
+        <netbeans.version>RELEASE67</netbeans.version>
+        <ui.brandingToken>purview</ui.brandingToken>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.4</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.scala-tools.testing</groupId>
+                <artifactId>specs_2.8.0.Beta1</artifactId>
+                <version>1.6.3</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-library</artifactId>
+                <version>${scala.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-swing</artifactId>
+                <version>${scala.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>1.2.14</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.netbeans.cluster</groupId>
+                <artifactId>platform10</artifactId>
+                <version>${netbeans.version}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.netbeans.api</groupId>
+                <artifactId>org-openide-util</artifactId>
+                <version>${netbeans.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.netbeans.api</groupId>
+                <artifactId>org-openide-windows</artifactId>
+                <version>${netbeans.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.netbeans.api</groupId>
+                <artifactId>org-openide-awt</artifactId>
+                <version>${netbeans.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.netbeans.api</groupId>
+                <artifactId>org-jdesktop-layout</artifactId>
+                <version>${netbeans.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <useSystemClassLoader>false</useSystemClassLoader>
+                    <argLine>-Xmx512m</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <configuration>
+                        <useDefaultManifestFile>true</useDefaultManifestFile>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.scala-tools</groupId>
+                    <artifactId>maven-scala-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>compile</goal>
+                                <goal>testCompile</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <scalaVersion>${scala.version}</scalaVersion>
+                        <executions>
+                            <execution>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>add-source</goal>
+                                    <goal>compile</goal>
+                                    <goal>testCompile</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <args>
+                            <arg>-target:jvm-${java.version}</arg>
+                            <!--arg>-Yspecialize</arg-->
+                            <!--arg>-make:transitivenocp</arg>
+                            <arg>-dependencyfile</arg>
+                            <arg>${project.build.directory}/.scala_dependencies</arg-->
+                        </args>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-eclipse-plugin</artifactId>
+                    <configuration>
+                        <downloadSources>true</downloadSources>
+                        <buildcommands>
+                            <buildcommand>ch.epfl.lamp.sdt.core.scalabuilder</buildcommand>
+                        </buildcommands>
+                        <additionalProjectnatures>
+                            <projectnature>ch.epfl.lamp.sdt.core.scalanature</projectnature>
+                        </additionalProjectnatures>
+                        <classpathContainers>
+                            <classpathContainer>org.eclipse.jdt.launching.JRE_CONTAINER</classpathContainer>
+                            <classpathContainer>ch.epfl.lamp.sdt.launching.SCALA_CONTAINER</classpathContainer>
+                        </classpathContainers>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>nbm-maven-plugin</artifactId>
+                    <version>3.1</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <descriptor>src/main/nbm/module.xml</descriptor>
+                        <brandingToken>${ui.brandingToken}</brandingToken>
+                        <cluster>purview</cluster>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.scala-tools</groupId>
+                <artifactId>maven-scala-plugin</artifactId>
+                <configuration>
+                    <scalaVersion>${scala.version}</scalaVersion>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
+
+    <repositories>
+        <repository>
+            <id>scala-tools.org/releases</id>
+            <name>Scala-Tools Maven2 Releases Repository</name>
+            <url>http://scala-tools.org/repo-releases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>scala-tools.org/snapshots</id>
+            <name>Scala-Tools Maven2 Snapshots Repository</name>
+            <url>http://scala-tools.org/repo-snapshots</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>netbeans</id>
+            <name>Repository hosting netbeans.org API artifacts</name>
+            <url>http://bits.netbeans.org/maven2</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>scala-tools.org/releases</id>
+            <name>Scala-Tools Maven2 Releases Repository</name>
+            <url>http://scala-tools.org/repo-releases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+</project>

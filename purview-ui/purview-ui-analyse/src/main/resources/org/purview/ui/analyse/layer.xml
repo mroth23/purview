@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<filesystem>
+    <folder name="Actions">
+        <folder name="Edit">
+            <file name="org-purview-ui-analyse-OpenImageAction.instance"/>
+        </folder>
+    </folder>
+    <folder name="Menu">
+        <folder name="File">
+            <file name="org-purview-ui-analyse-OpenImageAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-purview-ui-analyse-OpenImageAction.instance"/>
+                <attr name="position" intvalue="300"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Shortcuts">
+        <file name="D-N.shadow">
+            <attr name="originalFile" stringvalue="Actions/Edit/org-purview-ui-analyse-OpenImageAction.instance"/>
+        </file>
+        <file name="D-O.shadow">
+            <attr name="originalFile" stringvalue="Actions/Edit/org-purview-ui-analyse-OpenImageAction.instance"/>
+        </file>
+    </folder>
+    <folder name="Toolbars">
+        <folder name="File">
+            <file name="org-purview-ui-analyse-OpenImageAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-purview-ui-analyse-OpenImageAction.instance"/>
+                <attr name="position" intvalue="150"/>
+            </file>
+        </folder>
+    </folder>
+</filesystem>

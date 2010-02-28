@@ -1,0 +1,38 @@
+# .gitignore - A file that lists everything that Git should not touch
+
+
+# All UNIX-hidden files
+.*
+
+# All UNIX-style text backup files
+*~
+*.orig
+\#.#
+
+# THIS file always needs to be included!
+!.gitignore
+
+# Files from other SCMs
+tags
+TAGS
+trunk
+
+# IDE project files (This might be removed if the demand for IDE files rises)
+nbproject
+*.ipr
+*.iml
+*.iws
+
+# Generated binaries
+target
+
+# Quilt files
+patches
+series
+
+# GNU global files
+GPATH
+GRTAGS
+GSYMS
+GTAGS
+
