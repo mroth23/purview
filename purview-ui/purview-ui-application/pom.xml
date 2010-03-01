@@ -31,12 +31,6 @@
         </dependency>
         <dependency>
             <groupId>org.purview</groupId>
-            <artifactId>purview-ui-base</artifactId>
-            <version>${project.version}</version>
-            <type>nbm</type>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
             <artifactId>purview-ui-branding</artifactId>
             <version>${project.version}</version>
             <type>nbm</type>
