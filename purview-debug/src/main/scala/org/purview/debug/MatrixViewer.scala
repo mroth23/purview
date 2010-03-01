@@ -7,8 +7,8 @@ import org.purview.core.data.Matrix
 import scala.swing.Component
 import scala.swing.Frame
 
-class MatrixViewer[@specialized A](matrix: Matrix[A],
-                                   cellDrawer: (Int, Int, A, BufferedImage) => Unit) extends Frame {
+class MatrixViewer[A](matrix: Matrix[A],
+                      cellDrawer: (Int, Int, A, BufferedImage) => Unit) extends Frame {
   lazy val image = {
     val result = new BufferedImage(matrix.width, matrix.height, BufferedImage.TYPE_INT_ARGB)
     for((x, y, contents) <- matrix.cells) {

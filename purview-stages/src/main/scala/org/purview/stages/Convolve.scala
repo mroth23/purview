@@ -5,12 +5,12 @@ import org.purview.core.data.MutableMatrix
 import org.purview.core.stage.Stage
 
 case class Convolve(kernel: Matrix[Float]) extends Stage[Matrix[Float], Matrix[Float]] {
+  val name = "Convolution filter"
   val f = { input: Matrix[Float] =>
     val result = new MutableMatrix[Float](input.width, input.height)
 
     val kwidth = kernel.width
     val kheight = kernel.height
-    val kvals = kernel.data
 
     val left = (kwidth - 1) / 2
     val right = Math.max(kwidth - left - 1, 0)
