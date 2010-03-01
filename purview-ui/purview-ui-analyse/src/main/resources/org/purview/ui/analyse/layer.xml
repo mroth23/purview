@@ -30,4 +30,11 @@
             </file>
         </folder>
     </folder>
+    <folder name="Windows2">
+        <folder name="Modes">
+            <folder name="output">
+                <file name="AnalysisTopComponent.wstcref" url="AnalysisTopComponentWstcref.xml"/>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>
