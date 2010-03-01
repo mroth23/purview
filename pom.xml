@@ -55,7 +55,7 @@
     <properties>
         <java.version>1.5</java.version>
         <scala.version>2.8.0-SNAPSHOT</scala.version>
-        <netbeans.version>RELEASE67</netbeans.version>
+        <netbeans.version>RELEASE68</netbeans.version>
         <ui.brandingToken>purview</ui.brandingToken>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -94,7 +94,7 @@
 
             <dependency>
                 <groupId>org.netbeans.cluster</groupId>
-                <artifactId>platform10</artifactId>
+                <artifactId>platform11</artifactId>
                 <version>${netbeans.version}</version>
                 <type>pom</type>
             </dependency>
