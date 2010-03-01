@@ -1,34 +1,37 @@
 package org.purview.core.data
 
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.GenericArray
 
-trait Matrix[@specialized +A] extends NotNull {
+object Matrix {
+  implicit def iterable[A](m: Matrix[A]) = new Iterable[A] {
+    def iterator = new Iterator[A] {
+      private var y = 0
+      private var x = 0
+      def hasNext = x + y * m.width + 1 < m.width * m.height
+      def next = {
+        x += 1
+        if(x == m.width) {
+          x = 0
+          y += 1
+        }
+        m.apply(x, y)
+      }
+    }
+  }
+}
+
+trait Matrix[@specialized("Int,Float") +A] {
   val width: Int
   val height: Int
-  val data: Seq[A]
+  def apply(x: Int, y: Int): A
 
-  @inline def apply(x: Int, y: Int): A = data(x + y * width)
-
-  def map[@specialized B : Manifest](f: A => B): Matrix[B] = {
-    val newData = new Array[B](width * height)
-    var i = 0
-    while(i < width * height) {
-      newData(i) = f(data(i))
-      i += 1
-    }
-    new ImmutableMatrix(width, height, newData)
+  def map[B](f: A => B): Matrix[B] = {
+    val result = map(f).toSeq
+    new ImmutableMatrix(width, height, result)
   }
 
-  def foreach(f: A => Unit): Unit = {
-    var i = 0
-    while(i < width * height) {
-      f(data(i))
-      i += 1
-    }
-  }
-  
   def cells: Matrix[(Int, Int, A)] = {
-    val result = new ArrayBuffer[(Int, Int, A)](width * height)
+    val result = new Array[(Int, Int, A)](width * height)
 
     var y = 0
     while(y < height) {
@@ -43,13 +46,25 @@ trait Matrix[@specialized +A] extends NotNull {
     new ImmutableMatrix(width, height, result)
   }
 
-  def filter(f: A => Boolean): Matrix[A] = if(data exists f) error("A matrix cannot become filtered!") else this
+  def filter(f: A => Boolean): Matrix[A] =
+    if(this.forall(f)) this else error("A matrix cannot become filtered!")
 }
 
-sealed case class ImmutableMatrix[@specialized A](width: Int, height: Int, data: Seq[A]) extends Matrix[A]
+sealed case class ImmutableMatrix[@specialized("Int,Float") +A](width: Int,
+                                     height: Int,
+                                     private val data: Seq[A]) extends Matrix[A] {
+  def apply(x: Int, y: Int) = data(x + y * width)
+}
 
-sealed case class MutableMatrix[@specialized A : Manifest](width: Int, height: Int) extends Matrix[A] {
-  private val buffer = new Array[A](width * height)
-  val data: Seq[A] = buffer
-  def update(x: Int, y: Int, value: A) = buffer(x + y * width) = value
+sealed case class MutableMatrix[@specialized("Int,Float") A : Manifest]
+    (width: Int, height: Int) extends Matrix[A] {
+  private val data = new Array[A](width * height)
+  def apply(x: Int, y: Int) = data(x + y * width)
+  def update(x: Int, y: Int, value: A) = data(x + y * width) = value
+}
+
+sealed case class MutableColorMatrix(width: Int, height: Int) extends Matrix[Color] {
+  private val buffer = new Array[Int](width * height)
+  def apply(x: Int, y: Int) = MakeColor fromRGB buffer(x + y * width)
+  def update(x: Int, y: Int, value: Color) = (buffer(x + y * width) = value.toRGB)
 }

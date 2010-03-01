@@ -14,7 +14,7 @@ import org.purview.core.stage.Stage
  * map as its result. The heat map is a Matrix of Floats, where regions with
  * high values indicate things to report.
  */
-trait HeatMapAnalyser[-A] extends Analyser[Matrix[A]] {
+trait HeatMapAnalyser[A] extends Analyser[Matrix[A]] {
   /** The stage that generates the heat map */
   val heatmap: Stage[Matrix[A], Matrix[Float]]
 
@@ -42,7 +42,7 @@ trait HeatMapAnalyser[-A] extends Analyser[Matrix[A]] {
 
   private def maximi(in: Matrix[Float], maxDevTol: Float): Set[(Int, Int)] = {
     //TODO: more rigorous way of finding all maximi
-    val max = in.data.max
+    val max = in.max
     val tolerance = max * maxDevTol
     var maximi = Set[(Int, Int)]()
 
@@ -114,7 +114,7 @@ trait HeatMapImageAnalyser extends HeatMapAnalyser[Color]
  * the treshold will be reported, and additional thresholds control the report
  * levels.
  */
-trait FilteredHeatMapAnalyser[-A] extends HeatMapAnalyser[A] {
+trait FilteredHeatMapAnalyser[A] extends HeatMapAnalyser[A] {
   /** The threshold to use */
   val threshold: Float
 

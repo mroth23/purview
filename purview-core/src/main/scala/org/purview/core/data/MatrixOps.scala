@@ -15,7 +15,7 @@ object MatrixOps {
         while(y1 < blockHeight) {
           var x1 = 0
           while(x1 < blockWidth) {
-            tmp(x1 + y1 * blockWidth) = in.data((x + x1) + (y + y1) * in.width)
+            tmp(x1 + y1 * blockWidth) = in(x + x1, y + y1)
             x1 += 1
           }
           y1 += 1
@@ -28,18 +28,14 @@ object MatrixOps {
     new ImmutableMatrix(in.width - blockWidth, in.height - blockHeight, result)
   }
 
-  def imageToMatrix(image: BufferedImage): Matrix[Color] = {
-    val result = new MutableMatrix[Color](image.getWidth, image.getHeight)
-    var y = 0
-    while(y < image.getHeight) {
-      var x = 0
-      while(x < image.getWidth) {
-        result(x, y) = MakeColor fromRGB image.getRGB(x, y)
-        println(x)
-        x += 1
-      }
-      y += 1
+  def imageToMatrix(image: BufferedImage): Matrix[Color] = new Matrix[Color] {
+    val width = image.getWidth
+    val height = image.getHeight
+    private val raster = image.getData
+    private val buffer = new Array[Int](4)
+    def apply(x: Int, y: Int) = synchronized {
+      raster.getPixel(x, y, buffer)
+      new Color(buffer(0), buffer(1), buffer(2), buffer(3))
     }
-    result
   }
 }

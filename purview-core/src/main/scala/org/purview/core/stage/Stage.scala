@@ -1,55 +1,85 @@
 package org.purview.core.stage
 
 import org.purview.core.analysis.Analyser
+import org.purview.core.session.SpartanAnalysisStats
 import scala.collection.mutable
 
 object Stage {
-  implicit def fromFunction[A, B](func: A => B) = new Stage[A, B] {
+  implicit def fromFunction[@specialized("Int,Float") A,
+                            @specialized("Int,Float") B](func: A => B) = new Stage[A, B] {
+    val name = "Anonymous function-based stage"
     val f = func
   }
 
-  def apply[A, B](name: String)(func: A => B) = new Stage[A, B] {
-    override val names = List(name)
+  def apply[@specialized("Int,Float") A,
+            @specialized("Int,Float") B](nam: String)(func: A => B) = new Stage[A, B] {
+    val name = nam
     val f = func
   }
-  
-  def accumulation[A, B, C](first: Stage[A, B], second: Stage[B, C]) = new Stage[A, C] {
-    val f = first.apply _ andThen second.apply _
-    override val names = first.names ::: second.names
+
+  def accumulation[@specialized("Int,Float") A,
+                   @specialized("Int,Float") B,
+                   @specialized("Int,Float") C]
+      (first: Stage[A, B], second: Stage[B, C]) = new Stage[A, C] {
+    val f = (in: A) => {
+
+      val oldStats = Analyser.statistics
+      val stats1 = new SpartanAnalysisStats((progress: Float) => {
+        oldStats.reportProgress(progress * 0.5f)
+      }, oldStats.reportStatus, oldStats.reportStage, oldStats.reportAnalyser)
+
+      val result = Analyser.statsVar.withValue(stats1) (first.apply(in))
+
+      val stats2 = new SpartanAnalysisStats((progress: Float) => {
+        oldStats.reportProgress(0.5f + progress * 0.5f)
+      }, oldStats.reportStatus, oldStats.reportStage, oldStats.reportAnalyser)
+
+      Analyser.statsVar.withValue(stats2) (second.apply(result))
+    }
+    override protected[stage] def names = first.names ::: second.names
+    val name = "A combination of \"" + names.mkString("\", \"") + "\""
   }
-  
-  def identity[@specialized A] = new Stage[A, A] {
+
+  def identity[@specialized("Int,Float") A] = new Stage[A, A] {
+    val name = "The identity stage"
     val f = (x: A) => x
   }
 }
 
 object stage {
-  def apply[A, B](name: String)(func: A => B) = new Stage[A, B] {
-    override val names = List(name)
+  def apply[@specialized("Int,Float") A,
+            @specialized("Int,Float") B](nam: String)(func: A => B) = new Stage[A, B] {
+    val name = nam
     val f = func
   }
 }
 
-trait Stage[@specialized -A, @specialized +B] extends Function1[A, B] {
+//TODO: add caching to stages! (Doesn't work at the moment because of A's contravariance)
+trait Stage[@specialized("Int,Float") -A, @specialized("Int,Float") +B] {
   protected val f: Function1[A, B]
 
-  val names: List[String] = Nil
+  val name: String
 
-  //A weak hash map will delete its values if available memory is low
-  private val cache = new mutable.WeakHashMap[Any, Any]
+  protected[stage] def names: List[String] = List(name)
 
-  def apply(in: A): B = (cache.get(in) getOrElse {
-    names match {
-      case List(name) => Analyser.statistics.reportStage(name)
-      case _ => //We are a higher-level stage or don't have a name
+  def apply(in: A): B = {
+      if(names.length == 1) {
+        Analyser.statistics.reportStage(name)
+        Analyser.statistics.reportStatus("→ Running step \"" + name + "\"")
+      }
+
+      val out = f(in)
+
+      if(names.length == 1) {
+        Analyser.statistics.reportStatus("→ Done running step \"" + name + "\"")
+      }
+      out
     }
-    val out = f(in)
-    cache(in) = out
-    out
-  }).asInstanceOf[B]
 
-  def andThen[C](that: Stage[B, C]): Stage[A, C] =
+  def andThen[@specialized("Int,Float") C](that: Stage[B, C]): Stage[A, C] =
     Stage.accumulation[A, B, C](this, that)
-  def compose[C](that: Stage[C, A]): Stage[C, B] =
+  def compose[@specialized("Int,Float") C](that: Stage[C, A]): Stage[C, B] =
     Stage.accumulation[C, A, B](that, this)
+
+  override def toString = name
 }
