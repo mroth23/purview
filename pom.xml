@@ -213,6 +213,11 @@
                         <cluster>purview</cluster>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>com.google.code.maven-replacer-plugin</groupId>
+                    <artifactId>maven-replacer-plugin</artifactId>
+                    <version>1.3</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -270,6 +275,10 @@
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>maven-replacer-plugin reposoitory</id>
+            <url>http://maven-replacer-plugin.googlecode.com/svn/release-repo</url>
         </pluginRepository>
     </pluginRepositories>
 </project>
