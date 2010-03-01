@@ -130,6 +130,14 @@
                     <argLine>-Xmx512m</argLine>
                 </configuration>
             </plugin>
+            <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+                <inherited>true</inherited>
+            </plugin>
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <inherited>true</inherited>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
