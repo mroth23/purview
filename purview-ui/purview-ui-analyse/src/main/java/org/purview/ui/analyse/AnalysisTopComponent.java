@@ -39,14 +39,13 @@ final class AnalysisTopComponent extends TopComponent implements Runnable {
     private static final String PREFERRED_ID = "AnalysisTopComponent";
     private final JLabel analyserDescrLabel = new JLabel();
     private final JLabel analyserLabel = new JLabel();
+    private final JLabel stageDescrLabel = new JLabel();
+    private final JLabel stageLabel = new JLabel();
     private final JScrollPane listScroller = new JScrollPane();
     private final JPanel mainPanel = new JPanel();
     private final JProgressBar progressBar = new JProgressBar();
-    private final JLabel stageDescrLabel = new JLabel();
-    private final JLabel stageLabel = new JLabel();
     private final JTextArea statusList = new JTextArea();
     private final AnalysisSession session;
-    private final List<Analyser<Matrix<Color>>> analysers;
     private final BufferedImage image;
     private final String imageName;
 
@@ -62,7 +61,6 @@ final class AnalysisTopComponent extends TopComponent implements Runnable {
                 JavaConversions.asBuffer(analysers).toSeq(),
                 matrix);
         this.image = image;
-        this.analysers = analysers;
         this.imageName = imageName;
     }
 
@@ -117,8 +115,7 @@ final class AnalysisTopComponent extends TopComponent implements Runnable {
         };
         final scala.collection.Map<Analyser<Matrix<Color>>, Set<ReportEntry>> results = session.run(stats);
         final Iterator<Analyser<Matrix<Color>>> analyserIter = results.keySet().iterator();
-        final Map<Analyser<Matrix<org.purview.core.data.Color>>, List<ReportEntry>> report = new
-                HashMap<Analyser<Matrix<org.purview.core.data.Color>>, List<ReportEntry>>();
+        final Map<Analyser<Matrix<org.purview.core.data.Color>>, List<ReportEntry>> report = new HashMap<Analyser<Matrix<org.purview.core.data.Color>>, List<ReportEntry>>();
 
         while (analyserIter.hasNext()) {
             final Analyser<Matrix<Color>> analyser = analyserIter.next();

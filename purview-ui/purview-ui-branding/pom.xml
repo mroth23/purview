@@ -13,7 +13,7 @@
 
     <name>Purview - User Interface - Branding resources</name>
     <description>Application branding resources</description>
-
+    
     <build>
         <plugins>
             <plugin>

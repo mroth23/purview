@@ -70,9 +70,9 @@ public class AnalyserSettingsDialog extends JDialog implements ActionListener, I
             if (analysers.get(analyser) && analyser instanceof Settings) {
                 final Settings settingsForAnalyser = (Settings) analyser;
                 final SettingsPanel panel = new SettingsPanel(settingsForAnalyser);
-                String tabName = (analyser instanceof Metadata) ?
-                    NbBundle.getMessage(AnalyserSettingsDialog.class, "LBL_SettingsFor", ((Metadata) analyser).name()) :
-                    NbBundle.getMessage(AnalyserSettingsDialog.class, "LBL_SettingsFor", "?");
+                String tabName = (analyser instanceof Metadata)
+                        ? NbBundle.getMessage(AnalyserSettingsDialog.class, "LBL_SettingsFor", ((Metadata) analyser).name())
+                        : NbBundle.getMessage(AnalyserSettingsDialog.class, "LBL_SettingsFor", "?");
                 analyserTabs.add(tabName, panel);
             }
         }
@@ -203,8 +203,8 @@ class SettingsPanel extends JPanel implements ChangeListener {
                 ((IntRangeSetting) s).value_$eq(slider.getValue());
             } else if (s instanceof FloatRangeSetting) {
                 JSlider slider = (JSlider) e.getSource();
-                ((FloatRangeSetting) s).value_$eq((float) slider.getValue() / 
-                        ((FloatRangeSetting) s).granularity());
+                ((FloatRangeSetting) s).value_$eq((float) slider.getValue()
+                        / ((FloatRangeSetting) s).granularity());
             }
         }
     }

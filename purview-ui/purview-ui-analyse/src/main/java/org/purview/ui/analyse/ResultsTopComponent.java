@@ -184,7 +184,6 @@ class ReportPanel extends JPanel {
     public static final Color sourceColor = Color.blue;
     public static final Color transpSourceColor = new Color(sourceColor.getRed(), sourceColor.getGreen(), sourceColor.getBlue(), 128);
     public static final Color arrowColor = Color.white;
-    
     private final BufferedImage image;
     private ReportEntry entry = null;
 
@@ -254,7 +253,7 @@ class ReportPanel extends JPanel {
         path.lineTo(ax1, ay1);
         path.lineTo(ax2, ay2);
         path.closePath();
-        
+
         final Line2D.Float arrowLine = new Line2D.Float(x1, y1, mx, my);
 
         //Outline for arrow

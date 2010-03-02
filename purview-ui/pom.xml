@@ -13,7 +13,7 @@
 
     <name>Purview - User interface</name>
     <description>A Netbeans-platform based GUI application</description>
-
+    
     <modules>
         <module>purview-ui-branding</module>
         <module>purview-ui-analyse</module>

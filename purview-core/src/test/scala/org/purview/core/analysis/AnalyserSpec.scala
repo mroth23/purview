@@ -20,9 +20,9 @@ object AnalyserSpec extends Specification {
     "be able to generate reports" in {
       val a = new Analyser[Int] {
         def analyse(i: Int) = Set(new ReportEntry with Message {
-          val level = ReportLevel.Information
-          val message = "Analysed " + i
-        })
+            val level = ReportLevel.Information
+            val message = "Analysed " + i
+          })
       }
       a.analyse(0) must not be empty
       a.analyse(2).foreach(x => x.asInstanceOf[Message].message must_== "Analysed 2")
