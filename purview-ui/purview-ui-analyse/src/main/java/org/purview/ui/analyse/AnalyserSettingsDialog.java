@@ -65,7 +65,7 @@ public class AnalyserSettingsDialog extends JDialog implements ActionListener, I
 
     private void updateTabs() {
         analyserTabs.removeAll();
-        analyserTabs.add(activeAnalysersTab);
+        analyserTabs.add(org.openide.util.NbBundle.getMessage(AnalyserSettingsDialog.class, "LBL_ActiveAnalysers"), activeAnalysersTab);
         for (final Analyser<Matrix<Color>> analyser : analysers.keySet()) {
             if (analysers.get(analyser) && analyser instanceof Settings) {
                 final Settings settingsForAnalyser = (Settings) analyser;
