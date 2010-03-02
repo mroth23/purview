@@ -29,10 +29,11 @@ public class CheckerboardScrollPane extends JScrollPane {
         g.fillRect(0, 0, getWidth(), getHeight());
 
         g.setColor(Color.lightGray);
-        for(int x = 0; x <= getWidth() / SQUARE_SIZE; x++) {
-            for(int y = 0; y <= getHeight() / SQUARE_SIZE; y++) {
-                if((x + y) % 2 == 1)
+        for (int x = 0; x <= getWidth() / SQUARE_SIZE; x++) {
+            for (int y = 0; y <= getHeight() / SQUARE_SIZE; y++) {
+                if ((x + y) % 2 == 1) {
                     g.fillRect(x * SQUARE_SIZE, y * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
+                }
             }
         }
 

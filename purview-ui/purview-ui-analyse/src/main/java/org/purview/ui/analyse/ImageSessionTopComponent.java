@@ -10,7 +10,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -124,11 +123,12 @@ final class ImageSessionTopComponent extends TopComponent implements ActionListe
     }
 
     public void actionPerformed(ActionEvent e) {
-        if(e.getSource() == analyseButton) {
+        if (e.getSource() == analyseButton) {
             LinkedList<Analyser<Matrix<Color>>> activeAnalysers = new LinkedList<Analyser<Matrix<Color>>>();
-            for(Analyser<Matrix<Color>> key : analysers.keySet()) {
-                if(analysers.get(key))
+            for (Analyser<Matrix<Color>> key : analysers.keySet()) {
+                if (analysers.get(key)) {
                     activeAnalysers.add(key);
+                }
             }
             AnalysisTopComponent c = new AnalysisTopComponent(name, image, activeAnalysers);
             c.open();
@@ -137,7 +137,7 @@ final class ImageSessionTopComponent extends TopComponent implements ActionListe
             Thread t = new Thread(c);
             t.setName("Analyser thread for image \"" + name + "\"");
             t.start();
-        } else if(e.getSource() == configureAnalysersButton) {
+        } else if (e.getSource() == configureAnalysersButton) {
             Frame window = WindowManager.getDefault().getMainWindow();
             AnalyserSettingsDialog dialog = new AnalyserSettingsDialog(analysers, window, true);
             dialog.setVisible(true);

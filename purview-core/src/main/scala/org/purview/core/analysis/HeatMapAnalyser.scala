@@ -2,12 +2,13 @@ package org.purview.core.analysis
 
 import org.purview.core.data.Color
 import org.purview.core.data.Matrix
-import org.purview.core.report.Information
 import org.purview.core.report.Message
 import org.purview.core.report.Point
 import org.purview.core.report.ReportEntry
 import org.purview.core.report.ReportLevel
 import org.purview.core.stage.Stage
+
+//TODO: this needs fixing!!
 
 /**
  * A HeatMapAnalyser is an Analyser that analyses a Matrix and outputs a heat
@@ -19,7 +20,7 @@ trait HeatMapAnalyser[A] extends Analyser[Matrix[A]] {
   val heatmap: Stage[Matrix[A], Matrix[Float]]
 
   /** The report level to use by default when creating a report */
-  val defaultReportLevel: ReportLevel = Information
+  val defaultReportLevel: ReportLevel = ReportLevel.Information
 
   /** The message to use for interesting heat map areas in the report */
   val message: String = "Interesting peak"

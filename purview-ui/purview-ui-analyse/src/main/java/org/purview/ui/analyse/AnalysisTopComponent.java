@@ -3,8 +3,10 @@ package org.purview.ui.analyse;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.image.BufferedImage;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -21,9 +23,12 @@ import org.purview.core.analysis.Analyser;
 import org.purview.core.data.Color;
 import org.purview.core.data.Matrix;
 import org.purview.core.data.MatrixOps;
+import org.purview.core.report.ReportEntry;
 import org.purview.core.session.AnalysisSession;
 import org.purview.core.session.AnalysisStats;
+import scala.collection.Iterator;
 import scala.collection.JavaConversions;
+import scala.collection.Set;
 
 /**
  * Top component which displays something.
@@ -41,6 +46,9 @@ final class AnalysisTopComponent extends TopComponent implements Runnable {
     private final JLabel stageLabel = new JLabel();
     private final JTextArea statusList = new JTextArea();
     private final AnalysisSession session;
+    private final List<Analyser<Matrix<Color>>> analysers;
+    private final BufferedImage image;
+    private final String imageName;
 
     public AnalysisTopComponent(final String imageName, final BufferedImage image,
             final List<Analyser<Matrix<Color>>> analysers) {
@@ -49,20 +57,24 @@ final class AnalysisTopComponent extends TopComponent implements Runnable {
         setToolTipText(NbBundle.getMessage(AnalysisTopComponent.class, "HINT_AnalysisTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
 
-        Matrix<Color> matrix = MatrixOps.imageToMatrix(image);
+        final Matrix<Color> matrix = MatrixOps.imageToMatrix(image);
         session = new AnalysisSession<Matrix<Color>>(
                 JavaConversions.asBuffer(analysers).toSeq(),
                 matrix);
+        this.image = image;
+        this.analysers = analysers;
+        this.imageName = imageName;
     }
 
     public void run() {
         AnalysisStats stats = new AnalysisStats() {
+
             private int oldProgress = 0;
 
             @Override
             public void reportProgress(final float progress) {
                 final int actualProgress = (int) (1000 * progress);
-                if(actualProgress > oldProgress) {
+                if (actualProgress > oldProgress) {
                     SwingUtilities.invokeLater(new Runnable() {
 
                         public void run() {
@@ -103,7 +115,31 @@ final class AnalysisTopComponent extends TopComponent implements Runnable {
                 });
             }
         };
-        System.out.println(session.run(stats));
+        final scala.collection.Map<Analyser<Matrix<Color>>, Set<ReportEntry>> results = session.run(stats);
+        final Iterator<Analyser<Matrix<Color>>> analyserIter = results.keySet().iterator();
+        final Map<Analyser<Matrix<org.purview.core.data.Color>>, List<ReportEntry>> report = new
+                HashMap<Analyser<Matrix<org.purview.core.data.Color>>, List<ReportEntry>>();
+
+        while (analyserIter.hasNext()) {
+            final Analyser<Matrix<Color>> analyser = analyserIter.next();
+            final Set<ReportEntry> resultsForAnalyser = results.apply(analyser);
+            final Iterator<ReportEntry> reportIter = resultsForAnalyser.iterator();
+            final LinkedList<ReportEntry> entries = new LinkedList<ReportEntry>();
+
+            while (reportIter.hasNext()) {
+                entries.add(reportIter.next());
+            }
+            report.put(analyser, entries);
+        }
+
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                final ResultsTopComponent resultsComp = new ResultsTopComponent(imageName, image, report);
+                resultsComp.open();
+                resultsComp.requestActive();
+            }
+        });
     }
 
     /**
@@ -158,11 +194,12 @@ final class AnalysisTopComponent extends TopComponent implements Runnable {
     }
 
     @Override
-    public List<Mode> availableModes(List<Mode> input) {
-        LinkedList<Mode> result = new LinkedList<Mode>();
-        for(Mode mode : input) {
-            if(mode.getName().equals("output") || mode.getName().endsWith("NewMode"))
+    public List<Mode> availableModes(final List<Mode> input) {
+        final LinkedList<Mode> result = new LinkedList<Mode>();
+        for (final Mode mode : input) {
+            if (mode.getName().equals("output") || mode.getName().endsWith("NewMode")) {
                 result.add(mode);
+            }
         }
         return result;
     }

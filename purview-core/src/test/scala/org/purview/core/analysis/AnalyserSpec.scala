@@ -2,10 +2,10 @@ package org.purview.core.analysis
 
 import org.purview.core.data.Matrix
 import org.purview.core.data.MutableMatrix
-import org.purview.core.report.Information
 import org.purview.core.report.Message
 import org.purview.core.report.Point
 import org.purview.core.report.ReportEntry
+import org.purview.core.report.ReportLevel
 import org.purview.core.stage.Stage
 import org.specs.Specification
 import org.specs.runner.JUnit4
@@ -20,7 +20,7 @@ object AnalyserSpec extends Specification {
     "be able to generate reports" in {
       val a = new Analyser[Int] {
         def analyse(i: Int) = Set(new ReportEntry with Message {
-          val level = Information
+          val level = ReportLevel.Information
           val message = "Analysed " + i
         })
       }

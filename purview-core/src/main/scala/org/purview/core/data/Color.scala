@@ -102,7 +102,7 @@ case class Color(a: Float, r: Float, g: Float, b: Float) extends NotNull {
   def blueByte  = mkByte((b * 255 toInt)      )
   
   def toTuple = (a, r, g, b)
-  def toAWTColor = new AWTColor(a, r, g, b)
+  def toAWTColor = new AWTColor(r, g, b, a)
   def toRGB = alphaByte << 24 | redByte << 16 | greenByte << 8 | blueByte
   def toHTML = '#' + padHex(redByte) + padHex(greenByte) + padHex(blueByte)
   

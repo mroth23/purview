@@ -39,7 +39,7 @@ public class AnalyserSettingsDialog extends JDialog implements ActionListener, I
         super(parent, modal);
 
         this.analysers = analysers;
-        
+
         initComponents();
 
         okButton.addActionListener(this);
@@ -47,16 +47,17 @@ public class AnalyserSettingsDialog extends JDialog implements ActionListener, I
         activeAnalysersTab.setLayout(new BoxLayout(activeAnalysersTab, BoxLayout.PAGE_AXIS));
         this.callbacks = new HashMap<JCheckBox, Analyser<Matrix<Color>>>();
         int unknownIndex = 0;
-        for(Analyser<Matrix<Color>> analyser : analysers.keySet()) {
+        for (Analyser<Matrix<Color>> analyser : analysers.keySet()) {
             JCheckBox box = new JCheckBox();
             box.setSelected(analysers.get(analyser));
             callbacks.put(box, analyser);
             box.addItemListener(this);
-            if(analyser instanceof Metadata)
-                box.setText(((Metadata)analyser).name());
-            else
+            if (analyser instanceof Metadata) {
+                box.setText(((Metadata) analyser).name());
+            } else {
                 box.setText(NbBundle.getMessage(AnalyserSettingsDialog.class,
-                        "LBL_UnknownAnalyser", unknownIndex++));
+                        "LBL_UnknownAnalyser", ++unknownIndex));
+            }
             activeAnalysersTab.add(box);
         }
         updateTabs();
@@ -65,16 +66,13 @@ public class AnalyserSettingsDialog extends JDialog implements ActionListener, I
     private void updateTabs() {
         analyserTabs.removeAll();
         analyserTabs.add(activeAnalysersTab);
-        for(Analyser<Matrix<Color>> analyser : analysers.keySet()) {
-            if(analysers.get(analyser) && analyser instanceof Settings) {
-                Settings settingsForAnalyser = (Settings)analyser;
-                SettingsPanel panel = new SettingsPanel(settingsForAnalyser);
-                String tabName = null;
-                if(analyser instanceof Metadata)
-                    tabName = NbBundle.getMessage(AnalyserSettingsDialog.class,
-                            "LBL_SettingsFor", ((Metadata)analyser).name());
-                else
-                    tabName = NbBundle.getMessage(AnalyserSettingsDialog.class, "LBL_SettingsFor", "?");
+        for (final Analyser<Matrix<Color>> analyser : analysers.keySet()) {
+            if (analysers.get(analyser) && analyser instanceof Settings) {
+                final Settings settingsForAnalyser = (Settings) analyser;
+                final SettingsPanel panel = new SettingsPanel(settingsForAnalyser);
+                String tabName = (analyser instanceof Metadata) ?
+                    NbBundle.getMessage(AnalyserSettingsDialog.class, "LBL_SettingsFor", ((Metadata) analyser).name()) :
+                    NbBundle.getMessage(AnalyserSettingsDialog.class, "LBL_SettingsFor", "?");
                 analyserTabs.add(tabName, panel);
             }
         }
@@ -120,7 +118,6 @@ public class AnalyserSettingsDialog extends JDialog implements ActionListener, I
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel activeAnalysersTab;
     private javax.swing.JTabbedPane analyserTabs;
@@ -129,21 +126,21 @@ public class AnalyserSettingsDialog extends JDialog implements ActionListener, I
     // End of variables declaration//GEN-END:variables
 
     public void actionPerformed(final ActionEvent e) {
-        if(e.getSource() == okButton) {
+        if (e.getSource() == okButton) {
             this.setVisible(false);
         }
     }
 
     public void itemStateChanged(final ItemEvent e) {
-        if(e.getSource() instanceof JCheckBox && callbacks.containsKey((JCheckBox)e.getSource())) {
-            JCheckBox box = (JCheckBox)e.getSource();
+        if (e.getSource() instanceof JCheckBox && callbacks.containsKey((JCheckBox) e.getSource())) {
+            final JCheckBox box = (JCheckBox) e.getSource();
             analysers.put(callbacks.get(box), box.isSelected());
         }
     }
-
 }
 
 class SettingsPanel extends JPanel implements ChangeListener {
+
     private final Map<Object, Setting> settingCallbacks;
 
     public SettingsPanel(final Settings set) {
@@ -166,15 +163,15 @@ class SettingsPanel extends JPanel implements ChangeListener {
          * }
          */
 
-        Seq<Setting<?>> settingFields = set.settings();
-        Iterator<Setting<?>> settingFieldIter = settingFields.iterator();
+        final Seq<Setting<?>> settingFields = set.settings();
+        final Iterator<Setting<?>> settingFieldIter = settingFields.iterator();
         this.setLayout(new GridLayout(2, settingFields.length()));
 
-        while(settingFieldIter.hasNext()) {
+        while (settingFieldIter.hasNext()) {
             Setting<?> s = settingFieldIter.next();
             this.add(new JLabel(s.name()));
-            if(s instanceof IntRangeSetting) {
-                IntRangeSetting setting = (IntRangeSetting)s;
+            if (s instanceof IntRangeSetting) {
+                IntRangeSetting setting = (IntRangeSetting) s;
                 JSlider slider = new JSlider();
                 slider.setMinimum(setting.min());
                 slider.setMaximum(setting.max());
@@ -182,12 +179,12 @@ class SettingsPanel extends JPanel implements ChangeListener {
                 this.add(slider);
                 slider.addChangeListener(this);
                 settingCallbacks.put(slider, setting);
-            } else if(s instanceof FloatRangeSetting) {
-                FloatRangeSetting setting = (FloatRangeSetting)s;
+            } else if (s instanceof FloatRangeSetting) {
+                FloatRangeSetting setting = (FloatRangeSetting) s;
                 JSlider slider = new JSlider();
-                slider.setMinimum((int)(setting.min() * 100));
-                slider.setMaximum((int)(setting.max() * 100));
-                slider.setValue((int)(setting.value() * 100));
+                slider.setMinimum((int) (setting.min() * setting.granularity()));
+                slider.setMaximum((int) (setting.max() * setting.granularity()));
+                slider.setValue((int) (setting.value() * setting.granularity()));
                 this.add(slider);
                 slider.addChangeListener(this);
                 settingCallbacks.put(slider, setting);
@@ -198,16 +195,16 @@ class SettingsPanel extends JPanel implements ChangeListener {
     }
 
     public void stateChanged(ChangeEvent e) {
-        if(settingCallbacks.containsKey(e.getSource())) {
+        if (settingCallbacks.containsKey(e.getSource())) {
             Setting s = settingCallbacks.get(e.getSource());
 
-            if(s instanceof IntRangeSetting) {
-                JSlider slider = (JSlider)e.getSource();
-                ((IntRangeSetting)s).value_$eq(slider.getValue());
-            } else if(s instanceof FloatRangeSetting) {
-                JSlider slider = (JSlider)e.getSource();
-                //TODO: Should we really only allow for values with granularity 0.01f?
-                ((FloatRangeSetting)s).value_$eq((float)slider.getValue() / 100);
+            if (s instanceof IntRangeSetting) {
+                JSlider slider = (JSlider) e.getSource();
+                ((IntRangeSetting) s).value_$eq(slider.getValue());
+            } else if (s instanceof FloatRangeSetting) {
+                JSlider slider = (JSlider) e.getSource();
+                ((FloatRangeSetting) s).value_$eq((float) slider.getValue() / 
+                        ((FloatRangeSetting) s).granularity());
             }
         }
     }

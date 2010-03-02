@@ -11,6 +11,7 @@ import javax.swing.Scrollable;
 
 public final class ImagePanel extends JPanel
         implements Scrollable, MouseMotionListener {
+
     private final BufferedImage image;
 
     public ImagePanel(final BufferedImage img) {
@@ -55,5 +56,6 @@ public final class ImagePanel extends JPanel
         this.scrollRectToVisible(r);
     }
 
-    public void mouseMoved(final MouseEvent me) {}
+    public void mouseMoved(final MouseEvent me) {
+    }
 }
