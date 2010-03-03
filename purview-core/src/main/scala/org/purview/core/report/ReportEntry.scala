@@ -40,7 +40,7 @@ trait SourceRectangle extends ReportEntry { this: SourcePoint =>
 
 case class ReportRectangle(level: ReportLevel, message: String, x: Int, y: Int, width: Int, height: Int)
     extends ReportEntry with Message with Point with Rectangle
-  
+
 case class ReportCircle(level: ReportLevel, message: String, x: Int, y: Int, radius: Int)
     extends ReportEntry with Message with Point with Circle
 

@@ -12,10 +12,9 @@ class AnalysisSession[A](analysersToRun: Seq[Analyser[A]], input: A) {
       analyser = analysersToRun(i)
       progOffset = i * progScale
       progReport = (x: Float) => stats.reportProgress(x * progScale + progOffset)
+      localStats = new SpartanAnalysisStats(progReport, stats.reportStatus _,
+                                            stats.reportStage _, stats.reportAnalyser _)
     } yield {
-      implicit val localStats =
-        new SpartanAnalysisStats(progReport, stats.reportStatus _,
-                                 stats.reportStage _, stats.reportAnalyser _)
       localStats.reportProgress(progOffset)
       analyser match {
         case m: Metadata =>
@@ -25,7 +24,7 @@ class AnalysisSession[A](analysersToRun: Seq[Analyser[A]], input: A) {
           localStats.reportAnalyser("Unknown")
           localStats.reportStatus("⇒ Using a nameless analyser" )
       }
-      val res = analyser.analyseWithStats(input)
+      val res = analyser.analyseWithStats(input)(localStats)
       analyser match {
         case m: Metadata =>
           localStats.reportStatus("⇒ Done using analyser \"" + m.name + "\"" )
