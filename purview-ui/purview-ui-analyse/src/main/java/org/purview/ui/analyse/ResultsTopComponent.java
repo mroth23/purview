@@ -7,7 +7,9 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.Stroke;
+import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
@@ -28,6 +30,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -35,6 +38,7 @@ import org.purview.core.analysis.Analyser;
 import org.purview.core.analysis.Metadata;
 import org.purview.core.data.Matrix;
 import org.purview.core.report.Circle;
+import org.purview.core.report.Critical$;
 import org.purview.core.report.LevelColor;
 import org.purview.core.report.Point;
 import org.purview.core.report.Rectangle;
@@ -43,6 +47,8 @@ import org.purview.core.report.ReportLevel;
 import org.purview.core.report.SourceCircle;
 import org.purview.core.report.SourcePoint;
 import org.purview.core.report.SourceRectangle;
+import org.purview.core.report.Warning$;
+import org.purview.core.report.Error$;
 
 /**
  * Top component which displays something.
@@ -128,9 +134,19 @@ class ReportEntryTreeCellRenderer extends DefaultTreeCellRenderer {
 
     private final Map<TreeNode, ReportEntry> callbacks;
     private static final Icon nodeIcon = ImageUtilities.loadImageIcon("org/purview/ui/analyse/done.png", true);
-    private static final Map<Color, Icon> icons = new HashMap<Color, Icon>();
-    private static final Ellipse2D.Float ellipse = new Ellipse2D.Float(4, 4, 8, 8);
+    private static final Map<ReportEntry, Icon> icons = new HashMap<ReportEntry, Icon>();
+    private static final Ellipse2D.Float circle = new Ellipse2D.Float(4, 4, 8, 8);
+    private static final Rectangle2D.Float rectangle = new Rectangle2D.Float(4, 4, 8, 8);
+    private static final Path2D.Float triangle = new Path2D.Float();
+    private static final Ellipse2D.Float point = new Ellipse2D.Float(6, 6, 4, 4);
     private final Stroke stroke = new BasicStroke(2);
+
+    static {
+        triangle.moveTo(4, 4);
+        triangle.lineTo(11, 8);
+        triangle.lineTo(4, 12);
+        triangle.closePath();
+    }
 
     public ReportEntryTreeCellRenderer(final Map<TreeNode, ReportEntry> callbacks) {
         this.callbacks = callbacks;
@@ -142,27 +158,40 @@ class ReportEntryTreeCellRenderer extends DefaultTreeCellRenderer {
         if (leaf) {
             if (value instanceof TreeNode && callbacks.containsKey((TreeNode) value)) {
                 final ReportEntry entry = callbacks.get((TreeNode) value);
-                final Color color = (entry.level() instanceof LevelColor)
-                        ? ((LevelColor) entry.level()).color().toAWTColor()
+                final ReportLevel level = entry.level();
+                final Color color = (level instanceof LevelColor)
+                        ? ((LevelColor) level).color().toAWTColor()
                         : Color.black;
 
-                if (!icons.containsKey(color)) {
+                if (!icons.containsKey(entry)) {
                     BufferedImage img = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
                     Graphics2D g = img.createGraphics();
                     g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                             RenderingHints.VALUE_ANTIALIAS_ON);
                     g.setStroke(stroke);
-                    g.setPaint(new Color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() / 2));
 
-                    g.fill(ellipse);
+                    final Color background = new Color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() / 2);
+
+                    Shape shape = null;
+                    if (entry instanceof SourcePoint)
+                        shape = triangle;
+                    else if (entry instanceof Rectangle)
+                        shape = rectangle;
+                    else if (entry instanceof Circle)
+                        shape = circle;
+                    else 
+                        shape = point;
+
+                    g.setPaint(background);
+                    g.fill(shape);
                     g.setPaint(color);
-
-                    g.draw(ellipse);
+                    g.draw(shape);
+                    
                     g.dispose();
-                    icons.put(color, new ImageIcon(img));
+                    icons.put(entry, new ImageIcon(img));
                 }
 
-                this.setIcon(icons.get(color));
+                this.setIcon(icons.get(entry));
             } else {
                 this.setIcon(null); //Default icon
             }
@@ -173,7 +202,7 @@ class ReportEntryTreeCellRenderer extends DefaultTreeCellRenderer {
     }
 }
 
-class ReportPanel extends JPanel {
+class ReportPanel extends JPanel implements Runnable {
 
     public static final float POINT_RADIUS = 2f;
     public static final float STROKE_WIDTH = 2f;
@@ -182,8 +211,8 @@ class ReportPanel extends JPanel {
     public static final Stroke stroke = new BasicStroke(STROKE_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
     public static final Stroke squareStroke = new BasicStroke(STROKE_WIDTH, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER);
     public static final Color sourceColor = Color.blue;
-    public static final Color transpSourceColor = new Color(sourceColor.getRed(), sourceColor.getGreen(), sourceColor.getBlue(), 128);
     public static final Color arrowColor = Color.white;
+    private volatile boolean hasUpdater = false;
     private final BufferedImage image;
     private ReportEntry entry = null;
 
@@ -192,6 +221,9 @@ class ReportPanel extends JPanel {
     }
 
     public void setReportEntry(final ReportEntry entry) {
+        if (null != entry) {
+            new Thread(this).start();
+        }
         this.entry = entry;
     }
 
@@ -270,8 +302,8 @@ class ReportPanel extends JPanel {
         //Let's use a more modern graphics API
         Graphics2D g = (Graphics2D) gr;
 
-        //Fade between 0.5f and 1.0f every second
-        float phase = 0.5f + (float) Math.abs(Math.sin(System.currentTimeMillis() * 1 / (Math.PI * 2000))) * 0.5f;
+        //Fade between 0.2f and 0.6f every half second
+        float phase = 0.2f + 0.4f * (float) Math.abs(Math.sin(System.currentTimeMillis() / (Math.PI * 125)));
 
         g.drawImage(image, 0, 0, this);
 
@@ -280,19 +312,19 @@ class ReportPanel extends JPanel {
                     RenderingHints.VALUE_ANTIALIAS_ON);
             ReportLevel level = entry.level();
 
-            final Color tmp = (level instanceof LevelColor)
+            final Color color = (level instanceof LevelColor)
                     ? ((LevelColor) level).color().toAWTColor() : Color.red;
 
-            final Color color = new Color(tmp.getRed(), tmp.getGreen(), tmp.getBlue(), (int) (tmp.getAlpha() * phase));
-
-            final Color transp = new Color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() / 2);
+            final Color transpColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), (int) (color.getAlpha() * phase));
+            final Color transpSourceColor = new Color(sourceColor.getRed(), sourceColor.getGreen(),
+                    sourceColor.getBlue(), (int) (sourceColor.getAlpha() * phase));
 
             g.setStroke(stroke);
 
             if (entry instanceof Point) {
                 final Point p = (Point) entry;
 
-                makePoint(g, p.x(), p.y(), transp, color);
+                makePoint(g, p.x(), p.y(), transpColor, color);
                 boolean hasArrow = false;
                 float x1 = 0, y1 = 0;
 
@@ -316,24 +348,41 @@ class ReportPanel extends JPanel {
                 if (entry instanceof Circle) {
                     final Circle c = (Circle) entry;
                     final float r = c.radius();
-                    makeCircle(g, p.x(), p.y(), c.radius(), transp, color);
+                    makeCircle(g, p.x(), p.y(), c.radius(), transpColor, color);
                 }
                 if (entry instanceof Rectangle) {
                     final Rectangle r = (Rectangle) entry;
-                    makeRectangle(g, p.x(), p.y(), r.width(), r.height(), transp, color);
+                    makeRectangle(g, p.x(), p.y(), r.width(), r.height(), transpColor, color);
                 }
 
                 if (hasArrow) {
                     makeArrow(g, x1, y1, p.x(), p.y(), arrowColor);
                 }
+            }
+        }
+    }
 
+    @Override
+    public void setVisible(boolean visible) {
+        if (visible) {
+            new Thread(this).start();
+        }
+
+        super.setVisible(visible);
+    }
+
+    public void run() {
+        if (!hasUpdater) {
+            hasUpdater = true;
+            while (null != entry && isVisible()) {
+                repaint();
                 try {
                     Thread.sleep(20);
-                } catch (InterruptedException e) {
-                    //ignore
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-                this.repaint();
             }
+            hasUpdater = false;
         }
     }
 }
