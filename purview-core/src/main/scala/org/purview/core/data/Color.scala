@@ -2,15 +2,16 @@ package org.purview.core.data
 
 import java.awt.{Color => AWTColor}
 
-object MakeColor {
+object Color {
+
+  def apply(a: Float, r: Float, g: Float, b: Float) = new Color(a, r, g, b)
+  def unapply(c: Color) = Some((c.a, c.r, c.g, c.b))
   def fromArray(colors: Array[Float]) = new Color(colors(0), colors(1), colors(2), colors(3))
 
   def fromAWT(color: AWTColor) = fromArray(color.getRGBComponents(null))
   def fromRGB(rgb: Int) = Color((rgb >>> 24) * 1f / 255f, ((rgb >>> 16) & 255) * 1f / 255f,
                                 ((rgb >>> 8) & 255) * 1f / 255f, (rgb &   255) * 1f / 255f)
-}
 
-object Colors {
   val Red = new Color(1, 1, 0, 0) {
     override def toHTML = "red"
     override def toAWTColor = AWTColor.red
@@ -90,7 +91,7 @@ object Colors {
   }
 }
 
-case class Color(a: Float, r: Float, g: Float, b: Float) extends NotNull {
+class Color(val a: Float, val r: Float, val g: Float, val b: Float) extends Product with NotNull {
   def alpha = a
   def red = r
   def green = g
@@ -130,4 +131,34 @@ case class Color(a: Float, r: Float, g: Float, b: Float) extends NotNull {
       255
     else
       x
+
+  def productArity = 4
+
+  override def productPrefix = "Color"
+
+  def productElement(i: Int) = i match {
+    case 0 => a
+    case 1 => r
+    case 2 => g
+    case 3 => b
+    case _ => throw new NoSuchElementException
+  }
+  
+  override def productElementName(i: Int) = i match {
+    case 0 => "a"
+    case 1 => "r"
+    case 2 => "g"
+    case 3 => "b"
+    case _ => throw new NoSuchElementException
+  }
+
+  def canEqual(x: Any) = x.isInstanceOf[Color]
+
+  override def equals(x: Any) = x match {
+    case that: Color => this.a == that.a && this.r == that.r &&
+      this.g == that.g && this.b == that.b
+    case _ => false
+  }
+
+  override def hashCode = a.hashCode ^ r.hashCode ^ g.hashCode ^ b.hashCode
 }

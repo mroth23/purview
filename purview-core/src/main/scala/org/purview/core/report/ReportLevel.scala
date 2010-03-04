@@ -1,7 +1,6 @@
 package org.purview.core.report
 
 import org.purview.core.data.Color
-import org.purview.core.data.Colors
 
 trait ReportLevel extends NotNull {
   val name: String
@@ -20,19 +19,19 @@ object Debug extends ReportLevel
 object Information extends ReportLevel
                       with LevelColor {
   val name = "Information"
-  val color = Colors.Green
+  val color = Color.Green
 }
 
 object Warning extends ReportLevel
                   with LevelColor {
   val name = "Warning"
-  val color = Colors.Yellow
+  val color = Color.Yellow
 }
 
 object Error extends ReportLevel
                 with LevelColor {
   val name = "Error"
-  val color = Colors.Red
+  val color = Color.Red
 }
 
 object Critical extends ReportLevel
