@@ -6,6 +6,7 @@ import org.purview.core.data.Color
 import org.purview.core.data.Matrix
 import scala.swing.Component
 import scala.swing.Frame
+import scala.math._
 
 class MatrixViewer[A](matrix: Matrix[A],
                       cellDrawer: (Int, Int, A, BufferedImage) => Unit) extends Frame {
@@ -27,9 +28,9 @@ class MatrixViewer[A](matrix: Matrix[A],
 object HeatmapViewer {
   def drawHeatmapCell(x: Int, y: Int, value: Float, img: BufferedImage) = {
     img.setRGB(x, y, 0xff000000 |
-      ((value       * 255).toInt min 255) << 16 |
-      ((value / 10  * 255).toInt min 255) << 8 |
-      ((value / 100 * 255).toInt min 255))
+      min((value       * 255).toInt, 255) << 16 |
+      min((value / 10  * 255).toInt, 255) << 8 |
+      min((value / 100 * 255).toInt, 255))
   }
 }
 
@@ -38,10 +39,10 @@ class HeatmapViewer(matrix: Matrix[Float]) extends MatrixViewer[Float](matrix, H
 object ImageViewer {
   def drawHeatmapCell(x: Int, y: Int, value: Color, img: BufferedImage) = {
     img.setRGB(x, y,
-      Math.max(0, Math.min((value.a * 255).toInt, 255)) << 24 |
-      Math.max(0, Math.min((value.r * 255).toInt, 255)) << 16 |
-      Math.max(0, Math.min((value.g * 255).toInt, 255)) << 8  |
-      Math.max(0, Math.min((value.b * 255).toInt, 255)))
+      max(0, min((value.a * 255).toInt, 255)) << 24 |
+      max(0, min((value.r * 255).toInt, 255)) << 16 |
+      max(0, min((value.g * 255).toInt, 255)) << 8  |
+      max(0, min((value.b * 255).toInt, 255)))
   }
 }
 

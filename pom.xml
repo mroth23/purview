@@ -73,6 +73,11 @@
                 <version>1.6.3</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>com.googlecode.scalaz</groupId>
+                <artifactId>scalaz-core_2.8.0.Beta1</artifactId>
+                <version>5.0-SNAPSHOT</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.scala-lang</groupId>
@@ -178,7 +183,8 @@
                         </executions>
                         <args>
                             <arg>-target:jvm-${java.version}</arg>
-                            <arg>-Yspecialize</arg>
+                            <arg>-deprecation</arg>
+                            <!--arg>-Yspecialize</arg-->
                             <!--arg>-make:transitivenocp</arg>
                             <arg>-dependencyfile</arg>
                             <arg>${project.build.directory}/.scala_dependencies</arg-->

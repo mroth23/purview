@@ -2,17 +2,21 @@ package org.purview.core.session
 
 class AnalysisStats {
   def reportProgress(progress: Float) = {}
-  def reportStatus(status: String) = {}
+  def reportSubProgress(progress: Float) = {}
   def reportStage(stage: String) = {}
   def reportAnalyser(analyser: String) = {}
+  def reportStatus(status: String) = {}
 }
 
-class SpartanAnalysisStats(progress: Float => Unit,
-                           status: String => Unit,
-                           stage: String => Unit,
-                           analyser: String => Unit) extends AnalysisStats {
+case class SpartanAnalysisStats(progress: Float => Unit,
+                                subProgress: Float => Unit,
+                                stage: String => Unit,
+                                analyser: String => Unit,
+                                status: String => Unit) extends AnalysisStats {
+
   override def reportProgress(progress: Float) = this.progress(progress)
-  override def reportStatus(status: String) = this.status(status)
+  override def reportSubProgress(progress: Float) = this.subProgress(progress)
   override def reportStage(stage: String) = this.stage(stage)
   override def reportAnalyser(analyser: String) =  this.analyser(analyser)
+  override def reportStatus(status: String) = this.status(status)
 }

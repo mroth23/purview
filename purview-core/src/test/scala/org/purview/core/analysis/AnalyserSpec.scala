@@ -1,12 +1,10 @@
 package org.purview.core.analysis
 
-import org.purview.core.data.Matrix
 import org.purview.core.data.MutableMatrix
 import org.purview.core.report.Information
 import org.purview.core.report.Message
 import org.purview.core.report.Point
 import org.purview.core.report.ReportEntry
-import org.purview.core.stage.Stage
 import org.specs.Specification
 import org.specs.runner.JUnit4
 import scala.util.Random
@@ -19,10 +17,10 @@ object AnalyserSpec extends Specification {
   "An analyser" should {
     "be able to generate reports" in {
       val a = new Analyser[Int] {
-        def analyse(i: Int) = Set(new ReportEntry with Message {
-            val level = Information
-            val message = "Analysed " + i
-          })
+        def result = for(i <- input) yield Set(new ReportEntry with Message {
+              val level = Information
+              val message = "Analysed " + i //This is NOT good practice!
+            })
       }
       a.analyse(0) must not be empty
       a.analyse(2).foreach(x => x.asInstanceOf[Message].message must_== "Analysed 2")
@@ -35,7 +33,7 @@ object AnalyserSpec extends Specification {
     "output a predefined message" in {
       val msg = "Hello, jakhlk"
       val analyser = new HeatMapAnalyser[Float] {
-        val heatmap = Stage.identity[Matrix[Float]]
+        val heatmap = input
         override val message = msg
       }
       matrix(0, 0) = 500
@@ -46,10 +44,10 @@ object AnalyserSpec extends Specification {
 
     "find a rogue maximum in a matrix" in {
       val analyser = new HeatMapAnalyser[Float] {
-        val heatmap = Stage.identity[Matrix[Float]]
+        val heatmap = input
       }
-      val posX = Random.nextInt(16)
-      val posY = Random.nextInt(16)
+      val posX = randomNumbers(16).head
+      val posY = randomNumbers(16).head
       matrix(posX, posY) = 9000 //high number
 
       val report = analyser.analyse(matrix)
@@ -69,8 +67,8 @@ object AnalyserSpec extends Specification {
       randomPoints.foreach(point => matrix(point._1, point._2) = 9000)
 
       val analyser = new HeatMapAnalyser[Float] {
-        val heatmap = Stage.identity[Matrix[Float]]
-        override val maxDistanceForMerge = 0f
+        val heatmap = input
+        override val accumulate = false
       }
 
       val report = analyser.analyse(matrix)
@@ -81,38 +79,6 @@ object AnalyserSpec extends Specification {
         val p = entry.asInstanceOf[Point]
         randomPoints must contain (p.x, p.y)
       }
-    }
-
-    "merge nearby maximi in a row" in {
-      matrix(1, 0) = 9000
-      matrix(3, 0) = 9000
-      matrix(5, 0) = 9000
-      matrix(15, 0) = 9000
-
-      val analyser = new HeatMapAnalyser[Float] {
-        val heatmap = Stage.identity[Matrix[Float]]
-        override val maxDistanceForMerge = 6f
-      }
-
-      val report = analyser.analyse(matrix)
-
-      report must have size 2
-    }
-
-    "merge nearby maximi in a cloud" in {
-      matrix(1, 1) = 9000
-      matrix(3, 3) = 9000
-      matrix(5, 5) = 9000
-      matrix(15, 15) = 9000
-
-      val analyser = new HeatMapAnalyser[Float] {
-        val heatmap = Stage.identity[Matrix[Float]]
-        override val maxDistanceForMerge = 6f
-      }
-
-      val report = analyser.analyse(matrix)
-
-      report must have size 2
     }
   }
 }

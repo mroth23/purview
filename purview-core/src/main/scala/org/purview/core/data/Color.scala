@@ -2,15 +2,26 @@ package org.purview.core.data
 
 import java.awt.{Color => AWTColor}
 
+/**
+ * Common color definitions.
+ */
 object Color {
 
+  /** Produces a new color with the given values */
   def apply(a: Float, r: Float, g: Float, b: Float) = new Color(a, r, g, b)
-  def unapply(c: Color) = Some((c.a, c.r, c.g, c.b))
-  def fromArray(colors: Array[Float]) = new Color(colors(0), colors(1), colors(2), colors(3))
 
+  /** Extracts color information from the given color */
+  def unapply(c: Color) = Some((c.a, c.r, c.g, c.b))
+
+  /** Produces a new color from the specified color array. Colors should have the order "RGBA" */
+  def fromArray(colors: Array[Float]) = new Color(colors(1), colors(2), colors(3), colors(0))
+
+  /** Produces a new color from the given java.awt.Color */
   def fromAWT(color: AWTColor) = fromArray(color.getRGBComponents(null))
+
+  /** Produces a new color from the given ARGB integer value */
   def fromRGB(rgb: Int) = Color((rgb >>> 24) * 1f / 255f, ((rgb >>> 16) & 255) * 1f / 255f,
-                                ((rgb >>> 8) & 255) * 1f / 255f, (rgb &   255) * 1f / 255f)
+                               ((rgb >>> 8) & 255) * 1f / 255f, (rgb &   255) * 1f / 255f)
 
   val Red = new Color(1, 1, 0, 0) {
     override def toHTML = "red"
@@ -92,19 +103,19 @@ object Color {
 }
 
 class Color(val a: Float, val r: Float, val g: Float, val b: Float) extends Product with NotNull {
-  def alpha = a
-  def red = r
-  def green = g
-  def blue = b
+  @inline def alpha = a
+  @inline def red = r
+  @inline def green = g
+  @inline def blue = b
 
-  def alphaByte = mkByte((a * 255 toInt) << 24)
-  def redByte   = mkByte((r * 255 toInt) << 16)
-  def greenByte = mkByte((g * 255 toInt) << 8 )
-  def blueByte  = mkByte((b * 255 toInt)      )
+  @inline def alphaByte = mkByte((a * 255 toInt) << 24)
+  @inline def redByte   = mkByte((r * 255 toInt) << 16)
+  @inline def greenByte = mkByte((g * 255 toInt) << 8 )
+  @inline def blueByte  = mkByte((b * 255 toInt)      )
   
-  def toTuple = (a, r, g, b)
-  def toAWTColor = new AWTColor(r, g, b, a)
-  def toRGB = alphaByte << 24 | redByte << 16 | greenByte << 8 | blueByte
+  @inline def toTuple = (a, r, g, b)
+  @inline def toAWTColor = new AWTColor(r, g, b, a)
+  @inline def toRGB = alphaByte << 24 | redByte << 16 | greenByte << 8 | blueByte
   def toHTML = '#' + padHex(redByte) + padHex(greenByte) + padHex(blueByte)
   
   def +(that: Color) = Color(this.a + that.a, this.r + that.r, this.g + that.g, this.b + that.b)
@@ -114,7 +125,7 @@ class Color(val a: Float, val r: Float, val g: Float, val b: Float) extends Prod
   def *(scale: Float) = Color(this.a * scale, this.r * scale, this.g * scale, this.b * scale)
   def /(scale: Float) = Color(this.a / scale, this.r / scale, this.g / scale, this.b / scale)
 
-  def abs = Color(Math.abs(a), Math.abs(r), Math.abs(g), Math.abs(b))
+  def abs = Color(a.abs, r.abs, g.abs, b.abs)
 
   @inline private def padHex(x: Int) = {
     val hex = Integer.toHexString(x)
@@ -141,14 +152,6 @@ class Color(val a: Float, val r: Float, val g: Float, val b: Float) extends Prod
     case 1 => r
     case 2 => g
     case 3 => b
-    case _ => throw new NoSuchElementException
-  }
-  
-  override def productElementName(i: Int) = i match {
-    case 0 => "a"
-    case 1 => "r"
-    case 2 => "g"
-    case 3 => "b"
     case _ => throw new NoSuchElementException
   }
 

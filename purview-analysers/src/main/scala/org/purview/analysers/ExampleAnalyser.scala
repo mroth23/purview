@@ -17,7 +17,7 @@ class ExampleAnalyser extends Analyser[Matrix[Color]] with Metadata {
   val name = "Example analyser"
   val description = "Makes stuff up about what it finds"
   
-  def analyse(in: Matrix[Color]) =
+  def result = for(_ <- input) yield
     Set(ReportRectangle(Information, "Wow, look at this!", 10, 10, 20, 20),
         ReportCircle(Warning, "This looks suspicious...", 50, 50, 40),
         ReportCircleMove(level = Error,

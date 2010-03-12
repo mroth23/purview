@@ -203,8 +203,8 @@ class SettingsPanel extends JPanel implements ChangeListener {
                 ((IntRangeSetting) s).value_$eq(slider.getValue());
             } else if (s instanceof FloatRangeSetting) {
                 JSlider slider = (JSlider) e.getSource();
-                ((FloatRangeSetting) s).value_$eq((float) slider.getValue()
-                        / ((FloatRangeSetting) s).granularity());
+                ((FloatRangeSetting) s).value_$eq(slider.getValue()
+                        / (float) ((FloatRangeSetting) s).granularity());
             }
         }
     }

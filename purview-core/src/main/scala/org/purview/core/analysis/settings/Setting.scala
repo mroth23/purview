@@ -43,7 +43,7 @@ case class FloatRangeSetting(name: String, min: Float, max: Float, granularity: 
   def value = v
   def value_=(f: Float): Unit = {
     if(value > max || value < min)
-      error("Setting out of range")
+      error("Setting out of range: " + f)
     else
       v = f
   }

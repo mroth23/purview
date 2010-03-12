@@ -3,7 +3,7 @@ package org.purview.core.data
 import java.awt.image.BufferedImage
 
 object MatrixOps {
-  def fragmentize[A : Manifest](in: Matrix[A], blockWidth: Int, blockHeight: Int): Matrix[Matrix[A]] = {
+  def fragmentize[@specialized("Int,Float") A : Manifest](in: Matrix[A], blockWidth: Int, blockHeight: Int): Matrix[Matrix[A]] = {
     val result = new Array[Matrix[A]]((in.width - blockWidth) * (in.height - blockHeight))
     val tmp = new Array[A](blockWidth * blockHeight)
 

@@ -7,7 +7,8 @@ import org.purview.core.report.Message
 import org.purview.core.report.Point
 import org.purview.core.report.ReportEntry
 import org.purview.core.report.ReportLevel
-import org.purview.core.stage.Stage
+import org.purview.core.process.Computation
+import scala.util.Sorting
 
 //TODO: this needs fixing!!
 
@@ -17,8 +18,8 @@ import org.purview.core.stage.Stage
  * high values indicate things to report.
  */
 trait HeatMapAnalyser[A] extends Analyser[Matrix[A]] {
-  /** The stage that generates the heat map */
-  val heatmap: Stage[Matrix[A], Matrix[Float]]
+  /** The computation that generates the heat map */
+  val heatmap: Computation[Matrix[Float]]
 
   /** The report level to use by default when creating a report */
   val defaultReportLevel: ReportLevel = Information
@@ -36,11 +37,9 @@ trait HeatMapAnalyser[A] extends Analyser[Matrix[A]] {
   val maxDeviationTolerance: Float = 0.1f
 
   /**
-   * If multiple regions are to be found, this specifies the max distance for
-   * which reported regions are treated as one. So, if two found regions have a
-   * distance that is smaller than this, they are treated as one.
+   * Specifies whether maximi that are next to each other should be merged
    */
-  val maxDistanceForMerge: Float = 5
+  val accumulate: Boolean = true
 
   private def maximi(in: Matrix[Float], maxDevTol: Float): Set[(Int, Int)] = {
     //TODO: more rigorous way of finding all maximi
@@ -64,39 +63,21 @@ trait HeatMapAnalyser[A] extends Analyser[Matrix[A]] {
 
   protected def heatRegions(in: Matrix[Float]): Set[(Int, Int)] = {
     val candidates = maximi(in, maxDeviationTolerance)
-    var distantEnough = Set.empty[(Int, Int)]
-    val maxDist = maxDistanceForMerge * maxDistanceForMerge
-    
-    for (candidate <- candidates) {//TODO: make better algorithm
-      val nearby = distantEnough find { x =>
-        val dx = Math.abs(x._1 - candidate._1)
-        val dy = Math.abs(x._2 - candidate._2)
-        (dx * dx + dy * dy) <= maxDist
-      }
 
-      nearby match {
-        case Some(n) =>
-          distantEnough -= n
-          distantEnough += (((candidate._1 + n._1) / 2, (candidate._2 + n._2) / 2))
-        case None =>
-          distantEnough += candidate
-      }
-    }
-    distantEnough
+    //TODO: accumulation algorithm!
+
+    candidates
   }
 
-  override def analyse(what: Matrix[A]) = {
-    //Generate the heat map for the given input
-    val result = heatmap(what)
-
-    val tops = heatRegions(result)
+  def result = for(r <- heatmap) yield {
+    val tops = heatRegions(r)
 
     val entries: Set[ReportEntry] = tops.map { point =>
       new ReportEntry with Point with Message {
         val message = HeatMapAnalyser.this.message
         val x = point._1
         val y = point._2
-        val level = reportLevelForValue(result(x, y))
+        val level = reportLevelForValue(r(x, y))
       }
     }
 
@@ -126,7 +107,12 @@ trait FilteredHeatMapAnalyser[A] extends HeatMapAnalyser[A] {
   abstract override def heatRegions(in: Matrix[Float]): Set[(Int, Int)] =
     super.heatRegions(in).filter(x => in.apply(x._1, x._2) > threshold)
 
-  private val sortedLevels = reportLevelThresholds.keySet.toSeq.sorted
+  private val sortedLevels = {
+    val result = reportLevelThresholds.keySet.toArray
+    Sorting.quickSort(result)
+    result
+  }
+  
   override def reportLevelForValue(value: Float) =
     sortedLevels find {value > _} map reportLevelThresholds getOrElse defaultReportLevel
 }
