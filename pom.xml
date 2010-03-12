@@ -47,7 +47,6 @@
     <modules>
         <module>purview-core</module>
         <module>purview-analysers</module>
-        <module>purview-stages</module>
         <module>purview-debug</module>
         <module>purview-ui</module>
     </modules>

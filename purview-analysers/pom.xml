@@ -29,11 +29,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>purview-stages</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
         </dependency>
