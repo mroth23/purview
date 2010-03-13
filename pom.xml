@@ -41,7 +41,7 @@
     <scm>
         <connection>scm:git:git://github.com/dflemstr/purview.git</connection>
         <developerConnection>scm:git:git@github.com:dflemstr/purview.git</developerConnection>
-        <url>http://github.com/dflemstr/pandora-libraries/tree/develop/</url>
+        <url>http://github.com/dflemstr/purview/tree/develop/</url>
     </scm>
 
     <modules>
