@@ -1,9 +1,11 @@
-package org.purview.core.data
+package org.purview.core.transforms
 
-import java.awt.image.BufferedImage
+import org.purview.core.data.ImmutableMatrix
+import org.purview.core.data.Matrix
 
-object MatrixOps {
-  def fragmentize[@specialized("Int,Float") A : Manifest](in: Matrix[A], blockWidth: Int, blockHeight: Int): Matrix[Matrix[A]] = {
+case class Fragmentize[@specialized("Int,Float") A : Manifest]
+    (blockWidth: Int, blockHeight: Int) extends Function1[Matrix[A], Matrix[Matrix[A]]] {
+  def apply(in: Matrix[A]) = {
     val result = new Array[Matrix[A]]((in.width - blockWidth) * (in.height - blockHeight))
     val tmp = new Array[A](blockWidth * blockHeight)
 
@@ -26,16 +28,5 @@ object MatrixOps {
       y += 1
     }
     new ImmutableMatrix(in.width - blockWidth, in.height - blockHeight, result)
-  }
-
-  def imageToMatrix(image: BufferedImage): Matrix[Color] = new Matrix[Color] {
-    val width = image.getWidth
-    val height = image.getHeight
-    private val raster = image.getData
-    private val buffer = new Array[Int](4)
-    def apply(x: Int, y: Int) = synchronized {
-      raster.getPixel(x, y, buffer)
-      new Color(buffer(0), buffer(1), buffer(2), buffer(3))
-    }
   }
 }
