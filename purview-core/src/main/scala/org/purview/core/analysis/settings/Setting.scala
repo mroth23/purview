@@ -23,7 +23,7 @@ case class IntRangeSetting(name: String, min: Int, max: Int) extends Setting[Int
   def value = v
   def value_=(f: Int): Unit = {
     if(value > max || value < min)
-      error("Setting out of range")
+      error("Setting out of range: " + f)
     else
       v = f
   }

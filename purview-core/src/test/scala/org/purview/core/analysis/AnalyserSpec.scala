@@ -4,6 +4,7 @@ import org.purview.core.data.MutableMatrix
 import org.purview.core.report.Information
 import org.purview.core.report.Message
 import org.purview.core.report.Point
+import org.purview.core.report.Rectangle
 import org.purview.core.report.ReportEntry
 import org.specs.Specification
 import org.specs.runner.JUnit4
@@ -13,17 +14,20 @@ class AnalyserSpecTest extends JUnit4(AnalyserSpec)
 
 object AnalyserSpec extends Specification {
   def randomNumbers(max: Int): Stream[Int] = Stream.cons(Random.nextInt(max), randomNumbers(max))
-
+  
   "An analyser" should {
     "be able to generate reports" in {
       val a = new Analyser[Int] {
         def result = for(i <- input) yield Set(new ReportEntry with Message {
-              val level = Information
-              val message = "Analysed " + i //This is NOT good practice!
-            })
+            val level = Information
+            val message = "Analysed " + i
+          })
       }
       a.analyse(0) must not be empty
-      a.analyse(2).foreach(x => x.asInstanceOf[Message].message must_== "Analysed 2")
+      a.analyse(2).partialMap {
+        case x: Message =>
+          x.message must_== "Analysed 2"
+      }
     }
   }
 
@@ -33,18 +37,20 @@ object AnalyserSpec extends Specification {
     "output a predefined message" in {
       val msg = "Hello, jakhlk"
       val analyser = new HeatMapAnalyser[Float] {
-        val heatmap = input
+        def heatmap = input
         override val message = msg
       }
       matrix(0, 0) = 500
-      for(entry <- analyser.analyse(matrix)) {
-        entry.asInstanceOf[Message].message must_== msg
+      analyser.analyse(matrix).partialMap {
+        case entry: Rectangle with Message =>
+          entry.message must_== msg
       }
     }
 
     "find a rogue maximum in a matrix" in {
       val analyser = new HeatMapAnalyser[Float] {
-        val heatmap = input
+        def heatmap = input
+        override def minRegionSize = 0
       }
       val posX = randomNumbers(16).head
       val posY = randomNumbers(16).head
@@ -52,12 +58,12 @@ object AnalyserSpec extends Specification {
 
       val report = analyser.analyse(matrix)
 
-      report must have size 1 //there's only one rogue, right?
+      report must have size 2 //there's only one rogue, right? + the raw image
 
-      for(entry <- report) {
-        val p = entry.asInstanceOf[Point]
-        p.x must_== posX
-        p.y must_== posY
+      report partialMap {
+        case p: Point with Rectangle =>
+          p.x must_== posX
+          p.y must_== posY
       }
     }
 
@@ -67,17 +73,18 @@ object AnalyserSpec extends Specification {
       randomPoints.foreach(point => matrix(point._1, point._2) = 9000)
 
       val analyser = new HeatMapAnalyser[Float] {
-        val heatmap = input
-        override val accumulate = false
+        def heatmap = input
+        override def accumulate = false
+        override def minRegionSize = 0
       }
 
       val report = analyser.analyse(matrix)
 
-      report must have size 16
+      report must have size 17 //points + raw image
 
-      for(entry <- report) {
-        val p = entry.asInstanceOf[Point]
-        randomPoints must contain (p.x, p.y)
+      report partialMap {
+        case p: Point with Rectangle =>
+          randomPoints must contain (p.x, p.y)
       }
     }
   }

@@ -1,5 +1,7 @@
 package org.purview.core.report
 
+import java.awt.image.BufferedImage
+
 abstract class ReportEntry extends NotNull {
   val level: ReportLevel
   override def toString = "Report entry"
@@ -13,6 +15,10 @@ trait Message extends ReportEntry {
 trait Point extends ReportEntry {
   val x: Int
   val y: Int
+}
+
+trait Image extends ReportEntry { this: Point =>
+  val image: BufferedImage
 }
 
 trait Circle extends ReportEntry { this: Point =>

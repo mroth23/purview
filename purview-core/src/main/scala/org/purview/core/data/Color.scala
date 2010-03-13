@@ -1,6 +1,7 @@
 package org.purview.core.data
 
 import java.awt.{Color => AWTColor}
+import scala.math._
 
 /**
  * Common color definitions.
@@ -108,10 +109,10 @@ class Color(val a: Float, val r: Float, val g: Float, val b: Float) extends Prod
   @inline def green = g
   @inline def blue = b
 
-  @inline def alphaByte = mkByte((a * 255 toInt) << 24)
-  @inline def redByte   = mkByte((r * 255 toInt) << 16)
-  @inline def greenByte = mkByte((g * 255 toInt) << 8 )
-  @inline def blueByte  = mkByte((b * 255 toInt)      )
+  @inline def alphaByte = mkByte(a * 255 toInt)
+  @inline def redByte   = mkByte(r * 255 toInt)
+  @inline def greenByte = mkByte(g * 255 toInt)
+  @inline def blueByte  = mkByte(b * 255 toInt)
   
   @inline def toTuple = (a, r, g, b)
   @inline def toAWTColor = new AWTColor(r, g, b, a)
@@ -126,6 +127,8 @@ class Color(val a: Float, val r: Float, val g: Float, val b: Float) extends Prod
   def /(scale: Float) = Color(this.a / scale, this.r / scale, this.g / scale, this.b / scale)
 
   def abs = Color(a.abs, r.abs, g.abs, b.abs)
+
+  def weight = sqrt(a * a + r * r + g * g + b * b).toFloat
 
   @inline private def padHex(x: Int) = {
     val hex = Integer.toHexString(x)

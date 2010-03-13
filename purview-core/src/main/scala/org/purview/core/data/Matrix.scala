@@ -1,6 +1,7 @@
 package org.purview.core.data
 
 import org.purview.core.analysis.Analyser
+import scala.collection.mutable.GenericArray
 
 object Matrix {
   implicit def iterable[A](m: Matrix[A]) = new Iterable[A] {
@@ -25,7 +26,7 @@ trait Matrix[@specialized("Int,Float,Boolean") +A] {
   val height: Int
   def apply(x: Int, y: Int): A
 
-  def map[B : Manifest](f: A => B) = {
+  def map[B : Manifest](f: A => B): Matrix[B] = {
     val data = new Array[B](width * height)
 
     var y = 0
@@ -34,6 +35,25 @@ trait Matrix[@specialized("Int,Float,Boolean") +A] {
       var x = 0
       while(x < width) {
         data(x + y * width) = f(apply(x, y))
+        x += 1
+      }
+      y += 1
+    }
+    
+    new ImmutableMatrix(width, height, data)
+  }
+
+  def zip[B](that: Matrix[B]): Matrix[(A, B)] = {
+    val data = new GenericArray[(A, B)](width * height)
+    require(this.width == that.width, "Matrices must have the same width")
+    require(this.height == that.height, "Matrices must have the same height")
+    
+    var y = 0
+    while(y < height) {
+      Analyser.statistics.reportSubProgress(y.toFloat / height)
+      var x = 0
+      while(x < width) {
+        data(x + y * width) = (this.apply(x, y), that.apply(x, y))
         x += 1
       }
       y += 1

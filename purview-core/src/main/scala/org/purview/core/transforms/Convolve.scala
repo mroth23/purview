@@ -8,27 +8,26 @@ case class Convolve(kernel: Matrix[Float]) extends Function1[Matrix[Float], Matr
   def apply(input: Matrix[Float]) = {
     val result = new MutableMatrix[Float](input.width, input.height)
 
-    val kwidth = kernel.width
-    val kheight = kernel.height
+    val kWidth = kernel.width
+    val kHeight = kernel.height
+    val kCenterX = (kWidth - 1) / 2
+    val kCenterY = (kHeight - 1) / 2
+    
+    val rWidth = input.width
+    val rHeight = input.height
 
-    val left = (kwidth - 1) / 2
-    val right = max((kwidth - left - 1), 0)
-    val top = (kheight - 1) / 2
-    val bottom = max((kheight - top - 1), 0)
-
-    val rwidth = input.width - left - right
-    val rheight = input.height - top - bottom
+    @inline def between(x: Int, low: Int, high: Int) = if(x < low) low else if(x > high) high else x
 
     var x = 0
-    while(x < rwidth) {
+    while(x < rWidth) {
       var y = 0
-      while(y < rheight) {
+      while(y < rHeight) {
         var dx = 0
-        var value: Float = 0
-        while(dx < kwidth) {
+        var value = 0.0f
+        while(dx < kWidth) {
           var dy = 0
-          while(dy < kheight) {
-            value += kernel(dx, dy) * input(x + dx, y + dy)
+          while(dy < kHeight) {
+            value += kernel(dx, dy) * input(between(x + dx - kCenterX, 0, rWidth - 1), between(y + dy - kCenterY, 0, rHeight - 1))
             dy += 1
           }
           dx += 1

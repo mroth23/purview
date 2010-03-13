@@ -9,8 +9,8 @@ import org.purview.core.data.Color
 import org.purview.core.data.ImmutableMatrix
 import org.purview.core.data.Matrix
 import org.purview.core.data.MutableMatrix
-import org.purview.core.process.Stage
-import org.purview.core.transforms.Convolve
+import org.purview.core.report.Warning
+import org.purview.core.transforms.LinearConvolve
 import scala.math._
 
 class Bilinear extends HeatMapImageAnalyser with Metadata with Settings {
@@ -18,6 +18,8 @@ class Bilinear extends HeatMapImageAnalyser with Metadata with Settings {
   val description = "Finds bilinearly interpolated regions in an image"
 
   override val message = "Bilinearly scaled region"
+  override val reportLevel = Warning
+  override def threshold = 1.0f
 
   val maxSizeFactorSetting = IntRangeSetting("Max factor to detect", 2, 16)
   maxSizeFactorSetting.value = 8 //default
@@ -27,10 +29,11 @@ class Bilinear extends HeatMapImageAnalyser with Metadata with Settings {
   val settings = List(maxSizeFactorSetting, epsilonSetting)
 
   //Just to make us have to type less
-  def maxSizeFactor = maxSizeFactorSetting.value
-  def epsilon = epsilonSetting.value
+  private def maxSizeFactor = maxSizeFactorSetting.value
+  private def epsilon = epsilonSetting.value
 
-  val markBilinear = Stage("Mark bilinear image regions") {
+  def markBilinear = {
+    status("Marking bilinearly scaled image regions")
     for(in <- input) yield {
       val result = new MutableMatrix[Float](in.width, in.height)
       val accessors = List[(Int, Int, Int) => Color](
@@ -66,19 +69,7 @@ class Bilinear extends HeatMapImageAnalyser with Metadata with Settings {
     }
   }
 
-  private val gaussian5BlurKernel =
-    new ImmutableMatrix(9, 9,
-                        Array[Float](0.0016f, 0.0032f, 0.0048f, 0.0064f, 0.0080f, 0.0064f, 0.0048f, 0.0032f, 0.0016f,
-                                     0.0032f, 0.0064f, 0.0096f, 0.0128f, 0.016f , 0.0128f, 0.0096f, 0.0064f, 0.0032f,
-                                     0.0048f, 0.0096f, 0.0144f, 0.0192f, 0.024f , 0.0192f, 0.0144f, 0.0096f, 0.0048f,
-                                     0.0064f, 0.0128f, 0.0192f, 0.0256f, 0.032f , 0.0256f, 0.0192f, 0.0128f, 0.0064f,
-                                     0.0080f, 0.016f , 0.024f , 0.032f , 0.04f  , 0.032f ,  0.024f, 0.016f , 0.0080f,
-                                     0.0064f, 0.0128f, 0.0192f, 0.0256f, 0.032f , 0.0256f, 0.0192f, 0.0128f, 0.0064f,
-                                     0.0048f, 0.0096f, 0.0144f, 0.0192f, 0.024f , 0.0192f, 0.0144f, 0.0096f, 0.0048f,
-                                     0.0032f, 0.0064f, 0.0096f, 0.0128f, 0.016f , 0.0128f, 0.0096f, 0.0064f, 0.0032f,
-                                     0.0016f, 0.0032f, 0.0048f, 0.0064f, 0.0080f, 0.0064f, 0.0048f, 0.0032f, 0.0016f))
+  private val gaussian5BlurKernel = Array[Float](0.0080f, 0.016f, 0.024f, 0.032f, 0.04f, 0.032f,  0.024f, 0.016f, 0.0080f)
 
-  val blur = Stage("Computing blurred bilinear image regions")(markBilinear >- Convolve(gaussian5BlurKernel))
-
-  val heatmap = blur
+  def heatmap = markBilinear >- LinearConvolve(gaussian5BlurKernel)
 }
