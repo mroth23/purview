@@ -19,10 +19,10 @@ import org.openide.windows.TopComponent;
 import org.purview.core.analysis.Analyser;
 import org.purview.core.data.Color;
 import org.purview.core.data.Matrix;
-import org.purview.core.data.MatrixOps;
 import org.purview.core.report.ReportEntry;
 import org.purview.core.session.AnalysisSession;
 import org.purview.core.session.AnalysisStats;
+import org.purview.core.transforms.ImageToMatrix;
 import scala.collection.Iterator;
 import scala.collection.JavaConversions;
 import scala.collection.Set;
@@ -35,9 +35,8 @@ final class AnalysisTopComponent extends TopComponent implements Runnable {
     private static final String ICON_PATH = "org/purview/ui/analyse/analyse.png";
     private static final String PREFERRED_ID = "AnalysisTopComponent";
     private static final String analyserDescr = NbBundle.getMessage(AnalysisTopComponent.class, "LBL_Analyser") + ": ";
-    private static final String stageDescr = NbBundle.getMessage(AnalysisTopComponent.class, "LBL_Stage") + ": ";
+    private static final String statusDescr = NbBundle.getMessage(AnalysisTopComponent.class, "LBL_Status") + ": ";
     private static final String runningAnalyser = NbBundle.getMessage(AnalysisTopComponent.class, "LBL_RunningAnalyser");
-    private static final String runningStage = NbBundle.getMessage(AnalysisTopComponent.class, "LBL_RunningStage");
     private final JScrollPane listScroller = new JScrollPane();
     private final JProgressBar progressBar = new JProgressBar();
     private final JProgressBar subProgressBar = new JProgressBar();
@@ -53,7 +52,7 @@ final class AnalysisTopComponent extends TopComponent implements Runnable {
         setToolTipText(NbBundle.getMessage(AnalysisTopComponent.class, "HINT_AnalysisTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
 
-        final Matrix<Color> matrix = MatrixOps.imageToMatrix(image);
+        final Matrix<Color> matrix = new ImageToMatrix().apply(image);
         session = new AnalysisSession<Matrix<Color>>(
                 JavaConversions.asBuffer(analysers).toSeq(),
                 matrix);
@@ -100,17 +99,6 @@ final class AnalysisTopComponent extends TopComponent implements Runnable {
             }
 
             @Override
-            public void reportStage(final String stage) {
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    public void run() {
-                        subProgressBar.setString(stageDescr + stage);
-                        statusList.append("→ " + runningStage + ": \"" + stage + "\"\n");
-                    }
-                });
-            }
-
-            @Override
             public void reportAnalyser(final String analyser) {
                 SwingUtilities.invokeLater(new Runnable() {
 
@@ -126,13 +114,14 @@ final class AnalysisTopComponent extends TopComponent implements Runnable {
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
+                        subProgressBar.setString(statusDescr + status);
                         statusList.append(status + "\n");
                     }
                 });
             }
         };
         final scala.collection.Map<Analyser<Matrix<Color>>, Set<ReportEntry>> results = session.run(stats);
-        stats.reportStatus("⇒ Done");
+        stats.reportStatus("Done"); //TODO: translate
         final Iterator<Analyser<Matrix<Color>>> analyserIter = results.keySet().iterator();
         final Map<Analyser<Matrix<org.purview.core.data.Color>>, List<ReportEntry>> report =
                 new HashMap<Analyser<Matrix<org.purview.core.data.Color>>, List<ReportEntry>>();

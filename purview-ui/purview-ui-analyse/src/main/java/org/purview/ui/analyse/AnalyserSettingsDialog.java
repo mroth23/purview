@@ -135,6 +135,7 @@ public class AnalyserSettingsDialog extends JDialog implements ActionListener, I
         if (e.getSource() instanceof JCheckBox && callbacks.containsKey((JCheckBox) e.getSource())) {
             final JCheckBox box = (JCheckBox) e.getSource();
             analysers.put(callbacks.get(box), box.isSelected());
+            updateTabs();
         }
     }
 }

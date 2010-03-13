@@ -4,12 +4,12 @@ import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
-import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
@@ -38,7 +38,7 @@ import org.purview.core.analysis.Analyser;
 import org.purview.core.analysis.Metadata;
 import org.purview.core.data.Matrix;
 import org.purview.core.report.Circle;
-import org.purview.core.report.Critical$;
+import org.purview.core.report.Image;
 import org.purview.core.report.LevelColor;
 import org.purview.core.report.Point;
 import org.purview.core.report.Rectangle;
@@ -47,8 +47,6 @@ import org.purview.core.report.ReportLevel;
 import org.purview.core.report.SourceCircle;
 import org.purview.core.report.SourcePoint;
 import org.purview.core.report.SourceRectangle;
-import org.purview.core.report.Warning$;
-import org.purview.core.report.Error$;
 
 /**
  * Top component which displays something.
@@ -123,7 +121,25 @@ final class ResultsTopComponent extends TopComponent implements TreeSelectionLis
             TreePath path = e.getPath();
             TreeNode node = (TreeNode) path.getLastPathComponent();
             if (node.isLeaf() && callbacks.containsKey(node)) {
-                reportPanel.setReportEntry(callbacks.get(node));
+                ReportEntry entry = callbacks.get(node);
+                reportPanel.setReportEntry(entry);
+
+                if (entry instanceof Point) {
+                    Point p = (Point) entry;
+                    if (entry instanceof Rectangle) {
+                        Rectangle r = (Rectangle) entry;
+                        reportPanel.scrollRectToVisible(
+                                new java.awt.Rectangle(p.x() - r.width() / 2, p.y() - r.height() / 2,
+                                r.width(), r.height()));
+                    } else if (entry instanceof Circle) {
+                        Circle c = (Circle) entry;
+                        reportPanel.scrollRectToVisible(
+                                new java.awt.Rectangle(p.x() - c.radius(), p.y() - c.radius(),
+                                c.radius() * 2, c.radius() * 2));
+                    } else if (!(entry instanceof Image)) {
+                        reportPanel.scrollRectToVisible(new java.awt.Rectangle(p.x(), p.y(), 0, 0));
+                    }
+                }
                 reportPanel.repaint();
             }
         }
@@ -168,25 +184,32 @@ class ReportEntryTreeCellRenderer extends DefaultTreeCellRenderer {
                     Graphics2D g = img.createGraphics();
                     g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                             RenderingHints.VALUE_ANTIALIAS_ON);
-                    g.setStroke(stroke);
 
-                    final Color background = new Color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() / 2);
+                    if (entry instanceof Image) {
+                        Image i = (Image) entry;
+                        g.drawImage(i.image(), 1, 1, 14, 14, tree);
+                    } else {
+                        g.setStroke(stroke);
 
-                    Shape shape = null;
-                    if (entry instanceof SourcePoint)
-                        shape = triangle;
-                    else if (entry instanceof Rectangle)
-                        shape = rectangle;
-                    else if (entry instanceof Circle)
-                        shape = circle;
-                    else 
-                        shape = point;
+                        final Color background = new Color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() / 2);
 
-                    g.setPaint(background);
-                    g.fill(shape);
-                    g.setPaint(color);
-                    g.draw(shape);
-                    
+                        Shape shape = null;
+                        if (entry instanceof SourcePoint) {
+                            shape = triangle;
+                        } else if (entry instanceof Rectangle) {
+                            shape = rectangle;
+                        } else if (entry instanceof Circle) {
+                            shape = circle;
+                        } else {
+                            shape = point;
+                        }
+
+                        g.setPaint(background);
+                        g.fill(shape);
+                        g.setPaint(color);
+                        g.draw(shape);
+                    }
+
                     g.dispose();
                     icons.put(entry, new ImageIcon(img));
                 }
@@ -218,6 +241,7 @@ class ReportPanel extends JPanel implements Runnable {
 
     public ReportPanel(final BufferedImage image) {
         this.image = image;
+        setPreferredSize(new Dimension(image.getWidth(), image.getHeight()));
     }
 
     public void setReportEntry(final ReportEntry entry) {
@@ -324,7 +348,10 @@ class ReportPanel extends JPanel implements Runnable {
             if (entry instanceof Point) {
                 final Point p = (Point) entry;
 
-                makePoint(g, p.x(), p.y(), transpColor, color);
+                if (!(entry instanceof Image)) {
+                    makePoint(g, p.x(), p.y(), transpColor, color);
+                }
+
                 boolean hasArrow = false;
                 float x1 = 0, y1 = 0;
 
@@ -347,12 +374,15 @@ class ReportPanel extends JPanel implements Runnable {
 
                 if (entry instanceof Circle) {
                     final Circle c = (Circle) entry;
-                    final float r = c.radius();
                     makeCircle(g, p.x(), p.y(), c.radius(), transpColor, color);
                 }
                 if (entry instanceof Rectangle) {
                     final Rectangle r = (Rectangle) entry;
                     makeRectangle(g, p.x(), p.y(), r.width(), r.height(), transpColor, color);
+                }
+                if (entry instanceof Image) {
+                    final Image img = (Image) entry;
+                    g.drawImage(img.image(), p.x(), p.y(), this);
                 }
 
                 if (hasArrow) {
