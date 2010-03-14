@@ -78,7 +78,7 @@ final class AnalysisTopComponent extends TopComponent implements Runnable {
                         public void run() {
                             progressBar.setIndeterminate(false);
                             progressBar.setValue(actualProgress);
-                            progressBar.setStringPainted(actualProgress >= 1.0f);
+                            progressBar.setStringPainted(actualProgress < 1000);
                         }
                     });
                     oldProgress = actualProgress;
@@ -94,7 +94,7 @@ final class AnalysisTopComponent extends TopComponent implements Runnable {
                         public void run() {
                             subProgressBar.setIndeterminate(false);
                             subProgressBar.setValue(actualProgress);
-                            progressBar.setStringPainted(actualProgress >= 1.0f);
+                            progressBar.setStringPainted(actualProgress < 1000);
                         }
                     });
                     oldSubProgress = actualProgress;
