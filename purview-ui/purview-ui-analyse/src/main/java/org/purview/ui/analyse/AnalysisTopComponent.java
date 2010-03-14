@@ -2,6 +2,8 @@ package org.purview.ui.analyse;
 
 import java.awt.BorderLayout;
 import java.awt.image.BufferedImage;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,6 +21,7 @@ import org.openide.windows.TopComponent;
 import org.purview.core.analysis.Analyser;
 import org.purview.core.data.Color;
 import org.purview.core.data.Matrix;
+import org.purview.core.report.Message;
 import org.purview.core.report.ReportEntry;
 import org.purview.core.session.AnalysisSession;
 import org.purview.core.session.AnalysisStats;
@@ -135,6 +138,18 @@ final class AnalysisTopComponent extends TopComponent implements Runnable {
             while (reportIter.hasNext()) {
                 entries.add(reportIter.next());
             }
+            Collections.sort(entries, new Comparator<ReportEntry>() {
+
+                public int compare(ReportEntry o1, ReportEntry o2) {
+                    final int r = o1.level().name().compareTo(o2.level().name());
+                    
+                    if (r == 0) {
+                        return ((Message) o1).message().compareTo(((Message) o2).message());
+                    } else {
+                        return r;
+                    }
+                }
+            });
             report.put(analyser, entries);
         }
 
