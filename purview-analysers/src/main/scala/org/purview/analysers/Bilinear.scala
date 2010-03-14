@@ -32,40 +32,44 @@ class Bilinear extends HeatMapImageAnalyser with Metadata with Settings {
   private def maxSizeFactor = maxSizeFactorSetting.value
   private def epsilon = epsilonSetting.value
 
-  def markBilinear = {
+  def markBilinear = for(matrix <- input) yield {
     status("Marking bilinearly scaled image regions")
-    for(in <- input) yield {
-      val result = new MutableMatrix[Float](in.width, in.height)
-      val accessors = List[(Int, Int, Int) => Color](
-        (x, y, n) => in(min(x + n, in.width - 1), y                        ),
-        (x, y, n) => in(x                       , min(y + n, in.height - 1)),
-        (x, y, n) => in(min(x + n, in.width - 1), min(y + n, in.height - 1))
-      )
+    val range = (1 to maxSizeFactor).toSeq
+    val width = matrix.width
+    val height = matrix.height
+    @inline def cmpSlope(slope1: Color, slope2: Color) = {
+      abs(slope1.a - slope2.a) < epsilon && abs(slope1.r - slope2.r) < epsilon &&
+      abs(slope1.g - slope2.g) < epsilon && abs(slope1.b - slope2.b) < epsilon && abs(slope1.weight - slope2.weight) > epsilon / 2f//TODO: arbitrary?
+    }
+    for {
+      (x, y, color) <- matrix.cells
+    } yield if(x == width - 1 || y == height - 1)
+      0.0f
+    else {
+      val slopeRight = matrix(x + 1, y) - matrix(x, y)
+      val slopeDown = matrix(x, y + 1) - matrix(x, y)
+      val slopeDiag = matrix(x + 1, y + 1) - matrix(x, y)
 
-      val w = in.width
-      val h = in.height
-
-      for {
-        (x, y, color) <- in.cells
-        read <- accessors
-      } {
-        val streak = for(extend <- 1 to 16) yield read(x, y, extend)
-        val slopes = streak.sliding(2).map(x => x(0) - x(1)).toSeq
-        val first = slopes.head
-        val firstabs = first.abs
-
-        if(firstabs.a > epsilon || firstabs.r > epsilon ||
-           firstabs.g > epsilon || firstabs.b > epsilon) {
-          val numberOfSlopes = slopes.findIndexOf { x =>
-            val xabs = (x - first).abs
-            !(xabs.a < epsilon && xabs.r < epsilon && xabs.g < epsilon && xabs.b < epsilon)
-          }
-
-          if(numberOfSlopes > -1)
-            result(x, y) = numberOfSlopes
-        }
+      val consecutiveRight = range.findLastIndexOf { extend =>
+        if(x + extend < width) {
+          val tmpSlope = matrix(x + extend, y) - matrix(x + extend - 1, y)
+          cmpSlope(tmpSlope, slopeRight)
+        } else false
       }
-      result
+      val consecutiveDown = range.findLastIndexOf { extend =>
+        if(y + extend < height) {
+          val tmpSlope = matrix(x, y + extend) - matrix(x, y + extend - 1)
+          cmpSlope(tmpSlope, slopeDown)
+        } else false
+      }
+
+      val consecutiveDiag = range.findLastIndexOf { extend =>
+        if(y + extend < height && x + extend < width) {
+          val tmpSlope = matrix(x + extend, y + extend) - matrix(x + extend - 1, y + extend - 1)
+          cmpSlope(tmpSlope, slopeDiag)
+        } else false
+      }
+      (consecutiveRight + consecutiveDown + consecutiveDiag).toFloat
     }
   }
 
