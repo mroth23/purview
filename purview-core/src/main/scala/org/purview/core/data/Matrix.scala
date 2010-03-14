@@ -21,29 +21,32 @@ object Matrix {
   }
 }
 
-trait Matrix[@specialized("Int,Float,Boolean") +A] {
+trait Matrix[@specialized("Int,Float,Boolean") +A] extends NotNull {
   val width: Int
   val height: Int
   def apply(x: Int, y: Int): A
 
   def map[B : Manifest](f: A => B): Matrix[B] = {
-    val data = new Array[B](width * height)
+    val result: MutableMatrix[B] = if(implicitly[Manifest[B]] <:< implicitly[Manifest[Color]])
+      (new MutableColorMatrix(width, height)).asInstanceOf[MutableMatrix[B]]
+    else
+      new MutableArrayMatrix[B](width, height)
 
     var y = 0
     while(y < height) {
       Analyser.statistics.reportSubProgress(y.toFloat / height)
       var x = 0
       while(x < width) {
-        data(x + y * width) = f(apply(x, y))
+        result(x, y) = f(apply(x, y))
         x += 1
       }
       y += 1
     }
     
-    new ImmutableMatrix(width, height, data)
+    result
   }
 
-  def zip[B](that: Matrix[B]): Matrix[(A, B)] = {
+  def zip[@specialized("Int,Float,Boolean") B](that: Matrix[B]): Matrix[(A, B)] = {
     val data = new GenericArray[(A, B)](width * height)
     require(this.width == that.width, "Matrices must have the same width")
     require(this.height == that.height, "Matrices must have the same height")
@@ -99,13 +102,17 @@ sealed case class ImmutableMatrix[@specialized("Int,Float,Boolean") +A](width: I
   def apply(x: Int, y: Int) = data(x + y * width)
 }
 
-sealed case class MutableMatrix[@specialized("Int,Float,Boolean") A : Manifest](width: Int, height: Int) extends Matrix[A] {
+trait MutableMatrix[@specialized("Int,Float,Boolean") A] extends Matrix[A] {
+  def update(x: Int, y: Int, value: A)
+}
+
+sealed case class MutableArrayMatrix[@specialized("Int,Float,Boolean") A : Manifest](width: Int, height: Int) extends MutableMatrix[A] {
   private val data = new Array[A](width * height)
   def apply(x: Int, y: Int) = data(x + y * width)
   def update(x: Int, y: Int, value: A) = data(x + y * width) = value
 }
 
-sealed case class MutableColorMatrix(width: Int, height: Int) extends Matrix[Color] {
+sealed case class MutableColorMatrix(width: Int, height: Int) extends MutableMatrix[Color] {
   private val buffer = new Array[Int](width * height)
   def apply(x: Int, y: Int) = Color fromRGB buffer(x + y * width)
   def update(x: Int, y: Int, value: Color) = (buffer(x + y * width) = value.toRGB)

@@ -10,7 +10,7 @@ import org.purview.core.report.Point
 import org.purview.core.report.Rectangle
 import org.purview.core.report.ReportEntry
 import org.purview.core.report.ReportLevel
-import org.purview.core.data.MutableMatrix
+import org.purview.core.data.MutableArrayMatrix
 import org.purview.core.process.Computation
 import org.purview.core.transforms.MatrixToImage
 import scala.collection.mutable.Queue
@@ -20,7 +20,7 @@ import scala.collection.mutable.Queue
  * map as its result. The heat map is a Matrix of Floats, where regions with
  * high values indicate things to report.
  */
-trait HeatMapAnalyser[A, B <: Matrix[A]] extends Analyser[B] {
+trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] extends Analyser[B] {
   /** The computation that generates the heat map */
   def heatmap: Computation[Matrix[Float]]
 
@@ -66,7 +66,7 @@ trait HeatMapAnalyser[A, B <: Matrix[A]] extends Analyser[B] {
 
   protected def heatRegions = for(max <- maximi; (in, candidateMatrix) = max) yield {
     status("Calculating " + (if(accumulate) "and merging " else "") + "peak regions")
-    val mask = new MutableMatrix[Boolean](candidateMatrix.width, candidateMatrix.height)
+    val mask = new MutableArrayMatrix[Boolean](candidateMatrix.width, candidateMatrix.height)
     val width = candidateMatrix.width
     val height = candidateMatrix.height
 

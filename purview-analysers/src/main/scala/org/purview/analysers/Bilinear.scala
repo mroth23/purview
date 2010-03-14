@@ -39,7 +39,7 @@ class Bilinear extends HeatMapImageAnalyser with Metadata with Settings {
     val height = matrix.height
     @inline def cmpSlope(slope1: Color, slope2: Color) = {
       abs(slope1.a - slope2.a) < epsilon && abs(slope1.r - slope2.r) < epsilon &&
-      abs(slope1.g - slope2.g) < epsilon && abs(slope1.b - slope2.b) < epsilon && abs(slope1.weight - slope2.weight) > epsilon / 2f//TODO: arbitrary?
+      abs(slope1.g - slope2.g) < epsilon && abs(slope1.b - slope2.b) < epsilon
     }
     for {
       (x, y, color) <- matrix.cells
@@ -49,27 +49,28 @@ class Bilinear extends HeatMapImageAnalyser with Metadata with Settings {
       val slopeRight = matrix(x + 1, y) - matrix(x, y)
       val slopeDown = matrix(x, y + 1) - matrix(x, y)
       val slopeDiag = matrix(x + 1, y + 1) - matrix(x, y)
+      if(slopeRight.weight > epsilon && slopeDown.weight > epsilon && slopeDiag.weight > epsilon) {
+        val consecutiveRight = range.findLastIndexOf { extend =>
+          if(x + extend < width) {
+            val tmpSlope = matrix(x + extend, y) - matrix(x + extend - 1, y)
+            cmpSlope(tmpSlope, slopeRight)
+          } else false
+        }
+        val consecutiveDown = range.findLastIndexOf { extend =>
+          if(y + extend < height) {
+            val tmpSlope = matrix(x, y + extend) - matrix(x, y + extend - 1)
+            cmpSlope(tmpSlope, slopeDown)
+          } else false
+        }
 
-      val consecutiveRight = range.findLastIndexOf { extend =>
-        if(x + extend < width) {
-          val tmpSlope = matrix(x + extend, y) - matrix(x + extend - 1, y)
-          cmpSlope(tmpSlope, slopeRight)
-        } else false
-      }
-      val consecutiveDown = range.findLastIndexOf { extend =>
-        if(y + extend < height) {
-          val tmpSlope = matrix(x, y + extend) - matrix(x, y + extend - 1)
-          cmpSlope(tmpSlope, slopeDown)
-        } else false
-      }
-
-      val consecutiveDiag = range.findLastIndexOf { extend =>
-        if(y + extend < height && x + extend < width) {
-          val tmpSlope = matrix(x + extend, y + extend) - matrix(x + extend - 1, y + extend - 1)
-          cmpSlope(tmpSlope, slopeDiag)
-        } else false
-      }
-      (consecutiveRight + consecutiveDown + consecutiveDiag).toFloat
+        val consecutiveDiag = range.findLastIndexOf { extend =>
+          if(y + extend < height && x + extend < width) {
+            val tmpSlope = matrix(x + extend, y + extend) - matrix(x + extend - 1, y + extend - 1)
+            cmpSlope(tmpSlope, slopeDiag)
+          } else false
+        }
+        (consecutiveRight + consecutiveDown + consecutiveDiag).toFloat
+      } else 0f
     }
   }
 

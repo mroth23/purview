@@ -1,13 +1,13 @@
 package org.purview.core.transforms
 
 import org.purview.core.data.Matrix
-import org.purview.core.data.MutableMatrix
+import org.purview.core.data.MutableArrayMatrix
 import scala.math._
 
 case class LinearConvolve(kernel: Array[Float]) extends Function1[Matrix[Float], Matrix[Float]] {
   def apply(input: Matrix[Float]) = {
-    val resultHoriz = new MutableMatrix[Float](input.width, input.height)
-    val resultVert = new MutableMatrix[Float](input.width, input.height)
+    val resultHoriz = new MutableArrayMatrix[Float](input.width, input.height)
+    val resultVert = new MutableArrayMatrix[Float](input.width, input.height)
 
     val kLen = kernel.length
     val kCenter = (kLen - 1) / 2

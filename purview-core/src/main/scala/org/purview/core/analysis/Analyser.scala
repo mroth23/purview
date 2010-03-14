@@ -19,7 +19,7 @@ private[core] object Analyser {
 /**
  * An object that processes something and generates a report.
  */
-abstract class Analyser[A] extends NotNull {
+abstract class Analyser[@specialized("Int,Float,Boolean") A] extends NotNull {
 
   /**
    * Runs this Analyser and generates a report

@@ -1,12 +1,12 @@
 package org.purview.core.transforms
 
 import org.purview.core.data.Matrix
-import org.purview.core.data.MutableMatrix
+import org.purview.core.data.MutableArrayMatrix
 import scala.math._
 
 case class Convolve(kernel: Matrix[Float]) extends Function1[Matrix[Float], Matrix[Float]] {
   def apply(input: Matrix[Float]) = {
-    val result = new MutableMatrix[Float](input.width, input.height)
+    val result = new MutableArrayMatrix[Float](input.width, input.height)
 
     val kWidth = kernel.width
     val kHeight = kernel.height

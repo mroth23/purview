@@ -1,7 +1,7 @@
 package org.purview.core.analysis
 
 import org.purview.core.data.Matrix
-import org.purview.core.data.MutableMatrix
+import org.purview.core.data.MutableArrayMatrix
 import org.purview.core.report.Information
 import org.purview.core.report.Message
 import org.purview.core.report.Point
@@ -33,7 +33,7 @@ object AnalyserSpec extends Specification {
   }
 
   "A heat map analyser" should {
-    val matrix = new MutableMatrix[Float](16, 16)
+    val matrix = new MutableArrayMatrix[Float](16, 16)
 
     "output a predefined message" in {
       val msg = "Hello, jakhlk"
