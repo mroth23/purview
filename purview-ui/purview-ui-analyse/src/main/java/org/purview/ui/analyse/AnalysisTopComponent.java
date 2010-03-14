@@ -20,6 +20,7 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.purview.core.analysis.Analyser;
 import org.purview.core.data.Color;
+import org.purview.core.data.ImageMatrix;
 import org.purview.core.data.Matrix;
 import org.purview.core.report.Message;
 import org.purview.core.report.ReportEntry;
@@ -45,21 +46,20 @@ final class AnalysisTopComponent extends TopComponent implements Runnable {
     private final JProgressBar subProgressBar = new JProgressBar();
     private final JTextArea statusList = new JTextArea();
     private final AnalysisSession session;
-    private final BufferedImage image;
+    private final ImageMatrix image;
     private final String imageName;
 
-    public AnalysisTopComponent(final String imageName, final BufferedImage image,
-            final List<Analyser<Matrix<Color>>> analysers) {
+    public AnalysisTopComponent(final String imageName, final ImageMatrix matrix,
+            final List<Analyser<ImageMatrix>> analysers) {
         initComponents();
         setName(NbBundle.getMessage(AnalysisTopComponent.class, "CTL_AnalysisTopComponent", imageName));
         setToolTipText(NbBundle.getMessage(AnalysisTopComponent.class, "HINT_AnalysisTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
 
-        final Matrix<Color> matrix = new ImageToMatrix().apply(image);
-        session = new AnalysisSession<Matrix<Color>>(
+        session = new AnalysisSession<ImageMatrix>(
                 JavaConversions.asBuffer(analysers).toSeq(),
                 matrix);
-        this.image = image;
+        this.image = matrix;
         this.imageName = imageName;
     }
 
@@ -121,14 +121,14 @@ final class AnalysisTopComponent extends TopComponent implements Runnable {
                 });
             }
         };
-        final scala.collection.Map<Analyser<Matrix<Color>>, Set<ReportEntry>> results = session.run(stats);
+        final scala.collection.Map<Analyser<ImageMatrix>, Set<ReportEntry>> results = session.run(stats);
         stats.reportStatus("Done"); //TODO: translate
-        final Iterator<Analyser<Matrix<Color>>> analyserIter = results.keySet().iterator();
-        final Map<Analyser<Matrix<org.purview.core.data.Color>>, List<ReportEntry>> report =
-                new HashMap<Analyser<Matrix<org.purview.core.data.Color>>, List<ReportEntry>>();
+        final Iterator<Analyser<ImageMatrix>> analyserIter = results.keySet().iterator();
+        final Map<Analyser<ImageMatrix>, List<ReportEntry>> report =
+                new HashMap<Analyser<ImageMatrix>, List<ReportEntry>>();
 
         while (analyserIter.hasNext()) {
-            final Analyser<Matrix<Color>> analyser = analyserIter.next();
+            final Analyser<ImageMatrix> analyser = analyserIter.next();
             final Set<ReportEntry> resultsForAnalyser = results.apply(analyser);
             final Iterator<ReportEntry> reportIter = resultsForAnalyser.iterator();
             final LinkedList<ReportEntry> entries = new LinkedList<ReportEntry>();
@@ -154,7 +154,7 @@ final class AnalysisTopComponent extends TopComponent implements Runnable {
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                final ResultsTopComponent resultsComp = new ResultsTopComponent(imageName, image, report);
+                final ResultsTopComponent resultsComp = new ResultsTopComponent(imageName, image.image(), report);
                 resultsComp.open();
                 resultsComp.requestActive();
             }

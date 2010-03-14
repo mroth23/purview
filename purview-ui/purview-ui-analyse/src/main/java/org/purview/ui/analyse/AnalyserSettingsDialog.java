@@ -23,18 +23,17 @@ import org.purview.core.analysis.Settings;
 import org.purview.core.analysis.settings.FloatRangeSetting;
 import org.purview.core.analysis.settings.IntRangeSetting;
 import org.purview.core.analysis.settings.Setting;
-import org.purview.core.data.Color;
-import org.purview.core.data.Matrix;
+import org.purview.core.data.ImageMatrix;
 import scala.collection.Iterator;
 import scala.collection.Seq;
 
 public class AnalyserSettingsDialog extends JDialog implements ActionListener, ItemListener {
 
-    private final Map<Analyser<Matrix<Color>>, Boolean> analysers;
-    private final Map<JCheckBox, Analyser<Matrix<Color>>> callbacks;
+    private final Map<Analyser<ImageMatrix>, Boolean> analysers;
+    private final Map<JCheckBox, Analyser<ImageMatrix>> callbacks;
 
     /** Creates new form AnalyserSettingsDialog */
-    public AnalyserSettingsDialog(final Map<Analyser<Matrix<Color>>, Boolean> analysers,
+    public AnalyserSettingsDialog(final Map<Analyser<ImageMatrix>, Boolean> analysers,
             final Frame parent, final boolean modal) {
         super(parent, modal);
 
@@ -45,9 +44,9 @@ public class AnalyserSettingsDialog extends JDialog implements ActionListener, I
         okButton.addActionListener(this);
 
         activeAnalysersTab.setLayout(new BoxLayout(activeAnalysersTab, BoxLayout.PAGE_AXIS));
-        this.callbacks = new HashMap<JCheckBox, Analyser<Matrix<Color>>>();
+        this.callbacks = new HashMap<JCheckBox, Analyser<ImageMatrix>>();
         int unknownIndex = 0;
-        for (Analyser<Matrix<Color>> analyser : analysers.keySet()) {
+        for (Analyser<ImageMatrix> analyser : analysers.keySet()) {
             JCheckBox box = new JCheckBox();
             box.setSelected(analysers.get(analyser));
             callbacks.put(box, analyser);
@@ -66,7 +65,7 @@ public class AnalyserSettingsDialog extends JDialog implements ActionListener, I
     private void updateTabs() {
         analyserTabs.removeAll();
         analyserTabs.add(org.openide.util.NbBundle.getMessage(AnalyserSettingsDialog.class, "LBL_ActiveAnalysers"), activeAnalysersTab);
-        for (final Analyser<Matrix<Color>> analyser : analysers.keySet()) {
+        for (final Analyser<ImageMatrix> analyser : analysers.keySet()) {
             if (analysers.get(analyser) && analyser instanceof Settings) {
                 final Settings settingsForAnalyser = (Settings) analyser;
                 final SettingsPanel panel = new SettingsPanel(settingsForAnalyser);

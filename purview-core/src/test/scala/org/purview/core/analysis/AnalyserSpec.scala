@@ -1,5 +1,6 @@
 package org.purview.core.analysis
 
+import org.purview.core.data.Matrix
 import org.purview.core.data.MutableMatrix
 import org.purview.core.report.Information
 import org.purview.core.report.Message
@@ -36,7 +37,7 @@ object AnalyserSpec extends Specification {
 
     "output a predefined message" in {
       val msg = "Hello, jakhlk"
-      val analyser = new HeatMapAnalyser[Float] {
+      val analyser = new HeatMapAnalyser[Float, Matrix[Float]] {
         def heatmap = input
         override val message = msg
       }
@@ -48,7 +49,7 @@ object AnalyserSpec extends Specification {
     }
 
     "find a rogue maximum in a matrix" in {
-      val analyser = new HeatMapAnalyser[Float] {
+      val analyser = new HeatMapAnalyser[Float, Matrix[Float]] {
         def heatmap = input
         override def minRegionSize = 0
       }
@@ -72,7 +73,7 @@ object AnalyserSpec extends Specification {
 
       randomPoints.foreach(point => matrix(point._1, point._2) = 9000)
 
-      val analyser = new HeatMapAnalyser[Float] {
+      val analyser = new HeatMapAnalyser[Float, Matrix[Float]] {
         def heatmap = input
         override def accumulate = false
         override def minRegionSize = 0

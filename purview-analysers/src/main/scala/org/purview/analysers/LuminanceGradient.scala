@@ -6,7 +6,7 @@ import org.purview.core.analysis.Metadata
 import org.purview.core.analysis.Settings
 import org.purview.core.analysis.settings.FloatRangeSetting
 import org.purview.core.data.Color
-import org.purview.core.data.Matrix
+import org.purview.core.data.ImageMatrix
 import org.purview.core.report.Image
 import org.purview.core.report.Information
 import org.purview.core.report.Message
@@ -15,7 +15,7 @@ import org.purview.core.report.ReportEntry
 import org.purview.core.transforms.MatrixToImage
 import scala.math._
 
-class LuminanceGradient extends Analyser[Matrix[Color]] with Metadata with Settings {
+class LuminanceGradient extends Analyser[ImageMatrix] with Metadata with Settings {
   val name = "Luminance Gradient"
   val description = "Plots the general light direction in the image"
 
