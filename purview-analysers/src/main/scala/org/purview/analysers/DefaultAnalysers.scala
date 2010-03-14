@@ -6,5 +6,5 @@ import org.purview.core.data.Matrix
 
 object DefaultAnalysers {
   val analysers: Seq[() => Analyser[Matrix[Color]]] =
-    List(() => new Bilinear, () => new ExampleAnalyser, () => new ErrorLevelAnalyser)
+    List(() => new Bilinear, () => new ExampleAnalyser, () => new ErrorLevelAnalyser, () => new LuminanceGradient)
 }
