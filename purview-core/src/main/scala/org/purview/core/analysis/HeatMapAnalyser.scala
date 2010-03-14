@@ -147,7 +147,7 @@ trait HeatMapAnalyser[A] extends Analyser[Matrix[A]] {
         val level = Information
         val x = 0
         val y = 0
-        val image = new MatrixToImage()(in.map(x => Color(1, x / max, x / max, x / max)))
+        val image = new MatrixToImage()(in.map(x => Color(0.9f, x / max, x / max, x / max)))
       }
     }
   }
