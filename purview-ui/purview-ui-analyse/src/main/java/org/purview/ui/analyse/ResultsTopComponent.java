@@ -324,69 +324,82 @@ class ReportPanel extends JPanel implements Runnable {
     @Override
     public void paint(Graphics gr) {
         //Let's use a more modern graphics API
-        Graphics2D g = (Graphics2D) gr;
+        final Graphics2D graphics = (Graphics2D) gr;
 
         //Fade between 0.2f and 0.6f every half second
         float phase = 0.2f + 0.4f * (float) Math.abs(Math.sin(System.currentTimeMillis() / (Math.PI * 125)));
 
-        g.drawImage(image, 0, 0, this);
+        graphics.drawImage(image, 0, 0, this);
 
         if (null != entry) {
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
-            ReportLevel level = entry.level();
+
+            final ReportLevel level = entry.level();
 
             final Color color = (level instanceof LevelColor)
                     ? ((LevelColor) level).color().toAWTColor() : Color.red;
-
-            final Color transpColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), (int) (color.getAlpha() * phase));
+            final Color transpColor = new Color(color.getRed(), color.getGreen(),
+                    color.getBlue(), (int) (color.getAlpha() * phase));
             final Color transpSourceColor = new Color(sourceColor.getRed(), sourceColor.getGreen(),
                     sourceColor.getBlue(), (int) (sourceColor.getAlpha() * phase));
 
-            g.setStroke(stroke);
+            graphics.setStroke(stroke);
 
+            //TODO: This could be put into a ReportEntry trait, but should it be? Is this too implementation specific?
             if (entry instanceof Point) {
-                final Point p = (Point) entry;
+                final Point point = (Point) entry;
 
                 if (!(entry instanceof Image)) {
-                    makePoint(g, p.x(), p.y(), transpColor, color);
+                    makePoint(graphics, point.x(), point.y(), transpColor, color);
                 }
 
                 boolean hasArrow = false;
-                float x1 = 0, y1 = 0;
+                float arrowSourceX = 0, arrowSourceY = 0;
 
                 if (entry instanceof SourcePoint) {
-                    final SourcePoint sp = (SourcePoint) entry;
-                    makePoint(g, sp.sourceX(), sp.sourceY(), transpSourceColor, sourceColor);
+                    final SourcePoint sourcePoint = (SourcePoint) entry;
+                    makePoint(graphics, sourcePoint.sourceX(), sourcePoint.sourceY(),
+                            transpSourceColor, sourceColor);
 
                     if (entry instanceof SourceCircle) {
-                        final SourceCircle sc = (SourceCircle) entry;
-                        makeCircle(g, sp.sourceX(), sp.sourceY(), sc.sourceRadius(), transpSourceColor, sourceColor);
+                        final SourceCircle sourceCircle = (SourceCircle) entry;
+                        makeCircle(graphics, sourcePoint.sourceX(), sourcePoint.sourceY(),
+                                sourceCircle.sourceRadius(),
+                                transpSourceColor, sourceColor);
                     }
                     if (entry instanceof SourceRectangle) {
-                        final SourceRectangle sr = (SourceRectangle) entry;
-                        makeRectangle(g, sp.sourceX(), sp.sourceY(), sr.sourceWidth(), sr.sourceHeight(), transpSourceColor, sourceColor);
+                        final SourceRectangle sourceRectangle = (SourceRectangle) entry;
+                        makeRectangle(graphics, sourcePoint.sourceX(), sourcePoint.sourceY(),
+                                sourceRectangle.sourceWidth(), sourceRectangle.sourceHeight(),
+                                transpSourceColor, sourceColor);
                     }
-                    x1 = sp.sourceX();
-                    y1 = sp.sourceY();
+                    arrowSourceX = sourcePoint.sourceX();
+                    arrowSourceY = sourcePoint.sourceY();
                     hasArrow = true;
                 }
 
                 if (entry instanceof Circle) {
-                    final Circle c = (Circle) entry;
-                    makeCircle(g, p.x(), p.y(), c.radius(), transpColor, color);
+                    final Circle circle = (Circle) entry;
+                    makeCircle(graphics, point.x(), point.y(),
+                            circle.radius(),
+                            transpColor, color);
                 }
                 if (entry instanceof Rectangle) {
                     final Rectangle r = (Rectangle) entry;
-                    makeRectangle(g, p.x(), p.y(), r.width(), r.height(), transpColor, color);
+                    makeRectangle(graphics, point.x(), point.y(),
+                            r.width(), r.height(),
+                            transpColor, color);
                 }
                 if (entry instanceof Image) {
                     final Image img = (Image) entry;
-                    g.drawImage(img.image(), p.x(), p.y(), this);
+                    graphics.drawImage(img.image(), point.x(), point.y(), this);
                 }
 
                 if (hasArrow) {
-                    makeArrow(g, x1, y1, p.x(), p.y(), arrowColor);
+                    makeArrow(graphics, arrowSourceX, arrowSourceY,
+                            point.x(), point.y(),
+                            arrowColor);
                 }
             }
         }
@@ -405,7 +418,77 @@ class ReportPanel extends JPanel implements Runnable {
         if (!hasUpdater) {
             hasUpdater = true;
             while (null != entry && isVisible()) {
-                repaint();
+                if (entry instanceof Point) {
+                    int left, top, right, bottom;
+                    final Point point = (Point) entry;
+                    if (entry instanceof Rectangle) {
+                        final Rectangle rectangle = (Rectangle) entry;
+                        left = point.x() - rectangle.width() / 2;
+                        top = point.y() - rectangle.height() / 2;
+                        right = point.x() + rectangle.width() / 2;
+                        bottom = point.y() + rectangle.height() / 2;
+                    } else if (entry instanceof Circle) {
+                        final Circle circle = (Circle) entry;
+                        left = point.x() - circle.radius();
+                        top = point.y() - circle.radius();
+                        right = point.x() + circle.radius();
+                        bottom = point.y() + circle.radius();
+                    } else if (entry instanceof Image) {
+                        final Image entryImage = (Image) entry;
+                        left = point.x();
+                        top = point.y();
+                        right = point.x() + entryImage.image().getWidth();
+                        bottom = point.y() + entryImage.image().getHeight();
+                    } else {
+                        left = point.x();
+                        top = point.y();
+                        right = point.x();
+                        bottom = point.y();
+                    }
+                    if (entry instanceof SourcePoint) {
+                        final SourcePoint sourcePoint = (SourcePoint) entry;
+                        int sourceLeft, sourceTop, sourceRight, sourceBottom;
+
+                        if (entry instanceof SourceCircle) {
+                            final SourceCircle sourceCircle = (SourceCircle) entry;
+                            sourceLeft = sourcePoint.sourceX() - sourceCircle.sourceRadius();
+                            sourceTop = sourcePoint.sourceY() - sourceCircle.sourceRadius();
+                            sourceRight = sourcePoint.sourceX() + sourceCircle.sourceRadius();
+                            sourceBottom = sourcePoint.sourceY() + sourceCircle.sourceRadius();
+                        } else if (entry instanceof SourceRectangle) {
+                            final SourceRectangle sourceRectangle = (SourceRectangle) entry;
+                            sourceLeft = sourcePoint.sourceX() - sourceRectangle.sourceWidth() / 2;
+                            sourceTop = sourcePoint.sourceY() - sourceRectangle.sourceHeight() / 2;
+                            sourceRight = sourcePoint.sourceX() + sourceRectangle.sourceWidth() / 2;
+                            sourceBottom = sourcePoint.sourceY() + sourceRectangle.sourceHeight() / 2;
+                        } else {
+                            sourceLeft = sourcePoint.sourceX();
+                            sourceTop = sourcePoint.sourceY();
+                            sourceRight = sourcePoint.sourceX();
+                            sourceBottom = sourcePoint.sourceY();
+                        }
+                        
+                        if (sourceLeft < left) {
+                            left = sourceLeft;
+                        }
+                        if (sourceTop < top) {
+                            top = sourceTop;
+                        }
+                        if (sourceRight > right) {
+                            right = sourceRight;
+                        }
+                        if (sourceBottom > bottom) {
+                            bottom = sourceBottom;
+                        }
+                    }
+                    left -= 5;
+                    top -= 5;
+                    right += 5;
+                    bottom += 5;
+
+                    this.repaint(left, top, right - left, bottom - top);
+                }
+
                 try {
                     Thread.sleep(20);
                 } catch (InterruptedException ex) {
