@@ -2,8 +2,7 @@ package org.purview.analysers
 
 import org.purview.core.analysis.Analyser
 import org.purview.core.analysis.Metadata
-import org.purview.core.data.Color
-import org.purview.core.data.Matrix
+import org.purview.core.data.ImageMatrix
 import org.purview.core.report.Critical
 import org.purview.core.report.Error
 import org.purview.core.report.Information
@@ -13,7 +12,7 @@ import org.purview.core.report.ReportRectangle
 import org.purview.core.report.ReportRectangleMove
 import org.purview.core.report.Warning
 
-class ExampleAnalyser extends Analyser[Matrix[Color]] with Metadata {
+class ExampleAnalyser extends Analyser[ImageMatrix] with Metadata {
   val name = "Example analyser"
   val description = "Makes stuff up about what it finds"
   

@@ -36,7 +36,7 @@ import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.purview.core.analysis.Analyser;
 import org.purview.core.analysis.Metadata;
-import org.purview.core.data.Matrix;
+import org.purview.core.data.ImageMatrix;
 import org.purview.core.report.Circle;
 import org.purview.core.report.Image;
 import org.purview.core.report.LevelColor;
@@ -62,7 +62,7 @@ final class ResultsTopComponent extends TopComponent implements TreeSelectionLis
     private final Map<TreeNode, ReportEntry> callbacks;
 
     public ResultsTopComponent(final String imageName, final BufferedImage image,
-            final Map<Analyser<Matrix<org.purview.core.data.Color>>, List<ReportEntry>> report) {
+            final Map<Analyser<ImageMatrix>, List<ReportEntry>> report) {
         setName(NbBundle.getMessage(ResultsTopComponent.class, "CTL_ResultsTopComponent", imageName));
         setToolTipText(NbBundle.getMessage(ResultsTopComponent.class, "HINT_ResultsTopComponent"));
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
@@ -74,7 +74,7 @@ final class ResultsTopComponent extends TopComponent implements TreeSelectionLis
 
         int unknownAnalyserIdx = 0;
         callbacks = new HashMap<TreeNode, ReportEntry>();
-        for (final Analyser<Matrix<org.purview.core.data.Color>> analyser : report.keySet()) {
+        for (final Analyser<ImageMatrix> analyser : report.keySet()) {
             //TODO: should we sync the "unknown index" with the one from the settings dialog?
             final DefaultMutableTreeNode analyserNode = (analyser instanceof Metadata)
                     ? new DefaultMutableTreeNode(((Metadata) analyser).name())

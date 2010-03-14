@@ -1,6 +1,7 @@
 package org.purview.core.analysis
 
 import org.purview.core.data.Color
+import org.purview.core.data.ImageMatrix
 import org.purview.core.data.Matrix
 import org.purview.core.report.Image
 import org.purview.core.report.Information
@@ -19,7 +20,7 @@ import scala.collection.mutable.Queue
  * map as its result. The heat map is a Matrix of Floats, where regions with
  * high values indicate things to report.
  */
-trait HeatMapAnalyser[A] extends Analyser[Matrix[A]] {
+trait HeatMapAnalyser[A, B <: Matrix[A]] extends Analyser[B] {
   /** The computation that generates the heat map */
   def heatmap: Computation[Matrix[Float]]
 
@@ -153,4 +154,4 @@ trait HeatMapAnalyser[A] extends Analyser[Matrix[A]] {
   }
 }
 
-trait HeatMapImageAnalyser extends HeatMapAnalyser[Color]
+trait HeatMapImageAnalyser extends HeatMapAnalyser[Color, ImageMatrix]
