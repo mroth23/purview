@@ -124,8 +124,19 @@
             </dependency>
             <dependency>
                 <groupId>org.netbeans.api</groupId>
+                <artifactId>org-openide-modules</artifactId>
+                <version>${netbeans.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.netbeans.api</groupId>
                 <artifactId>org-jdesktop-layout</artifactId>
                 <version>${netbeans.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.seaglasslookandfeel</groupId>
+                <artifactId>seaglasslookandfeel</artifactId>
+                <version>0.1.7.2</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -271,6 +282,11 @@
             <id>netbeans</id>
             <name>Repository hosting netbeans.org API artifacts</name>
             <url>http://bits.netbeans.org/maven2</url>
+        </repository>
+        <repository>
+            <id>OSS Staging</id>
+            <name>Sonatype Staging Repository</name>
+            <url>http://oss.sonatype.org/content/groups/staging/</url>
         </repository>
     </repositories>
 
