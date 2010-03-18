@@ -15,7 +15,7 @@ import org.purview.core.report.ReportEntry
 import org.purview.core.transforms.MatrixToImage
 import scala.math._
 
-class LuminanceGradient extends Analyser[ImageMatrix] with Metadata with Settings {
+class LuminanceGradientAnalyser extends Analyser[ImageMatrix] with Metadata with Settings {
   val name = "Luminance Gradient"
   val description = "Plots the general light direction in the image"
 
