@@ -11,7 +11,7 @@
     <artifactId>purview-ui</artifactId>
     <packaging>pom</packaging>
 
-    <name>Purview - User interface</name>
+    <name>Purview - User Interface</name>
     <description>A Netbeans-platform based GUI application</description>
     
     <modules>
