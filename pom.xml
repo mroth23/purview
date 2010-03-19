@@ -45,10 +45,10 @@
     </scm>
 
     <modules>
-        <module>purview-core</module>
-        <module>purview-analysers</module>
-        <module>purview-debug</module>
-        <module>purview-ui</module>
+        <module>core</module>
+        <module>analysers</module>
+        <module>debug</module>
+        <module>ui</module>
     </modules>
 
     <properties>
