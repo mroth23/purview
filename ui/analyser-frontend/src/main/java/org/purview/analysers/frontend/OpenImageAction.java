@@ -60,7 +60,7 @@ public final class OpenImageAction extends CallableSystemAction {
 
     @Override
     protected String iconResource() {
-        return "org/purview/ui/analyse/open.png";
+        return "org/purview/analysers/frontend/open.png";
     }
 
     public HelpCtx getHelpCtx() {

@@ -58,7 +58,7 @@
         </dependency>
         <dependency>
             <groupId>org.purview</groupId>
-            <artifactId>analyser-frontend</artifactId>
+            <artifactId>analysers-frontend</artifactId>
             <version>${project.version}</version>
             <type>nbm</type>
         </dependency>

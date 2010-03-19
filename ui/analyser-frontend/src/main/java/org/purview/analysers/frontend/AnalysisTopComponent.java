@@ -25,7 +25,6 @@ import org.purview.core.report.Message;
 import org.purview.core.report.ReportEntry;
 import org.purview.core.session.AnalysisSession;
 import org.purview.core.session.AnalysisStats;
-import org.purview.core.transforms.ImageToMatrix;
 import scala.collection.Iterator;
 import scala.collection.JavaConversions;
 import scala.collection.Set;
@@ -35,7 +34,7 @@ import scala.collection.Set;
  */
 final class AnalysisTopComponent extends TopComponent implements Runnable {
 
-    private static final String ICON_PATH = "org/purview/ui/analyse/analyse.png";
+    private static final String ICON_PATH = "org/purview/analysers/frontend/analyse.png";
     private static final String PREFERRED_ID = "AnalysisTopComponent";
     private static final String analyserDescr = NbBundle.getMessage(AnalysisTopComponent.class, "LBL_Analyser") + ": ";
     private static final String statusDescr = NbBundle.getMessage(AnalysisTopComponent.class, "LBL_Status") + ": ";

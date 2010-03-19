@@ -53,7 +53,7 @@ import org.purview.core.report.SourceRectangle;
  */
 final class ResultsTopComponent extends TopComponent implements TreeSelectionListener {
 
-    private static final String ICON_PATH = "org/purview/ui/analyse/done.png";
+    private static final String ICON_PATH = "org/purview/analysers/frontend/done.png";
     private static final String PREFERRED_ID = "ResultsTopComponent";
     private final JSplitPane splitter;
     private final JTree reportTree;
@@ -149,7 +149,7 @@ final class ResultsTopComponent extends TopComponent implements TreeSelectionLis
 class ReportEntryTreeCellRenderer extends DefaultTreeCellRenderer {
 
     private final Map<TreeNode, ReportEntry> callbacks;
-    private static final Icon nodeIcon = ImageUtilities.loadImageIcon("org/purview/ui/analyse/done.png", true);
+    private static final Icon nodeIcon = ImageUtilities.loadImageIcon("org/purview/analysers/frontend/done.png", true);
     private static final Map<ReportEntry, Icon> icons = new HashMap<ReportEntry, Icon>();
     private static final Ellipse2D.Float circle = new Ellipse2D.Float(4, 4, 8, 8);
     private static final Rectangle2D.Float rectangle = new Rectangle2D.Float(4, 4, 8, 8);

@@ -44,7 +44,7 @@ import scala.collection.Seq;
  */
 final class ImageSessionTopComponent extends TopComponent implements ActionListener {
 
-    private static final String ICON_PATH = "org/purview/ui/analyse/gears.png";
+    private static final String ICON_PATH = "org/purview/analysers/frontend/gears.png";
     private static final String PREFERRED_ID = "ImageSessionTopComponent";
     private final JButton analyseButton;
     private final JButton configureAnalysersButton;
@@ -106,7 +106,7 @@ final class ImageSessionTopComponent extends TopComponent implements ActionListe
         toolbar.setRollover(true);
 
         analyseButton.setIcon(
-                new ImageIcon(getClass().getResource("/org/purview/ui/analyse/gears.png")));
+                new ImageIcon(getClass().getResource("/org/purview/analysers/frontend/gears.png")));
         Mnemonics.setLocalizedText(analyseButton,
                 NbBundle.getMessage(ImageSessionTopComponent.class, "LBL_AnalyseImage"));
         analyseButton.setFocusable(false);
@@ -116,7 +116,7 @@ final class ImageSessionTopComponent extends TopComponent implements ActionListe
         toolbar.add(analyseButton);
 
         configureAnalysersButton.setIcon(
-                new ImageIcon(getClass().getResource("/org/purview/ui/analyse/settings.png")));
+                new ImageIcon(getClass().getResource("/org/purview/analysers/frontend/settings.png")));
         Mnemonics.setLocalizedText(configureAnalysersButton,
                 NbBundle.getMessage(ImageSessionTopComponent.class, "LBL_ConfigureAnalysers"));
         configureAnalysersButton.setFocusable(false);
