@@ -200,7 +200,12 @@
                         <args>
                             <arg>-target:jvm-${java.version}</arg>
                             <arg>-deprecation</arg>
-                            <arg>-Yspecialize</arg>
+                            <!--arg>-Yspecialize</arg-->
+                            <arg>-Yinline</arg>
+                            <arg>-Ytailrecommend</arg>
+                            <arg>-Ywarn-dead-code</arg>
+                            <arg>-Ywarn-shadowing</arg>
+                            <arg>-Xstrict-warnings</arg>
                             <!--arg>-make:transitivenocp</arg>
                             <arg>-dependencyfile</arg>
                             <arg>${project.build.directory}/.scala_dependencies</arg-->
