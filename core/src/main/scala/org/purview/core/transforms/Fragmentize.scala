@@ -10,7 +10,7 @@ case class Fragmentize[@specialized("Int,Float") A : Manifest]
     val tmp = new Array[A](blockWidth * blockHeight)
 
     var y = 0
-    while(y < in.height - blockHeight + 1) {
+    while(y < in.height - blockHeight) {
       var x = 0
       while(x < in.width - blockWidth) {
         var y1 = 0

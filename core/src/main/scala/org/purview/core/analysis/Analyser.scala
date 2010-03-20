@@ -57,6 +57,12 @@ abstract class Analyser[@specialized("Int,Float,Boolean") A] extends NotNull {
    * @param status The status to report
    */
   protected def status(status: String) = Analyser.statistics.reportStatus(status)
+
+  /**
+   * Reports this analysers current progress
+   * @param status The progress to report; a number between 0 and 1
+   */
+  protected def progress(progress: Float) = Analyser.statistics.reportProgress(progress)
 }
 
 /**

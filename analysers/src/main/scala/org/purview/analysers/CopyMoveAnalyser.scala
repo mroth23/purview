@@ -9,7 +9,12 @@ import org.purview.core.data.ImageMatrix
 import org.purview.core.data.ImmutableMatrix
 import org.purview.core.data.Matrix
 import org.purview.core.data.MutableArrayMatrix
+import org.purview.core.report.Critical
+import org.purview.core.report.ReportEntry
+import org.purview.core.report.ReportRectangleMove
 import org.purview.core.transforms.Fragmentize
+import scala.collection.mutable.ArrayBuffer
+import scala.math._
 import scala.util.Sorting
 
 class CopyMoveAnalyser extends Analyser[ImageMatrix] with Metadata with Settings {
@@ -56,6 +61,33 @@ class CopyMoveAnalyser extends Analyser[ImageMatrix] with Metadata with Settings
         y += 1
       }
       0
+    }
+
+    override def equals(x: Any): Boolean = x match {
+      case that: Block =>
+        var x = 0
+        while(x < size) {
+          var y = 0
+          while(y < size) {
+            if(this.values(x, y) != that.values(x, y))
+              return false
+            y += 1
+          }
+          x += 1
+        }
+        true
+      case _ => false
+    }
+
+    override def hashCode = values.foldLeft(0)(_ ^ _.hashCode)
+  }
+
+  private sealed case class Shift(from: Block, to: Block) {
+    val lengthSquared = (from.x - to.x) * (from.x - to.x) + (from.y - to.y) * (from.y - to.y)
+    val vector = {
+      val x1 = from.x - to.x
+      val y1 = from.y - to.y
+      if(x1 < 0) (-x1, -y1) else (x1, y1)
     }
   }
 
@@ -109,7 +141,7 @@ class CopyMoveAnalyser extends Analyser[ImageMatrix] with Metadata with Settings
 
   private val discreteCosine: Matrix[Matrix[Float]] = {
     val result = new MutableArrayMatrix[Matrix[Float]](16, 16)
-    val pi = Math.Pi.toFloat
+    val pi = Pi.toFloat
 
     var y = 0
     while(y < 16) {
@@ -120,7 +152,7 @@ class CopyMoveAnalyser extends Analyser[ImageMatrix] with Metadata with Settings
         while(y0 < 16) {
           var x0 = 0
           while(x0 < 16) {
-            tmp(x0, y0) = (Math.cos(x0 * pi * (x / 16f + 1f / 32f)) * Math.cos(pi * y0 * (y / 16f + 1f / 32f))).toFloat
+            tmp(x0, y0) = (cos(x0 * pi * (x / 16f + 1f / 32f)) * cos(pi * y0 * (y / 16f + 1f / 32f))).toFloat
             x0 += 1
           }
           y0 += 1
@@ -138,8 +170,10 @@ class CopyMoveAnalyser extends Analyser[ImageMatrix] with Metadata with Settings
     quant16 map (x => (s * x + 50) / 100)
   }
 
-  private def grayscale(in: Matrix[Color]): Matrix[Float] =
+  private def grayscale(in: Matrix[Color]): Matrix[Float] = {
+    status("Converting image to grayscale")
     in map (color => color.r * 0.3f + color.g * 0.59f + color.b * 0.11f - 0.5f)
+  }
 
   private def quantize(input: Matrix[Float], quant: Matrix[Float]): Matrix[Float] = {
     val w = input.width
@@ -149,7 +183,7 @@ class CopyMoveAnalyser extends Analyser[ImageMatrix] with Metadata with Settings
     while(y < h) {
       var x = 0
       while(x < w) {
-        result(x, y) = Math.round(input(x, y) / quant(x, y))
+        result(x, y) = round(input(x, y) / quant(x, y))
         x += 1
       }
       y += 1
@@ -188,6 +222,7 @@ class CopyMoveAnalyser extends Analyser[ImageMatrix] with Metadata with Settings
   }
 
   private def makeBlocks(in: Matrix[Matrix[Float]]): Array[Block] = {
+    status("Splitting up the image into DCT blocks with size " + partialDCTBlockSize)
     val quant = quant16Biased(quality)
     val res: Iterable[Block] = for((x, y, value) <- in.cells) yield {
       new Block(partiallyQuantizeDCT(value, quant, partialDCTBlockSize), x, y, partialDCTBlockSize)
@@ -196,9 +231,63 @@ class CopyMoveAnalyser extends Analyser[ImageMatrix] with Metadata with Settings
   }
 
   private def sortBlocks(blocks: Array[Block]) = {
+    status("Sorting the generated blocks by similarity")
     Sorting.quickSort(blocks)
     blocks
   }
+
+  private def makeShifts(blocks: Array[Block]): Seq[Shift] = {
+    status("Calculating block shifts")
+    val result = new ArrayBuffer[Shift](blocks.length / 16)
+    val minimumDistanceSquared = minDistance * minDistance
+    var i = 0
+    while(i < blocks.length - 1) {
+      val block1 = blocks(i)
+      val block2 = blocks(i + 1)
+      progress(i.toFloat / blocks.length)
+      if((block1 compare block2) == 0) {
+        val shift = if(block1.x < block2.x)
+          new Shift(block1, block2)
+        else if(block1.x == block2.x && block1.y < block2.y)
+          new Shift(block1, block2)
+        else
+          new Shift(block2, block1)
+        
+        if(shift.lengthSquared > minimumDistanceSquared)
+          result += shift
+      }
+      i += 1
+    }
+    result
+  }
+
+  private def groupShifts(shifts: Seq[Shift]): Map[(Int, Int), Seq[Shift]] = {
+    status("Grouping shifts by displacement vector")
+    shifts.groupBy(_.vector).toMap
+  }
+
+  private def makeReport(groupedShifts: Map[(Int, Int), Seq[Shift]]): Set[ReportEntry] =
+    (for((vector, shifts) <- groupedShifts if shifts.length > threshold) yield {
+        var left = 0
+        var top = 0
+        var right = 0
+        var bottom = 0
+
+        for(shift <- shifts; s = shift.from) {
+          if(s.x < left)
+            left = s.x
+          if(s.x + s.size > right)
+            right = s.x + s.size
+          if(s.y < top)
+            top = s.y
+          if(s.y + s.size > bottom)
+            bottom = s.y + s.size
+        }
+        val x = (left + right) / 2
+        val y = (top + bottom) / 2
+
+        new ReportRectangleMove(Critical, "This region was moved", x, y, x + vector._1, y + vector._2, right - left, bottom - top)
+      }).toSet
 
   /*
    * Process:
@@ -206,7 +295,11 @@ class CopyMoveAnalyser extends Analyser[ImageMatrix] with Metadata with Settings
    * - Fragmentize the image into overlapping 16x16 pieces
    * - Make blocks out of these pieces (also quantizing them while we're at it)
    * - Sort the blocks with quickSort
+   * - Find blocks that are similar and make BlockShifts out of them
+   * - Filter out block shifts that are improbable results
+   * - Report the remaining shifts
    */
 
-  def result = input >- grayscale >- Fragmentize(16, 16) >- makeBlocks >- sortBlocks
+  def result = input >- grayscale >- Fragmentize(16, 16) >- makeBlocks >- sortBlocks >-
+  makeShifts >- groupShifts >- makeReport
 }
