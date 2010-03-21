@@ -208,7 +208,7 @@
                             <arg>-Yinline</arg>
                             <arg>-Ytailrecommend</arg>
                             <arg>-Ywarn-dead-code</arg>
-                            <arg>-Ywarn-shadowing</arg>
+                            <!--arg>-Ywarn-shadowing</arg-->
                             <arg>-Xstrict-warnings</arg>
                             <!--arg>-make:transitivenocp</arg>
                             <arg>-dependencyfile</arg>
