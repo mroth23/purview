@@ -7,13 +7,10 @@ import org.purview.core.report.Message
 import org.purview.core.report.Point
 import org.purview.core.report.Rectangle
 import org.purview.core.report.ReportEntry
-import org.specs.Specification
-import org.specs.runner.JUnit4
+import org.specs.SpecificationWithJUnit
 import scala.util.Random
 
-class AnalyserSpecTest extends JUnit4(AnalyserSpec)
-
-object AnalyserSpec extends Specification {
+class AnalyserSpec extends SpecificationWithJUnit {
   def randomNumbers(max: Int): Stream[Int] = Stream.cons(Random.nextInt(max), randomNumbers(max))
   
   "An analyser" should {

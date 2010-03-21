@@ -38,7 +38,7 @@ class CopyMoveAnalyser extends Analyser[ImageMatrix] with Metadata with Settings
   private def minDistance = minDistanceSetting.value
   private def partialDCTBlockSize = partialDCTBlockSizeSetting.value
 
-  private sealed case class Block(values: Matrix[Float], x: Int, y: Int, size: Int) extends Ordered[Block] {
+  sealed case class Block(values: Matrix[Float], x: Int, y: Int, size: Int) extends Ordered[Block] {
     require(values.width == size && values.height == size, "Block with invalid value matrix created!")
     
     def compare(that: Block): Int = {
@@ -82,7 +82,7 @@ class CopyMoveAnalyser extends Analyser[ImageMatrix] with Metadata with Settings
     override def hashCode = values.foldLeft(0)(_ ^ _.hashCode)
   }
 
-  private sealed case class Shift(from: Block, to: Block) {
+  sealed case class Shift(from: Block, to: Block) {
     val lengthSquared = (from.x - to.x) * (from.x - to.x) + (from.y - to.y) * (from.y - to.y)
     val vector = {
       val x1 = from.x - to.x
@@ -127,21 +127,21 @@ class CopyMoveAnalyser extends Analyser[ImageMatrix] with Metadata with Settings
     val width = 16
     val height = 16
 
-    private val Sixteenth = 0.0625f
-    private val TwoSixteenths = Sixteenth * 2
-    private val SqrtTwoOverSixteen = 0.08838834764831845f
+    private val Double = 1 / 16f //sqrt(1 / 16) * sqrt(1 / 16)
+    private val Single = 0.08838834764831845f //sqrt(1 / 16f) * sqrt(2 / 16f)
+    private val Sans = 1 / 8f //sqrt(2 / 16f) * sqrt(2 / 16f)
 
     def apply(x: Int, y: Int) = if(x == 0 && y == 0)
-      Sixteenth
+      Double
     else if(x == 1 || y == 1)
-      SqrtTwoOverSixteen
+      Single
     else
-      TwoSixteenths
+      Sans
   }
 
   private val discreteCosine: Matrix[Matrix[Float]] = {
     val result = new MutableArrayMatrix[Matrix[Float]](16, 16)
-    val pi = Pi.toFloat
+    val pi = 3.141592653589793f //Pi.toFloat
 
     var y = 0
     while(y < 16) {
@@ -152,7 +152,7 @@ class CopyMoveAnalyser extends Analyser[ImageMatrix] with Metadata with Settings
         while(y0 < 16) {
           var x0 = 0
           while(x0 < 16) {
-            tmp(x0, y0) = (cos(x0 * pi * (x / 16f + 1f / 32f)) * cos(pi * y0 * (y / 16f + 1f / 32f))).toFloat
+            tmp(x0, y0) = (cos(pi * x * (2.0 * x0 + 1.0) / 32.0) * cos(pi * y * (2.0 * y0 + 1.0) / 32.0)).toFloat
             x0 += 1
           }
           y0 += 1
@@ -170,12 +170,12 @@ class CopyMoveAnalyser extends Analyser[ImageMatrix] with Metadata with Settings
     quant16 map (x => (s * x + 50) / 100)
   }
 
-  private def grayscale(in: Matrix[Color]): Matrix[Float] = {
-    status("Converting image to grayscale")
-    in map (color => color.r * 0.3f + color.g * 0.59f + color.b * 0.11f - 0.5f)
+  def grayscale(in: Matrix[Color]): Matrix[Float] = {
+    status("Converting image to high-amplitude grayscale")
+    in map (color => (color.r * 11 + color.g * 16 + color.b * 5) / 32 - 128)
   }
 
-  private def quantize(input: Matrix[Float], quant: Matrix[Float]): Matrix[Float] = {
+  def quantize(input: Matrix[Float], quant: Matrix[Float]): Matrix[Float] = {
     val w = input.width
     val h = input.height
     val result = new MutableArrayMatrix[Float](w, h)
@@ -185,14 +185,13 @@ class CopyMoveAnalyser extends Analyser[ImageMatrix] with Metadata with Settings
       while(x < w) {
         result(x, y) = round(input(x, y) / quant(x, y))
         x += 1
-      }
+       with agenda items
       y += 1
     }
     result
   }
 
-  private def partiallyQuantizeDCT(input: Matrix[Float], quant: Matrix[Float],
-                                   size: Int): Matrix[Float] = {
+  def partialDCT(input: Matrix[Float], size: Int): Matrix[Float] = {
     val w = input.width
     val h = input.height
     val result = new MutableArrayMatrix[Float](size, size)
@@ -218,25 +217,25 @@ class CopyMoveAnalyser extends Analyser[ImageMatrix] with Metadata with Settings
       }
       y += 1
     }
-    quantize(result, quant)
+    result
   }
 
-  private def makeBlocks(in: Matrix[Matrix[Float]]): Array[Block] = {
+  def makeBlocks(in: Matrix[Matrix[Float]]): Array[Block] = {
     status("Splitting up the image into DCT blocks with size " + partialDCTBlockSize)
     val quant = quant16Biased(quality)
     val res: Iterable[Block] = for((x, y, value) <- in.cells) yield {
-      new Block(partiallyQuantizeDCT(value, quant, partialDCTBlockSize), x, y, partialDCTBlockSize)
+      new Block(quantize(partialDCT(value, partialDCTBlockSize), quant), x, y, partialDCTBlockSize)
     }
     res.toArray
   }
 
-  private def sortBlocks(blocks: Array[Block]) = {
+  def sortBlocks(blocks: Array[Block]) = {
     status("Sorting the generated blocks by similarity")
     Sorting.quickSort(blocks)
     blocks
   }
 
-  private def makeShifts(blocks: Array[Block]): Seq[Shift] = {
+  def makeShifts(blocks: Array[Block]): Seq[Shift] = {
     status("Calculating block shifts")
     val result = new ArrayBuffer[Shift](blocks.length / 16)
     val minimumDistanceSquared = minDistance * minDistance
@@ -261,12 +260,12 @@ class CopyMoveAnalyser extends Analyser[ImageMatrix] with Metadata with Settings
     result
   }
 
-  private def groupShifts(shifts: Seq[Shift]): Map[(Int, Int), Seq[Shift]] = {
+  def groupShifts(shifts: Seq[Shift]): Map[(Int, Int), Seq[Shift]] = {
     status("Grouping shifts by displacement vector")
     shifts.groupBy(_.vector).toMap
   }
 
-  private def makeReport(groupedShifts: Map[(Int, Int), Seq[Shift]]): Set[ReportEntry] =
+  def makeReport(groupedShifts: Map[(Int, Int), Seq[Shift]]): Set[ReportEntry] =
     (for((vector, shifts) <- groupedShifts if shifts.length > threshold) yield {
         var left = 0
         var top = 0
