@@ -185,7 +185,7 @@ class CopyMoveAnalyser extends Analyser[ImageMatrix] with Metadata with Settings
       while(x < w) {
         result(x, y) = round(input(x, y) / quant(x, y))
         x += 1
-       with agenda items
+      }
       y += 1
     }
     result
