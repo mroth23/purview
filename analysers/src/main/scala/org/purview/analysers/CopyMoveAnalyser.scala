@@ -1,5 +1,8 @@
 package org.purview.analysers
 
+import java.awt.geom.Area
+import java.awt.geom.GeneralPath
+import java.awt.geom.Rectangle2D
 import org.purview.core.analysis.Analyser
 import org.purview.core.analysis.Metadata
 import org.purview.core.analysis.Settings
@@ -9,9 +12,15 @@ import org.purview.core.data.ImageMatrix
 import org.purview.core.data.ImmutableMatrix
 import org.purview.core.data.Matrix
 import org.purview.core.data.MutableArrayMatrix
-import org.purview.core.report.Critical
+import org.purview.core.report.Error
+import org.purview.core.report.FreeShape
+import org.purview.core.report.FreeSourceShape
+import org.purview.core.report.Message
+import org.purview.core.report.Message
+import org.purview.core.report.Point
 import org.purview.core.report.ReportEntry
-import org.purview.core.report.ReportRectangleMove
+import org.purview.core.report.SourcePoint
+import org.purview.core.report.SourcePoint
 import org.purview.core.transforms.Fragmentize
 import scala.collection.mutable.ArrayBuffer
 import scala.math._
@@ -172,7 +181,7 @@ class CopyMoveAnalyser extends Analyser[ImageMatrix] with Metadata with Settings
 
   def grayscale(in: Matrix[Color]): Matrix[Float] = {
     status("Converting image to high-amplitude grayscale")
-    in map (color => (color.r * 11 + color.g * 16 + color.b * 5) / 32 - 128)
+    in map (color => (color.redByte * 11 + color.greenByte * 16 + color.blueByte * 5) / 32 - 128f)
   }
 
   def quantize(input: Matrix[Float], quant: Matrix[Float]): Matrix[Float] = {
@@ -265,28 +274,40 @@ class CopyMoveAnalyser extends Analyser[ImageMatrix] with Metadata with Settings
     shifts.groupBy(_.vector).toMap
   }
 
-  def makeReport(groupedShifts: Map[(Int, Int), Seq[Shift]]): Set[ReportEntry] =
-    (for((vector, shifts) <- groupedShifts if shifts.length > threshold) yield {
-        var left = 0
-        var top = 0
-        var right = 0
-        var bottom = 0
+  def makeReport(groupedShifts: Map[(Int, Int), Seq[Shift]]): Set[ReportEntry] = {
+    status("Merging resulting vector regions")
+    (for {
+        (vector, shifts) <- groupedShifts
+        if shifts.length > threshold
+      } yield {
+        val avgX = shifts.map(_.from.x).foldLeft(0f)((acc, n) => acc + n.toFloat / shifts.length)
+        val avgY = shifts.map(_.from.y).foldLeft(0f)((acc, n) => acc + n.toFloat / shifts.length)
 
-        for(shift <- shifts; s = shift.from) {
-          if(s.x < left)
-            left = s.x
-          if(s.x + s.size > right)
-            right = s.x + s.size
-          if(s.y < top)
-            top = s.y
-          if(s.y + s.size > bottom)
-            bottom = s.y + s.size
+        val rectsFrom: Seq[Area] =
+          for(s <- shifts) yield new Area(new Rectangle2D.Double(s.from.x, s.from.y, 16, 16))
+        
+        val rectsTo: Seq[Area] =
+          for(s <- shifts) yield new Area(new Rectangle2D.Double(s.to.x, s.to.y, 16, 16))
+
+        val areaFrom = new Area
+        rectsFrom.foreach(areaFrom.add)
+
+        val areaTo = new Area
+        rectsTo.foreach(areaTo.add)
+
+        new ReportEntry with Message with Point with SourcePoint with FreeShape with FreeSourceShape {
+          val level = Error
+          val message = "This region was moved"
+          val sourceX = avgX.toInt
+          val sourceY = avgY.toInt
+          val x = sourceX + vector._1
+          val y = sourceY + vector._2
+          val sourceShape = areaFrom
+          val shape = areaTo
         }
-        val x = (left + right) / 2
-        val y = (top + bottom) / 2
-
-        new ReportRectangleMove(Critical, "This region was moved", x, y, x + vector._1, y + vector._2, right - left, bottom - top)
-      }).toSet
+      }
+    ).toSet
+  }
 
   /*
    * Process:
