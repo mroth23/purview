@@ -83,7 +83,7 @@ class LuminanceGradientAnalyser extends Analyser[ImageMatrix] with Metadata with
   }
 
   def imageReport(img: BufferedImage): Set[ReportEntry] =
-    Set(new ReportEntry with Point with Image with Message {
+    Set(new ReportEntry with Image with Message {
         val x = 0
         val y = 0
         val image = img

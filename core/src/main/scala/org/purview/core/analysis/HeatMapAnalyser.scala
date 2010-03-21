@@ -135,8 +135,8 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] exten
     .map { region =>
       new ReportEntry with Point with Rectangle with Message {
         val message = HeatMapAnalyser.this.message
-        val x = (region.left + region.right) / 2
-        val y = (region.top + region.bottom) / 2
+        val x = region.left
+        val y = region.top
         val width = (region.right - region.left)
         val height = (region.bottom - region.top)
         val level = reportLevel
