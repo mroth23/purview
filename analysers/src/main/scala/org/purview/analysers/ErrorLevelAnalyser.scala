@@ -62,10 +62,7 @@ class ErrorLevelAnalyser extends HeatMapImageAnalyser with Settings with Metadat
       }
     }
 
-    if(result.isEmpty)
-      error("Couldn't find any working JPEG writers")
-    else
-      result
+    result getOrElse error("Couldn't find any working JPEG writers")
   }
 
   private val gaussian30Kernel =
