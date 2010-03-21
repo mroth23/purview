@@ -40,28 +40,39 @@ class ErrorLevelAnalyser extends HeatMapImageAnalyser with Settings with Metadat
     val writers = ImageIO.getImageWritersByFormatName("jpeg")
 
     val out = new ByteArrayOutputStream
-    val writer = writers.next()
-    try {
-      writer.setOutput(ImageIO.createImageOutputStream(out))
+    var result: Option[BufferedImage] = None
 
-      val param = writer.getDefaultWriteParam
-      param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT)
-      param.setCompressionQuality(quality)
+    while(result.isEmpty && writers.hasNext) {
+      val writer = writers.next()
+      try {
+        writer.setOutput(ImageIO.createImageOutputStream(out))
 
-      writer.write(null, new IIOImage(in, null, null), param)
+        val param = writer.getDefaultWriteParam
+        param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT)
+        param.setCompressionQuality(quality)
 
-      ImageIO.read(new ByteArrayInputStream(out.toByteArray))
-    } finally {
-      writer.dispose()
-      out.close()
+        writer.write(null, new IIOImage(in, null, null), param)
+
+        result = Some(ImageIO.read(new ByteArrayInputStream(out.toByteArray)))
+      } catch {
+        case _ => //Do nothing
+      } finally {
+        writer.dispose()
+        out.close()
+      }
     }
+
+    if(result.isEmpty)
+      error("Couldn't find any working JPEG writers")
+    else
+      result
   }
-  
+
   private val gaussian30Kernel =
     (for(i <- -30 to 30) yield (30 - abs(i)) / (30f * 30f * 30f)).toArray
-  
+
   private def errorMatrix = input >- MatrixToImage() >- introduceJPEGArtifacts >- ImageToMatrix()
-  
+
   def diff = for(in <- input; artifacts <- errorMatrix) yield
     in.zip(artifacts).map(x => {
         val w = (x._1 - x._2).weight / 2 //2 because of sqrt(4); we want to average the color
