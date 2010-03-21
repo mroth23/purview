@@ -62,12 +62,6 @@
             <version>${project.version}</version>
             <type>nbm</type>
         </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>look-and-feel</artifactId>
-            <version>${project.version}</version>
-            <type>nbm</type>
-        </dependency>
     </dependencies>
 
     <profiles>
