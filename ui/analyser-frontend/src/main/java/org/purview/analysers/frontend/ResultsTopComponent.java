@@ -38,6 +38,8 @@ import org.purview.core.analysis.Analyser;
 import org.purview.core.analysis.Metadata;
 import org.purview.core.data.ImageMatrix;
 import org.purview.core.report.Circle;
+import org.purview.core.report.FreeShape;
+import org.purview.core.report.FreeSourceShape;
 import org.purview.core.report.Image;
 import org.purview.core.report.LevelColor;
 import org.purview.core.report.Point;
@@ -129,7 +131,7 @@ final class ResultsTopComponent extends TopComponent implements TreeSelectionLis
                     if (entry instanceof Rectangle) {
                         Rectangle r = (Rectangle) entry;
                         reportPanel.scrollRectToVisible(
-                                new java.awt.Rectangle(p.x() - r.width() / 2, p.y() - r.height() / 2,
+                                new java.awt.Rectangle(p.x(), p.y(),
                                 r.width(), r.height()));
                     } else if (entry instanceof Circle) {
                         Circle c = (Circle) entry;
@@ -257,38 +259,17 @@ class ReportPanel extends JPanel implements Runnable {
 
     private void makePoint(Graphics2D g, float x, float y, Color fill, Color outline) {
         final Ellipse2D.Float point = new Ellipse2D.Float(x - POINT_RADIUS, y - POINT_RADIUS, POINT_RADIUS * 2, POINT_RADIUS * 2);
-
-        //Fill for point
-        g.setPaint(fill);
-        g.fill(point);
-
-        //Outline for point
-        g.setPaint(outline);
-        g.draw(point);
+        makeShape(g, point, fill, outline);
     }
 
-    private void makeCircle(Graphics2D g, float x, float y, float radius, Color fill, Color outline) {
-        final Ellipse2D.Float circle = new Ellipse2D.Float(x - radius, y - radius, radius * 2, radius * 2);
-
-        //Fill for circle
+    private void makeShape(Graphics2D g, Shape shape, Color fill, Color outline) {
+        //Fill for shape
         g.setPaint(fill);
-        g.fill(circle);
+        g.fill(shape);
 
-        //Outline for circle
+        //Outline for shape
         g.setPaint(outline);
-        g.draw(circle);
-    }
-
-    private void makeRectangle(Graphics2D g, float x, float y, float width, float height, Color fill, Color outline) {
-        final Rectangle2D.Float rectangle = new Rectangle2D.Float(x - width / 2, y - height / 2, width, height);
-
-        //Fill for rect
-        g.setPaint(fill);
-        g.fill(rectangle);
-
-        //Outline for rect
-        g.setPaint(outline);
-        g.draw(rectangle);
+        g.draw(shape);
     }
 
     private void makeArrow(Graphics2D g, float x1, float y1, float x2, float y2, Color color) {
@@ -315,7 +296,7 @@ class ReportPanel extends JPanel implements Runnable {
         //Outline for arrow
         Stroke prev = g.getStroke();
         g.setStroke(squareStroke);
-        g.setPaint(arrowColor);
+        g.setPaint(color);
         g.draw(arrowLine);
         g.fill(path);
         g.setStroke(prev);
@@ -362,16 +343,9 @@ class ReportPanel extends JPanel implements Runnable {
                     makePoint(graphics, sourcePoint.sourceX(), sourcePoint.sourceY(),
                             transpSourceColor, sourceColor);
 
-                    if (entry instanceof SourceCircle) {
-                        final SourceCircle sourceCircle = (SourceCircle) entry;
-                        makeCircle(graphics, sourcePoint.sourceX(), sourcePoint.sourceY(),
-                                sourceCircle.sourceRadius(),
-                                transpSourceColor, sourceColor);
-                    }
-                    if (entry instanceof SourceRectangle) {
-                        final SourceRectangle sourceRectangle = (SourceRectangle) entry;
-                        makeRectangle(graphics, sourcePoint.sourceX(), sourcePoint.sourceY(),
-                                sourceRectangle.sourceWidth(), sourceRectangle.sourceHeight(),
+                    if (entry instanceof FreeSourceShape) {
+                        final FreeSourceShape sourceShape = (FreeSourceShape) entry;
+                        makeShape(graphics, sourceShape.sourceShape(),
                                 transpSourceColor, sourceColor);
                     }
                     arrowSourceX = sourcePoint.sourceX();
@@ -379,16 +353,9 @@ class ReportPanel extends JPanel implements Runnable {
                     hasArrow = true;
                 }
 
-                if (entry instanceof Circle) {
-                    final Circle circle = (Circle) entry;
-                    makeCircle(graphics, point.x(), point.y(),
-                            circle.radius(),
-                            transpColor, color);
-                }
-                if (entry instanceof Rectangle) {
-                    final Rectangle r = (Rectangle) entry;
-                    makeRectangle(graphics, point.x(), point.y(),
-                            r.width(), r.height(),
+                if (entry instanceof FreeShape) {
+                    final FreeShape shape = (FreeShape) entry;
+                    makeShape(graphics, shape.shape(),
                             transpColor, color);
                 }
                 if (entry instanceof Image) {
@@ -419,74 +386,49 @@ class ReportPanel extends JPanel implements Runnable {
             hasUpdater = true;
             while (null != entry && isVisible()) {
                 if (entry instanceof Point) {
-                    int left, top, right, bottom;
+                    int x, y, width, height;
                     final Point point = (Point) entry;
-                    if (entry instanceof Rectangle) {
-                        final Rectangle rectangle = (Rectangle) entry;
-                        left = point.x() - rectangle.width() / 2;
-                        top = point.y() - rectangle.height() / 2;
-                        right = point.x() + rectangle.width() / 2;
-                        bottom = point.y() + rectangle.height() / 2;
-                    } else if (entry instanceof Circle) {
-                        final Circle circle = (Circle) entry;
-                        left = point.x() - circle.radius();
-                        top = point.y() - circle.radius();
-                        right = point.x() + circle.radius();
-                        bottom = point.y() + circle.radius();
+                    if (entry instanceof FreeShape) {
+                        final Rectangle2D bounds = ((FreeShape) entry).shape().getBounds2D();
+                        x = (int) bounds.getX();
+                        y = (int) bounds.getY();
+                        width = (int) bounds.getWidth();
+                        height = (int) bounds.getHeight();
                     } else if (entry instanceof Image) {
                         final Image entryImage = (Image) entry;
-                        left = point.x();
-                        top = point.y();
-                        right = point.x() + entryImage.image().getWidth();
-                        bottom = point.y() + entryImage.image().getHeight();
+                        x = point.x();
+                        y = point.y();
+                        width = point.x() + entryImage.image().getWidth();
+                        height = point.y() + entryImage.image().getHeight();
                     } else {
-                        left = point.x();
-                        top = point.y();
-                        right = point.x();
-                        bottom = point.y();
+                        x = point.x();
+                        y = point.y();
+                        width = 0;
+                        height = 0;
                     }
+                    final Rectangle2D rect = new Rectangle2D.Float(x, y, width, height);
+                    
                     if (entry instanceof SourcePoint) {
                         final SourcePoint sourcePoint = (SourcePoint) entry;
-                        int sourceLeft, sourceTop, sourceRight, sourceBottom;
+                        int sourceX, sourceY, sourceWidth, sourceHeight;
 
-                        if (entry instanceof SourceCircle) {
-                            final SourceCircle sourceCircle = (SourceCircle) entry;
-                            sourceLeft = sourcePoint.sourceX() - sourceCircle.sourceRadius();
-                            sourceTop = sourcePoint.sourceY() - sourceCircle.sourceRadius();
-                            sourceRight = sourcePoint.sourceX() + sourceCircle.sourceRadius();
-                            sourceBottom = sourcePoint.sourceY() + sourceCircle.sourceRadius();
-                        } else if (entry instanceof SourceRectangle) {
-                            final SourceRectangle sourceRectangle = (SourceRectangle) entry;
-                            sourceLeft = sourcePoint.sourceX() - sourceRectangle.sourceWidth() / 2;
-                            sourceTop = sourcePoint.sourceY() - sourceRectangle.sourceHeight() / 2;
-                            sourceRight = sourcePoint.sourceX() + sourceRectangle.sourceWidth() / 2;
-                            sourceBottom = sourcePoint.sourceY() + sourceRectangle.sourceHeight() / 2;
+                        if (entry instanceof FreeSourceShape) {
+                            final Rectangle2D bounds = ((FreeSourceShape) entry).sourceShape().getBounds2D();
+                            sourceX = (int) bounds.getX();
+                            sourceY = (int) bounds.getY();
+                            sourceWidth = (int) bounds.getWidth();
+                            sourceHeight = (int) bounds.getHeight();
                         } else {
-                            sourceLeft = sourcePoint.sourceX();
-                            sourceTop = sourcePoint.sourceY();
-                            sourceRight = sourcePoint.sourceX();
-                            sourceBottom = sourcePoint.sourceY();
+                            sourceX = sourcePoint.sourceX();
+                            sourceY = sourcePoint.sourceY();
+                            sourceWidth = 0;
+                            sourceHeight = 0;
                         }
-                        
-                        if (sourceLeft < left) {
-                            left = sourceLeft;
-                        }
-                        if (sourceTop < top) {
-                            top = sourceTop;
-                        }
-                        if (sourceRight > right) {
-                            right = sourceRight;
-                        }
-                        if (sourceBottom > bottom) {
-                            bottom = sourceBottom;
-                        }
+                        Rectangle2D sourceRect = new Rectangle2D.Float(sourceX, sourceY, sourceWidth, sourceHeight);
+                        rect.add(sourceRect);
                     }
-                    left -= 5;
-                    top -= 5;
-                    right += 5;
-                    bottom += 5;
 
-                    this.repaint(left, top, right - left, bottom - top);
+                    this.repaint((int)rect.getX(), (int)rect.getY(), (int)rect.getWidth(), (int)rect.getHeight());
                 }
 
                 try {
