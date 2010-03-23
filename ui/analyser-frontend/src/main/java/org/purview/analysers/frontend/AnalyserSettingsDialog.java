@@ -1,12 +1,15 @@
 package org.purview.analysers.frontend;
 
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
@@ -14,6 +17,9 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.SpringLayout;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.util.NbBundle;
@@ -165,33 +171,45 @@ class SettingsPanel extends JPanel implements ChangeListener {
 
         final Seq<Setting<?>> settingFields = set.settings();
         final Iterator<Setting<?>> settingFieldIter = settingFields.iterator();
-        this.setLayout(new GridLayout(2, settingFields.length()));
+        this.setLayout(new SpringLayout());
 
         while (settingFieldIter.hasNext()) {
             Setting<?> s = settingFieldIter.next();
-            this.add(new JLabel(s.name()));
+            JLabel l = new JLabel(s.name(), JLabel.TRAILING);
+            this.add(l);
             if (s instanceof IntRangeSetting) {
                 IntRangeSetting setting = (IntRangeSetting) s;
                 JSlider slider = new JSlider();
                 slider.setMinimum(setting.min());
                 slider.setMaximum(setting.max());
                 slider.setValue(setting.value());
+                
+                Dictionary<Integer, JLabel> labels = new Hashtable<Integer, JLabel>();
+                labels.put(setting.min(), new JLabel("" + setting.min()));
+                labels.put(setting.max(), new JLabel("" + setting.max()));
+                slider.setLabelTable(labels);
+                slider.setPaintLabels(true);
+                
+                l.setLabelFor(slider);
                 this.add(slider);
                 slider.addChangeListener(this);
                 settingCallbacks.put(slider, setting);
             } else if (s instanceof FloatRangeSetting) {
                 FloatRangeSetting setting = (FloatRangeSetting) s;
-                JSlider slider = new JSlider();
-                slider.setMinimum((int) (setting.min() * setting.granularity()));
-                slider.setMaximum((int) (setting.max() * setting.granularity()));
-                slider.setValue((int) (setting.value() * setting.granularity()));
-                this.add(slider);
-                slider.addChangeListener(this);
-                settingCallbacks.put(slider, setting);
+                JSpinner spinner = new JSpinner();
+                spinner.setModel(new SpinnerNumberModel(Float.valueOf(setting.value()), 
+                        Float.valueOf(setting.min()), Float.valueOf(setting.max()),
+                        Float.valueOf(1f / setting.granularity())));
+                
+                l.setLabelFor(spinner);
+                this.add(spinner);
+                spinner.addChangeListener(this);
+                settingCallbacks.put(spinner, setting);
             } else {
                 this.add(new JLabel("(" + NbBundle.getMessage(SettingsPanel.class, "LBL_SettingNotSupported") + ")"));
             }
         }
+        SpringUtilities.makeCompactGrid(this, settingFields.length(), 2, 5, 5, 5, 5);
     }
 
     public void stateChanged(ChangeEvent e) {
@@ -202,9 +220,8 @@ class SettingsPanel extends JPanel implements ChangeListener {
                 JSlider slider = (JSlider) e.getSource();
                 ((IntRangeSetting) s).value_$eq(slider.getValue());
             } else if (s instanceof FloatRangeSetting) {
-                JSlider slider = (JSlider) e.getSource();
-                ((FloatRangeSetting) s).value_$eq(slider.getValue()
-                        / (float) ((FloatRangeSetting) s).granularity());
+                JSpinner spinner = (JSpinner) e.getSource();
+                ((FloatRangeSetting) s).value_$eq(((Float)spinner.getValue()).floatValue());
             }
         }
     }

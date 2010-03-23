@@ -19,10 +19,10 @@ class LuminanceGradientAnalyser extends Analyser[ImageMatrix] with Metadata with
   val name = "Luminance Gradient"
   val description = "Plots the general light direction in the image"
 
-  val scaleSetting = FloatRangeSetting("Scale of the blue channel", 2, 20)
+  val scaleSetting = FloatRangeSetting("Blue scale", 2, 20)
   scaleSetting.value = 10 //default
 
-  val blendSetting = FloatRangeSetting("Percentage of the original pixel to be included in the output pixel", 0f, 1f)
+  val blendSetting = FloatRangeSetting("Blending", 0f, 1f)
   blendSetting.value = 0f
 
   val settings = List(scaleSetting, blendSetting)
