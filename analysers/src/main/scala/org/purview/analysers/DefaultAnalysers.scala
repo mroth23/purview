@@ -5,7 +5,7 @@ import org.purview.core.data.ImageMatrix
 
 object DefaultAnalysers {
   val analysers: Seq[() => Analyser[ImageMatrix]] =
-    List(() => new Bilinear, () => new ExampleAnalyser,
+    List(() => new Bilinear,
          () => new ErrorLevelAnalyser, () => new LuminanceGradientAnalyser,
-         () => new MetadataAnalyser, () => new CopyMoveAnalyser)
+         () => new MetadataAnalyser, () => new CopyMoveAnalyser, () => new NearestNeighborAnalyser)
 }
