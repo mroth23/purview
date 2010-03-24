@@ -7,5 +7,5 @@ object DefaultAnalysers {
   val analysers: Seq[() => Analyser[ImageMatrix]] =
     List(() => new Bilinear, () => new ExampleAnalyser,
          () => new ErrorLevelAnalyser, () => new LuminanceGradientAnalyser,
-         () => new MetadataAnalyser, () => new CopyMoveAnalyser)
+         () => new MetadataAnalyser, () => new CopyMoveAnalyser, () => new NoopAnalyser)
 }

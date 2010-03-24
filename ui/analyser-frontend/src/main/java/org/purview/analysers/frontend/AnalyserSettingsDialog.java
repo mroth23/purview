@@ -179,28 +179,21 @@ class SettingsPanel extends JPanel implements ChangeListener {
             this.add(l);
             if (s instanceof IntRangeSetting) {
                 IntRangeSetting setting = (IntRangeSetting) s;
-                JSlider slider = new JSlider();
-                slider.setMinimum(setting.min());
-                slider.setMaximum(setting.max());
-                slider.setValue(setting.value());
-                
-                Dictionary<Integer, JLabel> labels = new Hashtable<Integer, JLabel>();
-                labels.put(setting.min(), new JLabel("" + setting.min()));
-                labels.put(setting.max(), new JLabel("" + setting.max()));
-                slider.setLabelTable(labels);
-                slider.setPaintLabels(true);
-                
-                l.setLabelFor(slider);
-                this.add(slider);
-                slider.addChangeListener(this);
-                settingCallbacks.put(slider, setting);
+                JSpinner spinner = new JSpinner();
+                spinner.setModel(new SpinnerNumberModel(setting.value(),
+                        setting.min(), setting.max(), 1));
+
+                l.setLabelFor(spinner);
+                this.add(spinner);
+                spinner.addChangeListener(this);
+                settingCallbacks.put(spinner, setting);
             } else if (s instanceof FloatRangeSetting) {
                 FloatRangeSetting setting = (FloatRangeSetting) s;
                 JSpinner spinner = new JSpinner();
-                spinner.setModel(new SpinnerNumberModel(Float.valueOf(setting.value()), 
+                spinner.setModel(new SpinnerNumberModel(Float.valueOf(setting.value()),
                         Float.valueOf(setting.min()), Float.valueOf(setting.max()),
                         Float.valueOf(1f / setting.granularity())));
-                
+
                 l.setLabelFor(spinner);
                 this.add(spinner);
                 spinner.addChangeListener(this);
@@ -217,11 +210,11 @@ class SettingsPanel extends JPanel implements ChangeListener {
             Setting s = settingCallbacks.get(e.getSource());
 
             if (s instanceof IntRangeSetting) {
-                JSlider slider = (JSlider) e.getSource();
-                ((IntRangeSetting) s).value_$eq(slider.getValue());
+                JSpinner spinner = (JSpinner) e.getSource();
+                ((IntRangeSetting) s).value_$eq(((Integer) spinner.getValue()).intValue());
             } else if (s instanceof FloatRangeSetting) {
                 JSpinner spinner = (JSpinner) e.getSource();
-                ((FloatRangeSetting) s).value_$eq(((Float)spinner.getValue()).floatValue());
+                ((FloatRangeSetting) s).value_$eq(((Float) spinner.getValue()).floatValue());
             }
         }
     }
