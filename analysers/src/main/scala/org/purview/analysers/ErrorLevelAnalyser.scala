@@ -45,24 +45,35 @@ class ErrorLevelAnalyser extends HeatMapImageAnalyser with Settings with Metadat
     while(result.isEmpty && writers.hasNext) {
       val writer = writers.next()
       try {
+        val rgb = new BufferedImage(in.getWidth, in.getHeight, BufferedImage.TYPE_INT_RGB)
+        val g = rgb.createGraphics
+        try {
+          g.drawImage(in, 0, 0, null)
+        } finally {
+          g.dispose()
+        }
+        
         writer.setOutput(ImageIO.createImageOutputStream(out))
 
         val param = writer.getDefaultWriteParam
         param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT)
         param.setCompressionQuality(quality)
 
-        writer.write(null, new IIOImage(in, null, null), param)
+        writer.write(null, new IIOImage(rgb, null, null), param)
 
         result = Some(ImageIO.read(new ByteArrayInputStream(out.toByteArray)))
       } catch {
-        case _ => //Do nothing
+        case _ => //ignore
       } finally {
         writer.dispose()
         out.close()
       }
     }
 
-    result getOrElse error("Couldn't find any working JPEG writers")
+    result getOrElse {
+      status("Couldn't find any working JPEG writers")
+      in
+    }
   }
 
   private val gaussian30Kernel =

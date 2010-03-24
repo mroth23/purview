@@ -34,12 +34,13 @@ class Bilinear extends HeatMapImageAnalyser with Metadata with Settings {
 
   def markBilinear = for(matrix <- input) yield {
     status("Marking bilinearly scaled image regions")
-    val range = (1 to maxSizeFactor).toSeq
+    val range = (2 to maxSizeFactor).toSeq
     val width = matrix.width
     val height = matrix.height
+    val e = epsilon
     @inline def cmpSlope(slope1: Color, slope2: Color) = {
-      abs(slope1.a - slope2.a) < epsilon && abs(slope1.r - slope2.r) < epsilon &&
-      abs(slope1.g - slope2.g) < epsilon && abs(slope1.b - slope2.b) < epsilon
+      abs(slope1.a - slope2.a) < e && abs(slope1.r - slope2.r) < e &&
+      abs(slope1.g - slope2.g) < e && abs(slope1.b - slope2.b) < e
     }
     for {
       (x, y, color) <- matrix.cells
@@ -49,28 +50,29 @@ class Bilinear extends HeatMapImageAnalyser with Metadata with Settings {
       val slopeRight = matrix(x + 1, y) - matrix(x, y)
       val slopeDown = matrix(x, y + 1) - matrix(x, y)
       val slopeDiag = matrix(x + 1, y + 1) - matrix(x, y)
-      if(slopeRight.weight > epsilon && slopeDown.weight > epsilon && slopeDiag.weight > epsilon) {
-        val consecutiveRight = range.findLastIndexOf { extend =>
-          if(x + extend < width) {
-            val tmpSlope = matrix(x + extend, y) - matrix(x + extend - 1, y)
-            cmpSlope(tmpSlope, slopeRight)
-          } else false
-        }
-        val consecutiveDown = range.findLastIndexOf { extend =>
-          if(y + extend < height) {
-            val tmpSlope = matrix(x, y + extend) - matrix(x, y + extend - 1)
-            cmpSlope(tmpSlope, slopeDown)
-          } else false
-        }
 
-        val consecutiveDiag = range.findLastIndexOf { extend =>
-          if(y + extend < height && x + extend < width) {
-            val tmpSlope = matrix(x + extend, y + extend) - matrix(x + extend - 1, y + extend - 1)
-            cmpSlope(tmpSlope, slopeDiag)
-          } else false
-        }
-        (consecutiveRight + consecutiveDown + consecutiveDiag).toFloat
-      } else 0f
+      val consecutiveRight = if(slopeRight.weight > e) range.lastIndexWhere { extend =>
+        if(x + extend < width) {
+          val tmpSlope = matrix(x + extend, y) - matrix(x + extend - 1, y)
+          cmpSlope(tmpSlope, slopeRight)
+        } else false
+      } else 0
+
+      val consecutiveDown = if(slopeDown.weight > e) range.lastIndexWhere { extend =>
+        if(y + extend < height) {
+          val tmpSlope = matrix(x, y + extend) - matrix(x, y + extend - 1)
+          cmpSlope(tmpSlope, slopeDown)
+        } else false
+      } else 0
+
+      val consecutiveDiag = if(slopeDiag.weight > e) range.lastIndexWhere { extend =>
+        if(y + extend < height && x + extend < width) {
+          val tmpSlope = matrix(x + extend, y + extend) - matrix(x + extend - 1, y + extend - 1)
+          cmpSlope(tmpSlope, slopeDiag)
+        } else false
+      } else 0
+
+      (consecutiveRight + consecutiveDown + consecutiveDiag).toFloat
     }
   }
 
