@@ -6,15 +6,21 @@ import java.io.ByteArrayOutputStream
 import javax.imageio.IIOImage
 import javax.imageio.ImageIO
 import javax.imageio.ImageWriteParam
+import org.purview.core.analysis.Analyser
 import org.purview.core.analysis.HeatMapImageAnalyser
 import org.purview.core.analysis.Metadata
 import org.purview.core.analysis.Settings
 import org.purview.core.analysis.settings.FloatRangeSetting
-import org.purview.core.report.Warning
+import org.purview.core.data.Color
+import org.purview.core.data.ImageMatrix
+import org.purview.core.data.Matrix
+import org.purview.core.process.Computation
+import org.purview.core.report._
 import org.purview.core.transforms.ImageToMatrix
 import org.purview.core.transforms.LinearConvolve
 import org.purview.core.transforms.MatrixToImage
 import scala.math._
+import scala.util.DynamicVariable
 
 class ErrorLevelAnalyser extends HeatMapImageAnalyser with Settings with Metadata {
   val name = "Error level analyser"
@@ -61,7 +67,17 @@ class ErrorLevelAnalyser extends HeatMapImageAnalyser with Settings with Metadat
 
         writer.write(null, new IIOImage(rgb, null, null), param)
 
-        result = Some(ImageIO.read(new ByteArrayInputStream(out.toByteArray)))
+        val destroyedImg = ImageIO.read(new ByteArrayInputStream(out.toByteArray))
+
+        val argb = new BufferedImage(in.getWidth, in.getHeight, BufferedImage.TYPE_INT_ARGB)
+        val g2 = argb.createGraphics
+        try {
+          g2.drawImage(destroyedImg, 0, 0, null)
+        } finally {
+          g2.dispose()
+        }
+
+        result = Some(argb)
       } catch {
         case _ => //ignore
       } finally {
@@ -79,6 +95,8 @@ class ErrorLevelAnalyser extends HeatMapImageAnalyser with Settings with Metadat
   private val gaussian30Kernel =
     (for(i <- -30 to 30) yield (30 - abs(i)) / (30f * 30f * 30f)).toArray
 
+  override val convolve = Some(gaussian30Kernel)
+
   private def errorMatrix = input >- MatrixToImage() >- introduceJPEGArtifacts >- ImageToMatrix()
 
   def diff = for(in <- input; artifacts <- errorMatrix) yield
@@ -88,5 +106,5 @@ class ErrorLevelAnalyser extends HeatMapImageAnalyser with Settings with Metadat
       })
 
   //Extreme blur!
-  def heatmap = diff >- {x => status("Convolving the result using a linear distribution"); x } >- LinearConvolve(gaussian30Kernel)
+  def heatmap = diff
 }

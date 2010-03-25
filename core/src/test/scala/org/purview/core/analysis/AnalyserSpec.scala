@@ -56,7 +56,7 @@ class AnalyserSpec extends SpecificationWithJUnit {
 
       val report = analyser.analyse(matrix)
 
-      report must have size 2 //there's only one rogue, right? + the raw image
+      report must have size 3 //there's only one rogue, right? + the raw images
 
       report partialMap {
         case p: Point with Rectangle =>
@@ -78,7 +78,7 @@ class AnalyserSpec extends SpecificationWithJUnit {
 
       val report = analyser.analyse(matrix)
 
-      report must have size 17 //points + raw image
+      report must have size 18 //points + raw images
 
       report partialMap {
         case p: Point with Rectangle =>

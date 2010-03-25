@@ -78,5 +78,7 @@ class Bilinear extends HeatMapImageAnalyser with Metadata with Settings {
 
   private val gaussian5BlurKernel = Array[Float](0.0080f, 0.016f, 0.024f, 0.032f, 0.04f, 0.032f,  0.024f, 0.016f, 0.0080f)
 
-  def heatmap = markBilinear >- LinearConvolve(gaussian5BlurKernel)
+  override val convolve = Some(gaussian5BlurKernel)
+
+  def heatmap = markBilinear
 }

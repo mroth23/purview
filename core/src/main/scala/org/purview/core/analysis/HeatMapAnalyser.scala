@@ -13,6 +13,7 @@ import org.purview.core.report.ReportLevel
 import org.purview.core.data.MutableArrayMatrix
 import org.purview.core.process.Computation
 import org.purview.core.transforms.MatrixToImage
+import org.purview.core.transforms.LinearConvolve
 import scala.collection.mutable.Queue
 
 /**
@@ -29,6 +30,9 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] exten
 
   /** The message to use for interesting heat map areas in the report */
   def message: String = "Interesting peak"
+
+  /** Should we convolve the result before scanning it? */
+  def convolve: Option[Array[Float]] = None
 
   /**
    * If multiple heat regions are to be found, this specifies the maximum
@@ -56,11 +60,12 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] exten
 
   private def maximi = 
     for {
-      in <- heatmap
+      raw <- heatmap
+      in = if(convolve.isDefined) LinearConvolve(convolve.get)(raw) else raw
       _ = status("Finding peaks in the generated data")
       max = in.max
       tolerance = max * maxDeviationTolerance
-    } yield (in, in map(value => value - max < tolerance && max - value < tolerance && value > threshold))
+    } yield ((raw, in), in map(value => value - max < tolerance && max - value < tolerance && value > threshold))
 
   protected case class HeatRegion(var left: Int, var top: Int, var right: Int, var bottom: Int)
 
@@ -90,7 +95,7 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] exten
       queue.enqueue((x, y))
 
       while(!queue.isEmpty) {
-        val pos = queue.dequeue
+        val pos = queue.dequeue()
         include(pos._1, pos._2, heatRegion)
 
         var minus, plus = pos._1
@@ -142,14 +147,23 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] exten
         val level = reportLevel
       }
     }.toSet + {
-      val max = in.max
-      new ReportEntry with Point with Image with Message {
+      val max = in._2.max
+      (new ReportEntry with Point with Image with Message {
+        val message = "Convoluted output"
+        val level = Information
+        val x = 0
+        val y = 0
+        val image = new MatrixToImage()(in._2.map(x => Color(0.9f, x / max, x / max, x / max)))
+      }): ReportEntry
+    } + {
+      val max = in._1.max
+      (new ReportEntry with Point with Image with Message {
         val message = "Raw output"
         val level = Information
         val x = 0
         val y = 0
-        val image = new MatrixToImage()(in.map(x => Color(0.9f, x / max, x / max, x / max)))
-      }
+        val image = new MatrixToImage()(in._1.map(x => Color(0.9f, x / max, x / max, x / max)))
+      }): ReportEntry
     }
   }
 }
