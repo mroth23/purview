@@ -48,6 +48,7 @@
         <module>core</module>
         <module>analysers</module>
         <module>nbp-ui</module>
+        <module>analyser-archetype</module>
     </modules>
 
     <properties>

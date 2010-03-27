@@ -22,12 +22,38 @@
         </dependency>
         <dependency>
             <groupId>org.purview</groupId>
-            <artifactId>analysers</artifactId>
+            <artifactId>bilinear-analyser</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.drewnoakes</groupId>
-            <artifactId>metadata-extractor</artifactId>
+            <groupId>org.purview</groupId>
+            <artifactId>copy-move-analyser</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.purview</groupId>
+            <artifactId>error-level-analyser</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.purview</groupId>
+            <artifactId>luminance-gradient-analyser</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.purview</groupId>
+            <artifactId>metadata-analyser</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.purview</groupId>
+            <artifactId>nearest-neighbor-analyser</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.purview</groupId>
+            <artifactId>noop-analyser</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
