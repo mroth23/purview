@@ -48,7 +48,7 @@
         <module>core</module>
         <module>analysers</module>
         <module>debug</module>
-        <module>ui</module>
+        <module>nbp-ui</module>
     </modules>
 
     <properties>

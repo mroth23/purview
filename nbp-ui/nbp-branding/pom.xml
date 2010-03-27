@@ -4,14 +4,14 @@
 
     <parent>
         <groupId>org.purview</groupId>
-        <artifactId>ui</artifactId>
+        <artifactId>nbp-ui</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>branding</artifactId>
+    <artifactId>nbp-branding</artifactId>
     <packaging>nbm</packaging>
 
-    <name>Purview - Branding resources</name>
+    <name>Purview - NetBeans Platform Branding resources</name>
     <description>Application branding resources</description>
 
     <build>

@@ -3,15 +3,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>ui</artifactId>
+        <artifactId>nbp-ui</artifactId>
         <groupId>org.purview</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>look-and-feel</artifactId>
+    <artifactId>nbp-look-and-feel</artifactId>
     <packaging>nbm</packaging>
 
-    <name>Purview - Look and feel</name>
+    <name>Purview - NetBeans Platform Look and feel</name>
     <description>Changes the look and feel of the application</description>
 
     <dependencies>

@@ -4,14 +4,14 @@
 
     <parent>
         <groupId>org.purview</groupId>
-        <artifactId>ui</artifactId>
+        <artifactId>nbp-ui</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>application</artifactId>
+    <artifactId>nbp-application</artifactId>
     <packaging>nbm-application</packaging>
 
-    <name>Purview - Main Application</name>
+    <name>Purview - NetBeans Platform Main Application</name>
     <description>The Purview main application for desktop usage</description>
 
     <build>
@@ -52,13 +52,13 @@
         </dependency>
         <dependency>
             <groupId>org.purview</groupId>
-            <artifactId>branding</artifactId>
+            <artifactId>nbp-branding</artifactId>
             <version>${project.version}</version>
             <type>nbm</type>
         </dependency>
         <dependency>
             <groupId>org.purview</groupId>
-            <artifactId>analysers-frontend</artifactId>
+            <artifactId>nbp-analysers-frontend</artifactId>
             <version>${project.version}</version>
             <type>nbm</type>
         </dependency>
