@@ -49,6 +49,7 @@
         <module>analysers</module>
         <module>debug</module>
         <module>nbp-ui</module>
+        <module>analyser-archetype</module>
     </modules>
 
     <properties>
