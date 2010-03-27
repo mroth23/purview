@@ -10,32 +10,42 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 
+/**
+ * Opens a new image file and creates an ImageSession for it
+ */
 public final class OpenImageAction extends CallableSystemAction {
+    private static final String actionName = NbBundle.getMessage(OpenImageAction.class, "CTL_OpenImageAction");
+    private static final JFileChooser imageChooser = new JFileChooser();
 
-    private final JFileChooser imageChooser = new JFileChooser();
-
-    public OpenImageAction() {
+    static {
+        //Set up the chooser
         imageChooser.setDialogTitle(NbBundle.getMessage(OpenImageAction.class, "MSG_OpenImage"));
         imageChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         imageChooser.setFileHidingEnabled(true);
+
+        //Add filters for all known image formats
         imageChooser.setFileFilter(new FileFilter() {
 
-            private String[] formats = ImageIO.getReaderFileSuffixes();
+            private final String[] formats = ImageIO.getReaderFileSuffixes();
 
             @Override
-            public boolean accept(File file) {
-                boolean supported = false;
-                for (String suffix : formats) {
-                    if (file.getName().endsWith("." + suffix)) {
-                        supported = true;
+            public boolean accept(final File file) {
+                if (file.isDirectory()) {
+                    return true;
+                } else {
+                    boolean supported = false;
+                    for (final String suffix : formats) {
+                        if (file.getName().endsWith("." + suffix)) {
+                            supported = true;
+                        }
                     }
+                    return supported;
                 }
-                return file.isDirectory() || supported;
             }
 
             @Override
             public String getDescription() {
-                return "Supported image files";
+                return "Supported image files"; //TODO: translate
             }
         });
     }
@@ -55,7 +65,7 @@ public final class OpenImageAction extends CallableSystemAction {
     }
 
     public String getName() {
-        return NbBundle.getMessage(OpenImageAction.class, "CTL_OpenImageAction");
+        return actionName;
     }
 
     @Override

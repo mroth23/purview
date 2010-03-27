@@ -46,17 +46,21 @@ import org.purview.core.report.Point;
 import org.purview.core.report.Rectangle;
 import org.purview.core.report.ReportEntry;
 import org.purview.core.report.ReportLevel;
-import org.purview.core.report.SourceCircle;
 import org.purview.core.report.SourcePoint;
-import org.purview.core.report.SourceRectangle;
 
 /**
  * Top component which displays something.
  */
 final class ResultsTopComponent extends TopComponent implements TreeSelectionListener {
 
+    //Some required resources:
     private static final String ICON_PATH = "org/purview/analysers/frontend/done.png";
     private static final String PREFERRED_ID = "ResultsTopComponent";
+    private static final String componentTooltip =
+            NbBundle.getMessage(ResultsTopComponent.class, "HINT_ResultsTopComponent");
+    private static final java.awt.Image componentIcon =
+            ImageUtilities.loadImage(ICON_PATH, true);
+    //Some required widgets:
     private final JSplitPane splitter;
     private final JTree reportTree;
     private final JScrollPane reportTreeScroller;
@@ -65,19 +69,25 @@ final class ResultsTopComponent extends TopComponent implements TreeSelectionLis
 
     public ResultsTopComponent(final String imageName, final BufferedImage image,
             final Map<Analyser<ImageMatrix>, List<ReportEntry>> report) {
-        setName(NbBundle.getMessage(ResultsTopComponent.class, "CTL_ResultsTopComponent", imageName));
-        setToolTipText(NbBundle.getMessage(ResultsTopComponent.class, "HINT_ResultsTopComponent"));
-        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
+        //Set up component metadata
+        setName(NbBundle.getMessage(
+                ResultsTopComponent.class, "CTL_ResultsTopComponent", imageName));
+        setToolTipText(componentTooltip);
+        setIcon(componentIcon);
 
+        //Add a tree for all of our report entries
+        //Top nodes are analysers, leaf nodes are report entries
         reportTreeScroller = new JScrollPane();
 
         final DefaultMutableTreeNode rootNode =
                 new DefaultMutableTreeNode(NbBundle.getMessage(ResultsTopComponent.class, "LBL_Report"));
 
+        //TODO: should we sync the "unknown index" with the one from the settings dialog?
         int unknownAnalyserIdx = 0;
         callbacks = new HashMap<TreeNode, ReportEntry>();
         for (final Analyser<ImageMatrix> analyser : report.keySet()) {
-            //TODO: should we sync the "unknown index" with the one from the settings dialog?
+            //Somehow create a node for the analyser; it's easy if it has a name...
+            //But if it hasn't, assign a number to it and call it "Unknown analyser #"
             final DefaultMutableTreeNode analyserNode = (analyser instanceof Metadata)
                     ? new DefaultMutableTreeNode(((Metadata) analyser).name())
                     : new DefaultMutableTreeNode(NbBundle.getMessage(ResultsTopComponent.class,
@@ -92,7 +102,8 @@ final class ResultsTopComponent extends TopComponent implements TreeSelectionLis
             rootNode.add(analyserNode);
         }
 
-        setLayout(new java.awt.BorderLayout());
+        //Add the widgets
+        setLayout(new BorderLayout());
 
         splitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
@@ -120,12 +131,18 @@ final class ResultsTopComponent extends TopComponent implements TreeSelectionLis
 
     public void valueChanged(TreeSelectionEvent e) {
         if (e.getSource() == reportTree) { //You never know...
+
+            //Figure out which leaf node is selected (if any)
             TreePath path = e.getPath();
             TreeNode node = (TreeNode) path.getLastPathComponent();
             if (node.isLeaf() && callbacks.containsKey(node)) {
+                //Get the report entry for the node
                 ReportEntry entry = callbacks.get(node);
+
+                //Set the active report entry
                 reportPanel.setReportEntry(entry);
 
+                //Scroll the view so that the report entry is visible
                 if (entry instanceof Point) {
                     Point p = (Point) entry;
                     if (entry instanceof Rectangle) {
@@ -142,15 +159,20 @@ final class ResultsTopComponent extends TopComponent implements TreeSelectionLis
                         reportPanel.scrollRectToVisible(new java.awt.Rectangle(p.x(), p.y(), 0, 0));
                     }
                 }
+
+                //Repaint the whole view
                 reportPanel.repaint();
             }
         }
     }
 }
 
+/**
+ * Renders a tree that contains report entries
+ */
 class ReportEntryTreeCellRenderer extends DefaultTreeCellRenderer {
 
-    private final Map<TreeNode, ReportEntry> callbacks;
+    //Graphics-related resources
     private static final Icon nodeIcon = ImageUtilities.loadImageIcon("org/purview/analysers/frontend/done.png", true);
     private static final Map<ReportEntry, Icon> icons = new HashMap<ReportEntry, Icon>();
     private static final Ellipse2D.Float circle = new Ellipse2D.Float(4, 4, 8, 8);
@@ -158,6 +180,8 @@ class ReportEntryTreeCellRenderer extends DefaultTreeCellRenderer {
     private static final Path2D.Float triangle = new Path2D.Float();
     private static final Ellipse2D.Float point = new Ellipse2D.Float(6, 6, 4, 4);
     private final Stroke stroke = new BasicStroke(2);
+    //Callbacks for tree nodes
+    private final Map<TreeNode, ReportEntry> callbacks;
 
     static {
         triangle.moveTo(4, 4);
@@ -173,36 +197,48 @@ class ReportEntryTreeCellRenderer extends DefaultTreeCellRenderer {
     @Override
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+        //Check whether this is a report-entry-bound node at all
         if (leaf) {
             if (value instanceof TreeNode && callbacks.containsKey((TreeNode) value)) {
                 final ReportEntry entry = callbacks.get((TreeNode) value);
-                final ReportLevel level = entry.level();
-                final Color color = (level instanceof LevelColor)
-                        ? ((LevelColor) level).color().toAWTColor()
-                        : Color.black;
 
+                //Check our cache for whether we've rendered this node already in the past
                 if (!icons.containsKey(entry)) {
+
+                    //Take the color from the report level if it has one
+                    final ReportLevel level = entry.level();
+                    final Color color = (level instanceof LevelColor)
+                            ? ((LevelColor) level).color().toAWTColor()
+                            : Color.black;
+
+                    //Create an image to use
                     BufferedImage img = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
                     Graphics2D g = img.createGraphics();
                     g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                             RenderingHints.VALUE_ANTIALIAS_ON);
 
+                    //Depending on the reporty entry type, choose a different icon shape
                     if (entry instanceof Image) {
                         Image i = (Image) entry;
                         g.drawImage(i.image(), 1, 1, 14, 14, tree);
                     } else {
                         g.setStroke(stroke);
 
+                        //Transparent version of the color
                         final Color background = new Color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() / 2);
 
                         Shape shape = null;
                         if (entry instanceof SourcePoint) {
+                            //The report entry expresses movement, use triangle
                             shape = triangle;
                         } else if (entry instanceof Rectangle) {
+                            //The report entry marks a rectangle
                             shape = rectangle;
                         } else if (entry instanceof Circle) {
+                            //The report entyr marks a circle
                             shape = circle;
                         } else {
+                            //The report entry is either location-less or marks a point
                             shape = point;
                         }
 
@@ -213,20 +249,25 @@ class ReportEntryTreeCellRenderer extends DefaultTreeCellRenderer {
                     }
 
                     g.dispose();
+                    //Store the ison in the cache
                     icons.put(entry, new ImageIcon(img));
                 }
 
+                //Use the icon from the cache
                 this.setIcon(icons.get(entry));
             } else {
                 this.setIcon(null); //Default icon
             }
         } else {
-            this.setIcon(nodeIcon);
+            this.setIcon(nodeIcon); //It's an analyser most likely; set that as an icon
         }
         return this;
     }
 }
 
+/**
+ * Renders a given report entry for a given image
+ */
 class ReportPanel extends JPanel implements Runnable {
 
     public static final float POINT_RADIUS = 2f;
@@ -327,6 +368,7 @@ class ReportPanel extends JPanel implements Runnable {
 
             graphics.setStroke(stroke);
 
+            //Draw different things depending on the entry (self-explanatory)
             //TODO: This could be put into a ReportEntry trait, but should it be? Is this too implementation specific?
             if (entry instanceof Point) {
                 final Point point = (Point) entry;
@@ -381,9 +423,10 @@ class ReportPanel extends JPanel implements Runnable {
         super.setVisible(visible);
     }
 
-    public void run() {
+    public synchronized void run() {
         if (!hasUpdater) {
             hasUpdater = true;
+            //Try to update only those regions that need to be redrawn
             while (null != entry && isVisible()) {
                 if (entry instanceof Point) {
                     int x, y, width, height;
@@ -407,7 +450,7 @@ class ReportPanel extends JPanel implements Runnable {
                         height = 0;
                     }
                     final Rectangle2D rect = new Rectangle2D.Float(x, y, width, height);
-                    
+
                     if (entry instanceof SourcePoint) {
                         final SourcePoint sourcePoint = (SourcePoint) entry;
                         int sourceX, sourceY, sourceWidth, sourceHeight;
@@ -425,10 +468,11 @@ class ReportPanel extends JPanel implements Runnable {
                             sourceHeight = 0;
                         }
                         Rectangle2D sourceRect = new Rectangle2D.Float(sourceX, sourceY, sourceWidth, sourceHeight);
+                        //Change the rect so that both rectangles "fit in"
                         rect.add(sourceRect);
                     }
 
-                    this.repaint((int)rect.getX(), (int)rect.getY(), (int)rect.getWidth(), (int)rect.getHeight());
+                    this.repaint((int) rect.getX(), (int) rect.getY(), (int) rect.getWidth(), (int) rect.getHeight());
                 }
 
                 try {

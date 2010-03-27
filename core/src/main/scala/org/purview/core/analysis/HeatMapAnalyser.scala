@@ -94,6 +94,7 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] exten
       val queue = new Queue[(Int, Int)]
       queue.enqueue((x, y))
 
+      //XXX: sometimes, for some reason, this gets stuck in an infinite loop. Why?
       while(!queue.isEmpty) {
         val pos = queue.dequeue()
         include(pos._1, pos._2, heatRegion)
@@ -137,7 +138,7 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] exten
   def result = {
     for(r <- heatRegions; (in, regions) = r) yield regions
     .filter(r => r.bottom - r.top >= minRegionSize && r.right - r.left >= minRegionSize)
-    .map { region =>
+    .map { region => //All of our peak regions
       new ReportEntry with Point with Rectangle with Message {
         val message = HeatMapAnalyser.this.message
         val x = region.left
@@ -146,7 +147,7 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] exten
         val height = (region.bottom - region.top)
         val level = reportLevel
       }
-    }.toSet + {
+    }.toSet + { //The convoluted input image
       val max = in._2.max
       (new ReportEntry with Point with Image with Message {
         val message = "Convoluted output"
@@ -155,7 +156,7 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] exten
         val y = 0
         val image = new MatrixToImage()(in._2.map(x => Color(0.9f, x / max, x / max, x / max)))
       }): ReportEntry
-    } + {
+    } + { //The unconvoluted input image
       val max = in._1.max
       (new ReportEntry with Point with Image with Message {
         val message = "Raw output"

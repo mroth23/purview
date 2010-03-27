@@ -1,22 +1,18 @@
 package org.purview.analysers.frontend;
 
-import java.awt.Dimension;
+import java.awt.Component;
 import java.awt.Frame;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.Dictionary;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSlider;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SpringLayout;
@@ -33,49 +29,99 @@ import org.purview.core.data.ImageMatrix;
 import scala.collection.Iterator;
 import scala.collection.Seq;
 
+/**
+ * A dialog that displays settings for a given set of analysers
+ */
 public class AnalyserSettingsDialog extends JDialog implements ActionListener, ItemListener {
 
+    /**
+     * Stores the available analysers and their enabled or disabled state.
+     */
     private final Map<Analyser<ImageMatrix>, Boolean> analysers;
+    /**
+     * Defines control callbacks for analyser checkboxes.
+     */
     private final Map<JCheckBox, Analyser<ImageMatrix>> callbacks;
 
-    /** Creates new form AnalyserSettingsDialog */
+    /**
+     * Creates a new AnalyserSettingsDialog with the specified enabled
+     * analysers and the specified parent.
+     */
     public AnalyserSettingsDialog(final Map<Analyser<ImageMatrix>, Boolean> analysers,
             final Frame parent, final boolean modal) {
         super(parent, modal);
 
+        //Store the analysers
         this.analysers = analysers;
 
+        //Set up standard controls (tab container, OK button)
         initComponents();
 
+        //Give us close events!
         okButton.addActionListener(this);
 
+        //Lay out our analyser checkboxes vertically
         activeAnalysersTab.setLayout(new BoxLayout(activeAnalysersTab, BoxLayout.PAGE_AXIS));
+
+        //Set up callbacks for analyser checkboxes
         this.callbacks = new HashMap<JCheckBox, Analyser<ImageMatrix>>();
+
+        //Create checkboxes for our analysers
+        createAnalyserBoxes();
+
+        //Create tabs for each of our analysers
+        updateTabs();
+    }
+
+    /**
+     * Adds one check box for each loaded analyser, which enables the user to
+     * enable or disable specific analysers
+     */
+    private void createAnalyserBoxes() {
         int unknownIndex = 0;
-        for (Analyser<ImageMatrix> analyser : analysers.keySet()) {
-            JCheckBox box = new JCheckBox();
+
+        //Clear existing checkboxes
+        activeAnalysersTab.removeAll();
+
+        //Create checkboxes for each analyser
+        for (final Analyser<ImageMatrix> analyser : analysers.keySet()) {
+            final JCheckBox box = new JCheckBox();
+
+            //The hashmap stores the enabled state of the analyser
             box.setSelected(analysers.get(analyser));
+
+            //Enable us to identify which analyser the check box belongs to
             callbacks.put(box, analyser);
+
             box.addItemListener(this);
+
+            //Do we have a name to give the analyser?
             if (analyser instanceof Metadata) {
                 box.setText(((Metadata) analyser).name());
             } else {
                 box.setText(NbBundle.getMessage(AnalyserSettingsDialog.class,
                         "LBL_UnknownAnalyser", ++unknownIndex));
             }
+
             activeAnalysersTab.add(box);
         }
-        updateTabs();
     }
 
+    /**
+     * Adds one tab for each loaded analyser, containing settings for that analyser
+     */
     private void updateTabs() {
         analyserTabs.removeAll();
-        analyserTabs.add(org.openide.util.NbBundle.getMessage(AnalyserSettingsDialog.class, "LBL_ActiveAnalysers"), activeAnalysersTab);
+
+        //Add our active analysers tab!
+        analyserTabs.add(org.openide.util.NbBundle.getMessage(AnalyserSettingsDialog.class,
+                "LBL_ActiveAnalysers"), activeAnalysersTab);
+
         for (final Analyser<ImageMatrix> analyser : analysers.keySet()) {
             if (analysers.get(analyser) && analyser instanceof Settings) {
                 final Settings settingsForAnalyser = (Settings) analyser;
                 final SettingsPanel panel = new SettingsPanel(settingsForAnalyser);
-                String tabName = (analyser instanceof Metadata)
+                final String tabName = (analyser instanceof Metadata)
                         ? NbBundle.getMessage(AnalyserSettingsDialog.class, "LBL_SettingsFor", ((Metadata) analyser).name())
                         : NbBundle.getMessage(AnalyserSettingsDialog.class, "LBL_SettingsFor", "?");
                 analyserTabs.add(tabName, panel);
@@ -130,84 +176,112 @@ public class AnalyserSettingsDialog extends JDialog implements ActionListener, I
     private javax.swing.JButton okButton;
     // End of variables declaration//GEN-END:variables
 
+    /**
+     * Handle the press of the OK button
+     * @param e The ActionEvent that is produced via a button press.
+     */
     public void actionPerformed(final ActionEvent e) {
         if (e.getSource() == okButton) {
+            //Close this window
             this.setVisible(false);
         }
     }
 
+    /**
+     * Handle the press of a check box
+     * @param e The ItemEvent that is produced via a click on a check box.
+     */
     public void itemStateChanged(final ItemEvent e) {
         if (e.getSource() instanceof JCheckBox && callbacks.containsKey((JCheckBox) e.getSource())) {
             final JCheckBox box = (JCheckBox) e.getSource();
+
+            //Disable/enable the analyser that the check box belongs to
             analysers.put(callbacks.get(box), box.isSelected());
-            updateTabs();
+
+            //Create and remove the necessary tabs
+            updateTabs(); //TODO: can be improved; why recreate all tabs?
         }
     }
 }
 
+/**
+ * A panel that displays a given sequence of settings
+ */
 class SettingsPanel extends JPanel implements ChangeListener {
 
-    private final Map<Object, Setting> settingCallbacks;
+    /**
+     * Stores the relation between a given setting widget and its associated setting.
+     */
+    private final Map<Component, Setting> settingCallbacks;
 
+    /**
+     * Creates a new settings panel for the given settings.
+     * @param set The settings that the settings panel should produce an user interface for.
+     */
     public SettingsPanel(final Settings set) {
-        settingCallbacks = new HashMap<Object, Setting>();
+        settingCallbacks = new HashMap<Component, Setting>();
 
-        /*
-         * Scala:
-         * for(s <- set.settings) {
-         *   settingsGrid.add(new JLabel(s.name));
-         *   s match {
-         *     case setting: IntRangeSetting =>
-         *       val slider = new JSlider
-         *       slider.setMinimum(setting.min)
-         *       slider.setMaximum(setting.max)
-         *       slider.setValue(setting.defaultVal getOrElse setting.min)
-         *       //...
-         *     case setting: FloatRangeSetting =>
-         *       //...
-         *   }
-         * }
-         */
-
+        //Do some Scala interop - we need to be able to iterate the settings sequence
         final Seq<Setting<?>> settingFields = set.settings();
         final Iterator<Setting<?>> settingFieldIter = settingFields.iterator();
+
+        //Use a spring layout for the panel
         this.setLayout(new SpringLayout());
 
+        //Iterate through the settings
         while (settingFieldIter.hasNext()) {
             Setting<?> s = settingFieldIter.next();
+
+            //The label for the settings entry
             JLabel l = new JLabel(s.name(), JLabel.TRAILING);
             this.add(l);
+
+            //Differentiate depending on the type of setting that we have
+            Component control;
             if (s instanceof IntRangeSetting) {
+                //IntRangeSetting: An integer setting with a minimum and a maximum
                 IntRangeSetting setting = (IntRangeSetting) s;
                 JSpinner spinner = new JSpinner();
                 spinner.setModel(new SpinnerNumberModel(setting.value(),
                         setting.min(), setting.max(), 1));
 
-                l.setLabelFor(spinner);
-                this.add(spinner);
                 spinner.addChangeListener(this);
-                settingCallbacks.put(spinner, setting);
+                control = spinner;
             } else if (s instanceof FloatRangeSetting) {
+                //FloatRangeSetting: A float setting with a max, min, and granularity (meaning: resolution)
                 FloatRangeSetting setting = (FloatRangeSetting) s;
                 JSpinner spinner = new JSpinner();
                 spinner.setModel(new SpinnerNumberModel(Float.valueOf(setting.value()),
                         Float.valueOf(setting.min()), Float.valueOf(setting.max()),
                         Float.valueOf(1f / setting.granularity())));
 
-                l.setLabelFor(spinner);
-                this.add(spinner);
                 spinner.addChangeListener(this);
-                settingCallbacks.put(spinner, setting);
+                control = spinner;
             } else {
-                this.add(new JLabel("(" + NbBundle.getMessage(SettingsPanel.class, "LBL_SettingNotSupported") + ")"));
+                //We can't handle this type of setting yet!
+                control = new JLabel("(" + NbBundle.getMessage(SettingsPanel.class, "LBL_SettingNotSupported") + ")");
             }
+
+            //Add the control
+            l.setLabelFor(control);
+            this.add(control);
+            settingCallbacks.put(control, s);
         }
+        
+        //Lay out our form properly
         SpringUtilities.makeCompactGrid(this, settingFields.length(), 2, 5, 5, 5, 5);
     }
 
+    /**
+     * Handles the change of a spinner widget
+     * @param e The emitted ChangeEvent
+     */
     public void stateChanged(ChangeEvent e) {
-        if (settingCallbacks.containsKey(e.getSource())) {
-            Setting s = settingCallbacks.get(e.getSource());
+        Component source = (Component) e.getSource();
+
+        //Handle the change of a spinner-bound setting
+        if (settingCallbacks.containsKey(source)) {
+            Setting s = settingCallbacks.get(source);
 
             if (s instanceof IntRangeSetting) {
                 JSpinner spinner = (JSpinner) e.getSource();

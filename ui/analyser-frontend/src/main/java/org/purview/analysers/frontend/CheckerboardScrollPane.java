@@ -5,6 +5,9 @@ import java.awt.Component;
 import java.awt.Graphics;
 import javax.swing.JScrollPane;
 
+/**
+ * A scroll pane that has a checkerboard background
+ */
 public class CheckerboardScrollPane extends JScrollPane {
 
     private final int SQUARE_SIZE = 16;

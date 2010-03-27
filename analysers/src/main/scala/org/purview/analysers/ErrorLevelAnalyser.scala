@@ -6,21 +6,14 @@ import java.io.ByteArrayOutputStream
 import javax.imageio.IIOImage
 import javax.imageio.ImageIO
 import javax.imageio.ImageWriteParam
-import org.purview.core.analysis.Analyser
 import org.purview.core.analysis.HeatMapImageAnalyser
 import org.purview.core.analysis.Metadata
 import org.purview.core.analysis.Settings
 import org.purview.core.analysis.settings.FloatRangeSetting
-import org.purview.core.data.Color
-import org.purview.core.data.ImageMatrix
-import org.purview.core.data.Matrix
-import org.purview.core.process.Computation
 import org.purview.core.report._
 import org.purview.core.transforms.ImageToMatrix
-import org.purview.core.transforms.LinearConvolve
 import org.purview.core.transforms.MatrixToImage
 import scala.math._
-import scala.util.DynamicVariable
 
 class ErrorLevelAnalyser extends HeatMapImageAnalyser with Settings with Metadata {
   val name = "Error level analyser"
@@ -41,6 +34,7 @@ class ErrorLevelAnalyser extends HeatMapImageAnalyser with Settings with Metadat
   override val threshold = 0f //We implement our own threshold and don't want upstream interference
   override val maxDeviationTolerance = 0.5f
 
+  /** Recompress the given image with a built-in JPEG codec */
   private def introduceJPEGArtifacts(in: BufferedImage) = {
     status("Generating JPEG artifacts")
     val writers = ImageIO.getImageWritersByFormatName("jpeg")

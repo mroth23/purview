@@ -2,6 +2,9 @@ package org.purview.core.data
 
 import java.awt.image.BufferedImage
 
+/**
+ * A matrix that is specialized for images, and stores values very efficiently
+ */
 case class ImageMatrix(image: BufferedImage, metadata: Map[String, Map[String, String]]) extends Matrix[Color] {
 
     val width = image.getWidth

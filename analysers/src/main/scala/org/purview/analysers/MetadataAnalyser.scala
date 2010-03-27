@@ -19,15 +19,15 @@ class MetadataAnalyser extends Analyser[ImageMatrix] with Metadata {
 
   def result = for(image <- input) yield {
     (for {
-      tester <- metadataTesters
-      tupled = tester.lift
-      (dir, tree) <- image.metadata
-      (key, value) <- tree
-      (critical, msg) <- tupled((dir, key, value))
-    } yield new ReportEntry with Message {
-      val level = if(critical) Error else Warning
-      val message = msg
-    }).toSet
+        tester <- metadataTesters
+        tupled = tester.lift
+        (dir, tree) <- image.metadata
+        (key, value) <- tree
+        (critical, msg) <- tupled((dir, key, value))
+      } yield new ReportEntry with Message {
+        val level = if(critical) Error else Warning
+        val message = msg
+      }).toSet
   }
 
   def photoshopDetector: MetaAnalyser = {
@@ -43,7 +43,7 @@ class MetadataAnalyser extends Analyser[ImageMatrix] with Metadata {
       (true, "The image was edited by Paint.NET")
   }
 
-    def gimpDetector: MetaAnalyser = {
+  def gimpDetector: MetaAnalyser = {
     case ("Exif", "Software", software) if software.toLowerCase contains "gimp" =>
       (true, "The image was edited by GIMP")
   }

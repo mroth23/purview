@@ -9,6 +9,7 @@ import com.drew.metadata.Tag;
 import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -40,18 +41,25 @@ import scala.collection.Iterator;
 import scala.collection.Seq;
 
 /**
- * Top component which displays something.
+ * Top component which displays an image session.
  */
 final class ImageSessionTopComponent extends TopComponent implements ActionListener {
-
+    //Some needed resources
     private static final String ICON_PATH = "org/purview/analysers/frontend/gears.png";
     private static final String PREFERRED_ID = "ImageSessionTopComponent";
+    private static final String analyseButtonText = NbBundle.getMessage(ImageSessionTopComponent.class, "LBL_AnalyseImage");
+    private static final Image componentIcon = ImageUtilities.loadImage(ICON_PATH, true);
+    private static final String componentTooltip = NbBundle.getMessage(ImageSessionTopComponent.class, "HINT_ImageSessionTopComponent");
+    private static final String configureAnalysersButtonText = NbBundle.getMessage(ImageSessionTopComponent.class, "LBL_ConfigureAnalysers");
+
+    //Some needed widgets
     private final JButton analyseButton;
     private final JButton configureAnalysersButton;
     private final JScrollPane scrollPane;
     private final JToolBar toolbar;
     private final BufferedImage image;
     private final String name;
+    //Some needed analyser-related variables
     private final Map<Analyser<ImageMatrix>, Boolean> analysers;
     private scala.collection.immutable.Map<String, scala.collection.immutable.Map<String, String>> metadata;
 
@@ -60,6 +68,7 @@ final class ImageSessionTopComponent extends TopComponent implements ActionListe
         ImageInputStream stream = ImageIO.createImageInputStream(imageFile);
         BufferedImage img = null;
 
+        //Try to load the image somehow
         try {
             java.util.Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
 
@@ -84,6 +93,7 @@ final class ImageSessionTopComponent extends TopComponent implements ActionListe
         name = imageFile.getName();
 
         //Do some really nifty Scala interop conversions to load default analysers
+        //TODO: use modules!
         Seq<Function0<Analyser<ImageMatrix>>> analyserFactories = DefaultAnalysers.analysers();
         Iterator<Function0<Analyser<ImageMatrix>>> iter = analyserFactories.iterator();
         HashMap<Analyser<ImageMatrix>, Boolean> createdAnalysers =
@@ -107,18 +117,15 @@ final class ImageSessionTopComponent extends TopComponent implements ActionListe
 
         analyseButton.setIcon(
                 new ImageIcon(getClass().getResource("/org/purview/analysers/frontend/gears.png")));
-        Mnemonics.setLocalizedText(analyseButton,
-                NbBundle.getMessage(ImageSessionTopComponent.class, "LBL_AnalyseImage"));
+        Mnemonics.setLocalizedText(analyseButton, analyseButtonText);
         analyseButton.setFocusable(false);
         analyseButton.setHorizontalTextPosition(SwingConstants.CENTER);
         analyseButton.setVerticalTextPosition(SwingConstants.BOTTOM);
         analyseButton.addActionListener(this);
         toolbar.add(analyseButton);
 
-        configureAnalysersButton.setIcon(
-                new ImageIcon(getClass().getResource("/org/purview/analysers/frontend/settings.png")));
-        Mnemonics.setLocalizedText(configureAnalysersButton,
-                NbBundle.getMessage(ImageSessionTopComponent.class, "LBL_ConfigureAnalysers"));
+        configureAnalysersButton.setIcon(new ImageIcon(getClass().getResource("/org/purview/analysers/frontend/settings.png")));
+        Mnemonics.setLocalizedText(configureAnalysersButton, configureAnalysersButtonText);
         configureAnalysersButton.setFocusable(false);
         configureAnalysersButton.setHorizontalTextPosition(SwingConstants.CENTER);
         configureAnalysersButton.setVerticalTextPosition(SwingConstants.BOTTOM);
@@ -128,22 +135,26 @@ final class ImageSessionTopComponent extends TopComponent implements ActionListe
         add(toolbar, BorderLayout.PAGE_START);
         add(scrollPane, BorderLayout.CENTER);
 
-        setName(NbBundle.getMessage(ImageSessionTopComponent.class,
-                "CTL_ImageSessionTopComponent", imageFile.getName()));
-        setToolTipText(NbBundle.getMessage(ImageSessionTopComponent.class,
-                "HINT_ImageSessionTopComponent"));
-        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
+        setName(NbBundle.getMessage(ImageSessionTopComponent.class, "CTL_ImageSessionTopComponent", imageFile.getName()));
+        setToolTipText(componentTooltip);
+        setIcon(componentIcon);
     }
 
     private BufferedImage readImageAndMetadata(final ImageReader reader,
             final ImageInputStream stream, final File imageFile)
             throws IOException {
+        //Set up the read head
         reader.setInput(stream);
+
+        //Create a new map for the metadata (MODULE$ accesses the singleton in Java)
         metadata = scala.collection.immutable.Map$.MODULE$.empty();
+
+        //We can only read metadata via the JPEG format at the moment
         if ("JPEG".equals(reader.getFormatName())) {
-            System.out.println("Image is a JPEG image; will read metadata");
             try {
                 final Metadata meta = JpegMetadataReader.readMetadata(imageFile);
+
+                //Traverse the metadata shallow tree
                 final java.util.Iterator dirs = meta.getDirectoryIterator();
                 while (dirs.hasNext()) {
                     final Directory dir = (Directory) dirs.next();
@@ -157,6 +168,8 @@ final class ImageSessionTopComponent extends TopComponent implements ActionListe
                                 dirMeta = dirMeta.$plus(new Tuple2<String, String>(tag.getTagName(), tag.getDescription()));
                             }
                         }
+
+                        //Add the metadata entry
                         metadata = metadata.$plus(
                                 new Tuple2<String, scala.collection.immutable.Map<String, String>>(dir.getName(), dirMeta));
                     }
@@ -166,9 +179,9 @@ final class ImageSessionTopComponent extends TopComponent implements ActionListe
             } catch (MetadataException ex) {
                 Exceptions.printStackTrace(ex);
             }
-        } else {
-            System.out.println("Image has format " + reader.getFormatName());
         }
+
+        //Actually read the image data:
         return reader.read(0);
     }
 
@@ -184,21 +197,26 @@ final class ImageSessionTopComponent extends TopComponent implements ActionListe
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == analyseButton) {
+            //Create a list of (active) analysers to use
             LinkedList<Analyser<ImageMatrix>> activeAnalysers = new LinkedList<Analyser<ImageMatrix>>();
             for (Analyser<ImageMatrix> key : analysers.keySet()) {
                 if (analysers.get(key)) {
                     activeAnalysers.add(key);
                 }
             }
-            AnalysisTopComponent c = new AnalysisTopComponent(name,
-                    new ImageMatrix(image, metadata), activeAnalysers);
-            c.open();
-            c.requestActive();
 
-            Thread t = new Thread(c);
-            t.setName("Analyser thread for image \"" + name + "\"");
-            t.start();
+            //Create a new analysis top component with the given analysers and image
+            AnalysisTopComponent analysisComponent = new AnalysisTopComponent(name,
+                    new ImageMatrix(image, metadata), activeAnalysers);
+            analysisComponent.open();
+            analysisComponent.requestActive();
+
+            //Start the analysis on another thread
+            Thread analysisThread = new Thread(analysisComponent);
+            analysisThread.setName("Analyser thread for image \"" + name + "\"");
+            analysisThread.start();
         } else if (e.getSource() == configureAnalysersButton) {
+            //Open a new analyser settings dialog
             Frame window = WindowManager.getDefault().getMainWindow();
             AnalyserSettingsDialog dialog = new AnalyserSettingsDialog(analysers, window, true);
             dialog.setVisible(true);

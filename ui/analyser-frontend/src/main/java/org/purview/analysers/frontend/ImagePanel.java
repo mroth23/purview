@@ -9,6 +9,9 @@ import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 import javax.swing.Scrollable;
 
+/**
+ * A panel that displays an image
+ */
 public final class ImagePanel extends JPanel
         implements Scrollable, MouseMotionListener {
 

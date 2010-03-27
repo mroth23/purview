@@ -12,6 +12,7 @@ import org.purview.core.report.ReportRectangle
 import org.purview.core.report.ReportRectangleMove
 import org.purview.core.report.Warning
 
+@deprecated
 class ExampleAnalyser extends Analyser[ImageMatrix] with Metadata {
   val name = "Example analyser"
   val description = "Makes stuff up about what it finds"
