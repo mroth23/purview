@@ -182,8 +182,8 @@ class CopyMoveAnalyser extends Analyser[ImageMatrix] with Metadata with Settings
         while(y < 16) {
           var x = 0
           while(x < 16) {
-            tmp(x, y) = (cos(pi * x * (2.0 * x0 + 1.0) / 32.0) *
-                           cos(pi * y * (2.0 * y0 + 1.0) / 32.0)).toFloat
+            tmp(x, y) = (cos(pi * u * (2.0 * x + 1.0) / 32.0) *
+                         cos(pi * v * (2.0 * y + 1.0) / 32.0)).toFloat
             x += 1
           }
           y += 1
