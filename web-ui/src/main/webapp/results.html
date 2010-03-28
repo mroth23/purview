@@ -1,0 +1,25 @@
+<lift:surround with="default" at="content">
+    <p>
+        <span>TODO</span>
+    </p>
+    <lift:AnalysisSession.resultsView>
+        <resultsView:tree>
+            <ul>
+                <tree:analyserEntry>
+                    <li>
+                        <analyserEntry:analyserName/><br/>
+                        <analyserEntry:analyserDescription/>
+                        <ul>
+                            <analyserEntry:reportEntry>
+                                <li><reportEntry:message/></li>
+                            </analyserEntry:reportEntry>
+                        </ul>
+                    </li>
+                </tree:analyserEntry>
+            </ul>
+        </resultsView:tree>
+        <resultsView:view>
+            <span>TODO</span>
+        </resultsView:view>
+    </lift:AnalysisSession.resultsView>
+</lift:surround>

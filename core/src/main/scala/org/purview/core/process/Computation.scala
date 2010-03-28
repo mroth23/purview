@@ -2,7 +2,7 @@ package org.purview.core.process
 
 object Computation {
   def apply[A](v: => A): Computation[A] = new Computation[A] {
-    private[core] def value() = v
+    def value() = v
   }
   @inline def unit[A](v: => A) = apply(v)
 
@@ -10,10 +10,13 @@ object Computation {
 }
 
 trait Computation[@specialized("Int,Float,Boolean") A] {
-  private[core] def value(): A
+  protected def value(): A
 
-  def map[B](f: A => B): Computation[B] = new Computation[B] {
-    private[core] def value() = f(Computation.this.value())
+  def map[B](f: A => B): Computation[B] = {
+    @inline def v() = value()
+    new Computation[B] {
+      def value(): B = f(v())
+    }
   }
   
   @inline final def >-[B](f: A => B) = map(f)

@@ -1,0 +1,73 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:lift="http://liftweb.net/">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+        <meta name="description" content="An image processing framework" />
+        <meta name="keywords" content="purview,image processing,image forensics,image,image analysis,forgery detection" />
+
+        <title>Purview - <lift:Menu.title/></title>
+
+        <lift:CSS.blueprint />
+        <lift:CSS.fancyType />
+        <script id="jquery" src="/classpath/jquery.js" type="text/javascript"/>
+        <script id="json" src="/classpath/json.js" type="text/javascript"/>
+        <style type="text/css">
+            /* <![CDATA[ */
+            .sidebar ul {
+                margin:0;
+                padding:0;
+                border-bottom:1px solid #ccc;
+            }
+
+
+            .sidebar ul li {
+                margin:0;
+                padding:0;
+                list-style:none;
+                border:1px solid #ccc;
+                border-bottom:none;
+            }
+
+            .sidebar ul li a {
+                display:block;
+                padding:3px;
+                text-indent:30px;
+                text-decoration:none;
+            }
+
+            .sidebar ul li span {
+                display:block;
+                padding:3px;
+                text-indent:30px;
+                text-decoration:none;
+            }
+
+            .sidebar ul li a:hover {
+                background-color: #eee;
+            }
+            /* ]]> */
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="column span-24 last" style="text-align: right">
+                <h1 class="alt">Purview 1.0</h1>
+            </div>
+
+            <hr/>
+
+            <div class="column span-5 sidebar">
+                <lift:Menu.builder/>
+            </div>
+
+            <div class="column span-19 last">
+                <h2><lift:Menu.title/></h2>
+                <lift:Msgs>
+                    <lift:error_class>error</lift:error_class>
+                    <lift:warning_class>notice</lift:warning_class>
+                    <lift:notice_class>success</lift:notice_class>
+                </lift:Msgs>
+                <lift:bind name="content" />
+            </div>
+        </div>
+    </body>
+</html>

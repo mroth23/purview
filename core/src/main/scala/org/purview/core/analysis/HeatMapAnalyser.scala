@@ -135,7 +135,7 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] exten
     (in, result)
   }
 
-  def result = {
+  def result: Computation[Set[ReportEntry]] = {
     for(r <- heatRegions; (in, regions) = r) yield regions
     .filter(r => r.bottom - r.top >= minRegionSize && r.right - r.left >= minRegionSize)
     .map { region => //All of our peak regions

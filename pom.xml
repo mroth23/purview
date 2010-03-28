@@ -49,94 +49,144 @@
         <module>analysers</module>
         <module>nbp-ui</module>
         <module>analyser-archetype</module>
+        <module>web-ui</module>
     </modules>
 
     <properties>
         <java.version>1.5</java.version>
-        <scala.version>2.8.0-SNAPSHOT</scala.version>
+        <scala.version>2.8.0.Beta1</scala.version>
         <netbeans.version>RELEASE68</netbeans.version>
+        <lift.version>2.0-scala280-SNAPSHOT</lift.version>
         <ui.brandingToken>purview</ui.brandingToken>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <!-- Scala -->
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.4</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.scala-tools.testing</groupId>
-                <artifactId>specs_2.8.0.Beta1</artifactId>
-                <version>1.6.3</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.googlecode.scalaz</groupId>
-                <artifactId>scalaz-core_2.8.0.Beta1</artifactId>
-                <version>5.0-SNAPSHOT</version>
-            </dependency>
-
-            <dependency>
+                <!-- Library -->
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-library</artifactId>
                 <version>${scala.version}</version>
             </dependency>
             <dependency>
+                <!-- Compiler-->
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-compiler</artifactId>
+                <version>${scala.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <!-- Swing interface -->
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-swing</artifactId>
                 <version>${scala.version}</version>
             </dependency>
-
             <dependency>
+                <!-- Scala on Steroidz -->
+                <groupId>com.googlecode.scalaz</groupId>
+                <artifactId>scalaz-core_2.8.0.Beta1</artifactId>
+                <version>5.0-SNAPSHOT</version>
+            </dependency>
+
+            <!-- Utility libraries -->
+            <dependency>
+                <!-- Log for Java -->
                 <groupId>log4j</groupId>
                 <artifactId>log4j</artifactId>
                 <version>1.2.14</version>
             </dependency>
             <dependency>
+                <!-- JPEG metadata extraction utility -->
                 <groupId>com.drewnoakes</groupId>
                 <artifactId>metadata-extractor</artifactId>
                 <version>2.4.0-beta-1</version>
             </dependency>
 
+            <!-- Netbeans -->
             <dependency>
+                <!-- Platform -->
                 <groupId>org.netbeans.cluster</groupId>
                 <artifactId>platform11</artifactId>
                 <version>${netbeans.version}</version>
                 <type>pom</type>
             </dependency>
             <dependency>
+                <!-- Utilities -->
                 <groupId>org.netbeans.api</groupId>
                 <artifactId>org-openide-util</artifactId>
                 <version>${netbeans.version}</version>
             </dependency>
             <dependency>
+                <!-- Window management -->
                 <groupId>org.netbeans.api</groupId>
                 <artifactId>org-openide-windows</artifactId>
                 <version>${netbeans.version}</version>
             </dependency>
             <dependency>
+                <!-- AWT utilities -->
                 <groupId>org.netbeans.api</groupId>
                 <artifactId>org-openide-awt</artifactId>
                 <version>${netbeans.version}</version>
             </dependency>
             <dependency>
+                <!-- Module API -->
                 <groupId>org.netbeans.api</groupId>
                 <artifactId>org-openide-modules</artifactId>
                 <version>${netbeans.version}</version>
             </dependency>
             <dependency>
+                <!-- Desktop layout API -->
                 <groupId>org.netbeans.api</groupId>
                 <artifactId>org-jdesktop-layout</artifactId>
                 <version>${netbeans.version}</version>
             </dependency>
 
+            <!-- Lift -->
             <dependency>
-                <groupId>com.seaglasslookandfeel</groupId>
-                <artifactId>seaglasslookandfeel</artifactId>
-                <version>0.1.7.2</version>
+                <!-- Common -->
+                <groupId>net.liftweb</groupId>
+                <artifactId>lift-common</artifactId>
+                <version>${lift.version}</version>
+            </dependency>
+            <dependency>
+                <!-- Widgets -->
+                <groupId>net.liftweb</groupId>
+                <artifactId>lift-widgets</artifactId>
+                <version>${lift.version}</version>
+            </dependency>
+
+            <!-- Java EE -->
+            <dependency>
+                <!-- Java Servlet API -->
+                <groupId>javax.servlet</groupId>
+                <artifactId>servlet-api</artifactId>
+                <version>2.5</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <!-- Jetty webapp server -->
+                <groupId>org.mortbay.jetty</groupId>
+                <artifactId>jetty</artifactId>
+                <version>[6.1.6,7.0)</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- Testing -->
+            <dependency>
+                <!-- Java unit testing -->
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.4</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <!-- Scala specs BDD testing suite -->
+                <groupId>org.scala-tools.testing</groupId>
+                <artifactId>specs_2.8.0.Beta1</artifactId>
+                <version>1.6.3</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -204,7 +254,7 @@
                         <args>
                             <arg>-target:jvm-${java.version}</arg>
                             <arg>-deprecation</arg>
-                            <arg>-Yspecialize</arg>
+                            <!--arg>-Yspecialize</arg-->
                             <!--arg>-Yinline</arg-->
                             <!--arg>-Ytailrecommend</arg-->
                             <!--arg>-Ywarn-dead-code</arg-->
@@ -247,6 +297,30 @@
                     <groupId>com.google.code.maven-replacer-plugin</groupId>
                     <artifactId>maven-replacer-plugin</artifactId>
                     <version>1.3</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>maven-jetty-plugin</artifactId>
+                    <version>6.1.22</version>
+                    <configuration>
+                        <contextPath>/</contextPath>
+                        <scanIntervalSeconds>5</scanIntervalSeconds>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>net.sf.alchim</groupId>
+                    <artifactId>yuicompressor-maven-plugin</artifactId>
+                    <version>0.7.1</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>compress</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <nosuffix>true</nosuffix>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
