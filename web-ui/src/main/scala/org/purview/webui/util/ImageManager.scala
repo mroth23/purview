@@ -1,6 +1,7 @@
 package org.purview.webui.util
 
 import java.awt.image.BufferedImage
+import java.awt.image.RenderedImage
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileInputStream
@@ -52,7 +53,7 @@ object ImageManager extends FileManager {
     new FileImage(id, file)
   }
 
-  def saveImage(image: BufferedImage): Image = {
+  def saveImage(image: RenderedImage): Image = {
     val id = Helpers.randomString(16)
     val file = createFile(id)
     ImageIO.write(image, "png", file)

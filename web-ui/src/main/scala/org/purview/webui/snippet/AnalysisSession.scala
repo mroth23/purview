@@ -1,6 +1,8 @@
 package org.purview.webui.snippet
 
 import java.awt.image.BufferedImage
+import java.io.StringWriter
+import net.liftweb.actor.LiftActor
 import net.liftweb.common.Full
 import net.liftweb.common.Logger
 import net.liftweb.http.DispatchSnippet
@@ -11,6 +13,9 @@ import net.liftweb.http.SHtml
 import net.liftweb.http.SessionVar
 import net.liftweb.http.js.JsCmds._
 import net.liftweb.util.Helpers._
+import org.apache.batik.dom.GenericDOMImplementation
+import org.apache.batik.svggen.SVGGeneratorContext
+import org.apache.batik.svggen.SVGGraphics2D
 import org.purview.core.analysis.Analyser
 import org.purview.core.analysis.Metadata
 import org.purview.core.analysis.Settings
@@ -24,9 +29,14 @@ import org.purview.core.session.SessionUtils
 import org.purview.webui.util.AnalysisActor
 import org.purview.webui.util.ImageManager
 import org.purview.webui.util.AnalysisActor
+import org.purview.webui.util.ReportEntryRenderer
 import org.purview.webui.util.ReportManager
+import org.purview.webui.util.SVGImageHandler
+import scala.actors.Actor
 import scala.xml.NodeSeq
 import scala.xml.Text
+import scala.xml.XML
+import scala.xml.dtd.DocType
 
 object AnalysisSession {
   object uploadedFile extends RequestVar[Option[FileParamHolder]](None)
@@ -207,17 +217,15 @@ class AnalysisSession extends DispatchSnippet with Logger {
       val key = ReportManager.makeId
       info("Current report key " + key)
       resultsKey.set(key)
-      val thread = new Thread(new Runnable {
-          def run() = {
-            val r = try {
-              ReportManager.saveReport(session.run(s), key)
-            } catch {
-              case ex => s.error(ex.getMessage)
-            }
-            s.done()
-          }
-        })
-      thread.start()
+      val actor = Actor.actor {
+        try {
+          ReportManager.saveReport(session.run(s), key)
+        } catch {
+          case ex => s.error(ex.getMessage)
+        }
+        s.done()
+      }
+      actor.start()
       S.redirectTo("/process")
     }
 
@@ -232,14 +240,19 @@ class AnalysisSession extends DispatchSnippet with Logger {
   }
 
   def resultsView(resultsViewTemplate: NodeSeq): NodeSeq = {
-    val res = if(results.is.isEmpty) {
-      val r = ReportManager.loadReport(resultsKey.is)
-      if(r.isEmpty) info("Loaded empty results tree")
-      results.set(r)
-      r
-    }
-    else
-      results.is
+    val id = randomString(16)
+    val image = inputImage.is.get.load()
+    
+    val res = (if(results.is.isEmpty) {
+        val r = ReportManager.loadReport(resultsKey.is)
+        if(r.isEmpty) info("Loaded empty results tree")
+        results.set(r)
+        r
+      } else results.is).map(x => x._1 -> x._2.toSeq.sortWith((x, y) => x.level.name < y.level.name))
+
+    val metas = res.keySet.toSeq.sortWith((x, y) => x.name < y.name)
+
+    var currentReportEntry: Option[ReportEntry] = None
 
     def makeTree(treeTemplate: NodeSeq): NodeSeq = {
       bind("tree", treeTemplate,
@@ -247,7 +260,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
     }
 
     def makeAnalyserEntry(analyserEntryTemplate: NodeSeq): NodeSeq =
-      res.keySet.flatMap { metadata =>
+      metas.flatMap { metadata =>
         bind("analyserEntry", analyserEntryTemplate,
              "analyserName" -> metadata.name,
              "analyserDescription" -> metadata.description,
@@ -256,21 +269,53 @@ class AnalysisSession extends DispatchSnippet with Logger {
 
     def makeReportEntry(metadata: Metadata)(reportEntryTemplate: NodeSeq): NodeSeq =
       res(metadata).flatMap { entry =>
-        entry match {
-          case m: Message =>
-            bind("reportEntry", reportEntryTemplate,
-                 "message" -> m.message)
-          case _ =>
-            bind("reportEntry", reportEntryTemplate,
-                 "message" -> ((n: NodeSeq) => n))
+        val isCurrent = currentReportEntry.map(_ == entry) getOrElse false
+        val labelResolver = entry match {
+          case m: Message => (_: NodeSeq) => Text(m.message)
+          case _ => (n: NodeSeq) => n
         }
+        
+        bind("reportEntry", reportEntryTemplate,
+             "message" -> ((n: NodeSeq) => SHtml.a(() => {currentReportEntry = Some(entry); redraw}, labelResolver(n))))
       }.toList
 
-    def makeView(viewTemplate: NodeSeq): NodeSeq = {
-      NodeSeq.Empty
+    def makeView(viewTemplate: NodeSeq): NodeSeq = currentReportEntry match {
+      case None =>
+        inputImage.is.map(x => <img src={S.hostAndPath + "/imagefile/" + x.id}/>) getOrElse viewTemplate
+      case Some(entry) if inputImage.is.isDefined =>
+        val domImpl = GenericDOMImplementation.getDOMImplementation
+        val svgNS = "http://www.w3.org/2000/svg"
+        val document = domImpl.createDocument(svgNS, "svg", null)
+
+        val context = SVGGeneratorContext.createDefault(document)
+        //context.setImageHandler(SVGImageHandler)
+            
+        val g = new SVGGraphics2D(context, false)
+        try {
+          g.drawImage(image, 0, 0, null)
+          ReportEntryRenderer.renderReportEntry(g, entry)
+        } catch {
+          case ex =>
+            error(ex + "\n" + ex.getStackTraceString)
+        }
+
+        val out = new StringWriter
+        g.stream(out, true)
+        g.dispose()
+        val svg = XML.loadString(out.toString)
+        //DEBUG:
+        XML.save("output.svg", svg, "UTF-8", true, null)
+        <div style={"width: " + image.getWidth + "px; height: " + image.getHeight + "px;"}>{svg}</div>
+      case _ => viewTemplate
     }
-    bind("resultsView", resultsViewTemplate,
-         "tree" -> makeTree _,
-         "view" -> makeView _)
+    
+    def redraw() = SetHtml(id, inner())
+
+    def inner() = {
+      bind("resultsView", resultsViewTemplate,
+           "tree" -> makeTree _,
+           "view" -> makeView _)
+    }
+    <div id={id}>{inner()}</div>
   }
 }

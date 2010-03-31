@@ -103,6 +103,18 @@
                 <artifactId>metadata-extractor</artifactId>
                 <version>2.4.0-beta-1</version>
             </dependency>
+            <dependency>
+                <!-- Codec helpers-->
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>1.3</version>
+            </dependency>
+            <dependency>
+                <!-- SVG renderer -->
+                <groupId>batik</groupId>
+                <artifactId>batik-svggen</artifactId>
+                <version>1.6-1</version>
+            </dependency>
 
             <!-- Netbeans -->
             <dependency>
@@ -171,6 +183,12 @@
                 <artifactId>jetty</artifactId>
                 <version>[6.1.6,7.0)</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <!-- Mail management -->
+                <groupId>javax.mail</groupId>
+                <artifactId>mail</artifactId>
+                <version>1.4.3-rc1</version>
             </dependency>
 
             <!-- Testing -->
@@ -370,6 +388,16 @@
             <id>OSS Staging</id>
             <name>Sonatype Staging Repository</name>
             <url>http://oss.sonatype.org/content/groups/staging/</url>
+        </repository>
+        <repository>
+            <id>JBoss</id>
+            <name>JBoss Repository</name>
+            <url>http://repository.jboss.org/maven2/</url>
+        </repository>
+        <repository>
+            <id>JavaNet</id>
+            <name>JavaNet Repository</name>
+            <url>http://download.java.net/maven/2/</url>
         </repository>
     </repositories>
 

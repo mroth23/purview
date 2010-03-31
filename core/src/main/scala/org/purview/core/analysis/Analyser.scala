@@ -50,7 +50,7 @@ abstract class Analyser[@specialized("Int,Float,Boolean") A] extends NotNull {
   /**
    * The input that this analyser uses for computing the result
    */
-  protected def input = Computation.unit(inputStore.value.get)
+  protected def input = Computation.unit(inputStore.value.get)(new Computation.Session)
 
   /**
    * Reports this analysers current status

@@ -1,11 +1,12 @@
 package bootstrap.liftweb
 
-import _root_.net.liftweb.common._
-import _root_.net.liftweb.util._
-import _root_.net.liftweb.http._
-import _root_.net.liftweb.sitemap._
+import _root_.net.liftweb.util.Helpers._
 import _root_.net.liftweb.sitemap.Loc._
-import Helpers._
+import net.liftweb.http.LiftRules
+import net.liftweb.http.Req
+import net.liftweb.sitemap.Loc
+import net.liftweb.sitemap.Menu
+import net.liftweb.sitemap.SiteMap
 import org.purview.webui.snippet.AnalysisSession
 import org.purview.webui.util.ImageManager
 import org.purview.webui.util.ReportManager
@@ -32,7 +33,7 @@ class Boot {
       Menu(Loc("PurviewAbout", List("about"), "About Purview")) ::
       Nil
       
-    LiftRules.setSiteMap(SiteMap(entries:_*))
+    LiftRules.setSiteMap(SiteMap(entries: _*))
 
     LiftRules.dispatch.append {
       case Req("imagefile" :: id :: Nil, _, _) =>

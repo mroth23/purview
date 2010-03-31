@@ -82,6 +82,10 @@
             <artifactId>scala-compiler</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>batik</groupId>
+            <artifactId>batik-svggen</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

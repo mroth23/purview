@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
+import org.apache.commons.codec.binary.Base64
 import org.purview.core.analysis.Metadata
 import scala.xml.Elem
 
@@ -27,7 +28,7 @@ object ReportPersistance {
     } finally {
       out.close()
     }
-    <reportentry>{new String(out.toByteArray)}</reportentry>
+    <reportentry>{new String(Base64.encodeBase64(out.toByteArray), "UTF-8")}</reportentry>
   }
 
   def decodeReportTree(reportTree: Elem): Map[Metadata, Set[ReportEntry]] =
@@ -43,7 +44,7 @@ object ReportPersistance {
       }).toMap
 
   def decodeReportEntry(reportentry: Elem) = {
-    val in = new ByteArrayInputStream(reportentry.text.getBytes("UTF-8"))
+    val in = new ByteArrayInputStream(Base64.decodeBase64(reportentry.text.getBytes("UTF-8")))
     try {
       val reader = new ObjectInputStream(in)
       reader.readObject.asInstanceOf[ReportEntry]

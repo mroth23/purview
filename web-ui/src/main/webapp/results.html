@@ -1,25 +1,26 @@
 <lift:surround with="default" at="content">
     <p>
-        <span>TODO</span>
+        Analysis results:
     </p>
     <lift:AnalysisSession.resultsView>
-        <resultsView:tree>
-            <ul>
-                <tree:analyserEntry>
-                    <li>
-                        <analyserEntry:analyserName/><br/>
-                        <analyserEntry:analyserDescription/>
+        <div class="span-5 column">
+            <resultsView:tree>
+                <ul>
+                    <tree:analyserEntry>
+                        <li>
+                        <analyserEntry:analyserName/>
                         <ul>
                             <analyserEntry:reportEntry>
                                 <li><reportEntry:message/></li>
                             </analyserEntry:reportEntry>
                         </ul>
-                    </li>
-                </tree:analyserEntry>
-            </ul>
-        </resultsView:tree>
-        <resultsView:view>
-            <span>TODO</span>
-        </resultsView:view>
+                        </li>
+                    </tree:analyserEntry>
+                </ul>
+            </resultsView:tree>
+        </div>
+        <div class="span-14 column last" style="overflow: auto;">
+            <resultsView:view/>
+        </div>
     </lift:AnalysisSession.resultsView>
 </lift:surround>
