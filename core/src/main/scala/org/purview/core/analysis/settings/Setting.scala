@@ -3,7 +3,7 @@ package org.purview.core.analysis.settings
 /**
  * A setting that can be changed
  */
-abstract class Setting[@specialized("Int,Float,Boolean") A] {
+abstract class Setting[A] {
   /** The name of this setting */
   val name: String
 

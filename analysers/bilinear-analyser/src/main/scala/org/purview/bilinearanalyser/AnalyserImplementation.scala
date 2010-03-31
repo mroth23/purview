@@ -6,11 +6,7 @@ import org.purview.core.analysis.Settings
 import org.purview.core.analysis.settings.IntRangeSetting
 import org.purview.core.analysis.settings.FloatRangeSetting
 import org.purview.core.data.Color
-import org.purview.core.data.ImmutableMatrix
-import org.purview.core.data.Matrix
-import org.purview.core.data.MutableMatrix
 import org.purview.core.report.Warning
-import org.purview.core.transforms.LinearConvolve
 import scala.math._
 
 class AnalyserImplementation extends HeatMapImageAnalyser with Metadata with Settings {

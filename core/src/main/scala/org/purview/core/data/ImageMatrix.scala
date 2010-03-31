@@ -3,7 +3,6 @@ package org.purview.core.data
 import com.drew.imaging.jpeg.JpegMetadataReader
 import com.drew.metadata.Directory
 import com.drew.metadata.Tag
-import java.awt.Graphics2D
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
@@ -14,7 +13,7 @@ object ImageMatrix {
     val stream = ImageIO.createImageInputStream(imageFile)
     try {
       val readers = ImageIO.getImageReaders(stream);
-      if (readers.isEmpty)
+      if (!readers.hasNext)
         throw new IllegalArgumentException("No readers found for the specified image");
 
       val reader = readers.next()
@@ -33,9 +32,9 @@ object ImageMatrix {
               if tag != null
               if tag.getTagName != null
             } yield (tag.getTagName, tag.getDescription)
-            (dir.getName, tags.toMap)
+            (dir.getName, tags.toSeq.toMap)
           }
-          metaTree.toMap
+          metaTree.toSeq.toMap
         } else Map.empty
 
       val raw = reader.read(0)

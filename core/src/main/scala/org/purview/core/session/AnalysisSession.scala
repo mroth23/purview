@@ -5,7 +5,7 @@ import org.purview.core.analysis.Metadata
 import org.purview.core.report.ReportEntry
 
 class AnalysisSession[A](analysersToRun: Seq[Analyser[A]], input: A) {
-  def run(implicit stats: AnalysisStats): Map[Analyser[A], Set[ReportEntry]] = {
+  def run(implicit stats: AnalysisStats): Map[Metadata, Set[ReportEntry]] = {
     val progScale = 1f / analysersToRun.length
     val results = for {
       i <- 0 until analysersToRun.length
@@ -25,7 +25,17 @@ class AnalysisSession[A](analysersToRun: Seq[Analyser[A]], input: A) {
     
     stats.reportProgress(1)
     stats.reportSubProgress(1)
-    
-    Map((analysersToRun zip results): _*)
+
+    var i = 0
+
+    Map((analysersToRun partialMap {
+          case m: Metadata => m
+          case analyser =>
+            i += 1
+            new Metadata {
+              val name = "Unknown analyser " + i
+              val description = "Unknown"
+            }
+        } zip results): _*)
   }
 }
