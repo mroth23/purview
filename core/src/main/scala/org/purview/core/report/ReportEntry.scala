@@ -3,8 +3,9 @@ package org.purview.core.report
 import java.awt.geom.Ellipse2D
 import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
+import java.io.Serializable
 
-abstract class ReportEntry extends NotNull {
+abstract class ReportEntry extends NotNull with Serializable {
   val level: ReportLevel
   override def toString = "Report entry"
 }

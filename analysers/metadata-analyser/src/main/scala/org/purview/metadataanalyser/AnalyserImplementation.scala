@@ -3,6 +3,7 @@ package org.purview.metadataanalyser
 import org.purview.core.analysis.Analyser
 import org.purview.core.analysis.Metadata
 import org.purview.core.data.ImageMatrix
+import org.purview.core.process.Computation
 import org.purview.core.report.Error
 import org.purview.core.report.Message
 import org.purview.core.report.ReportEntry
@@ -17,7 +18,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Metadata {
   private val metadataTesters: Set[MetaAnalyser] =
     Set(photoshopDetector, paintDotNetDetector, gimpDetector)
 
-  def result = for(image <- input) yield {
+  val result: Computation[Set[ReportEntry]] = for(image <- input) yield {
     (for {
         tester <- metadataTesters
         tupled = tester.lift

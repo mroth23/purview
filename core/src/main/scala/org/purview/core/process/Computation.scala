@@ -3,37 +3,42 @@ package org.purview.core.process
 import scala.collection.mutable.WeakHashMap
 
 object Computation {
-  private[core] case class Session()
-
-  private[core] def apply[A](v: => A)(implicit s: Session = new Session): Computation[A] = new Computation[A] {
-    def value = v
-    def session = s
+  private[core] class Session {
+    override def equals(x: Any) = x match {
+      case that: AnyRef => this eq that
+    }
   }
-  @inline private[core] def unit[A](v: => A)(implicit session: Session = new Session) = apply(v)
 
-  private[core] def get[A](s: Computation[A]) = s.value
+  def apply[A](v: => A): Computation[A] = new Computation[A] {
+    def calculateValue(session: Computation.Session) = v
+  }
+  @inline def unit[A](v: => A)(implicit session: Session = new Session) = apply(v)
+
+  private[core] def get[A](s: Computation[A])(implicit session: Session) = s.value
 }
 
 trait Computation[@specialized("Int,Float,Boolean") A] {
-  protected def value: A
-  protected[core] def session: Computation.Session
+  protected def calculateValue(session: Computation.Session): A
 
   private val sessionCache = new WeakHashMap[Computation.Session, A]
-  private def sessionValue: A = sessionCache.getOrElse(session, {
-      val v = value
+  
+  private def value(implicit session: Computation.Session): A = sessionCache.getOrElse(session, {
+      val v = calculateValue(session)
       sessionCache(session) = v
       v
     })
 
   def map[B](f: A => B): Computation[B] = 
     new Computation[B] {
-      def value: B = f(Computation.this.sessionValue)
-      def session = Computation.this.session
+      def calculateValue(session: Computation.Session): B = f(Computation.this.value(session))
     }
   
   @inline final def >-[B](f: A => B) = map(f)
 
-  def flatMap[B](f: A => Computation[B]): Computation[B] = f(sessionValue)
+  def flatMap[B](f: A => Computation[B]): Computation[B] =
+    new Computation[B] {
+      def calculateValue(session: Computation.Session): B = f(Computation.this.value(session)).value(session)
+    }
 
   @inline final def >>=[B](f: A => Computation[B]) = flatMap(f)
 }

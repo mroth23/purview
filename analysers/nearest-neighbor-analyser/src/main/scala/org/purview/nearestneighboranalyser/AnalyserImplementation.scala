@@ -14,7 +14,7 @@ class AnalyserImplementation extends HeatMapImageAnalyser with Metadata {
   override val message = "Nearest neighbor scaled region"
   override val reportLevel = Warning
 
-  def markNearest = for(matrix <- input) yield {
+  val markNearest = for(matrix <- input) yield {
     status("Marking nearest neighbor scaled image regions")
 
     val width = matrix.width
@@ -42,7 +42,7 @@ class AnalyserImplementation extends HeatMapImageAnalyser with Metadata {
     }
   }
 
-  def findSquares : Computation[Matrix[Float]] = for (matrix <- markNearest) yield {
+  val findSquares: Computation[Matrix[Float]] = for (matrix <- markNearest) yield {
     status("Finding squares in uniform pixel regions")
     val countRange = 2 until 20
 
@@ -66,7 +66,7 @@ class AnalyserImplementation extends HeatMapImageAnalyser with Metadata {
   private val gaussian30Kernel =
     (for(i <- -30 to 30) yield (30 - abs(i)) / (30f * 30f * 30f)).toArray
 
-  override val convolve = Some(gaussian30Kernel)
+  override val convolve: Computation[Option[Array[Float]]] = Computation(Some(gaussian30Kernel))
 
-  def heatmap = findSquares
+  val heatmap = findSquares
 }

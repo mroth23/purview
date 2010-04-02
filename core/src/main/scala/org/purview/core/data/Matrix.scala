@@ -4,7 +4,8 @@ import org.purview.core.analysis.Analyser
 import scala.collection.mutable.GenericArray
 
 object Matrix {
-  implicit def iterable[A](m: Matrix[A]) = new Iterable[A] {
+  /** Adds support for everything that Iterable supports to Matrix */
+  implicit def iterable[@specialized("Int,Float,Boolean") A](m: Matrix[A]) = new Iterable[A] {
     def iterator = new Iterator[A] {
       private var y = 0
       private var x = 0

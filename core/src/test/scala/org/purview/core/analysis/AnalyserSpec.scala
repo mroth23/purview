@@ -16,19 +16,19 @@ class AnalyserSpec extends SpecificationWithJUnit {
   "An analyser" should {
     "be able to generate reports" in {
       val a = new Analyser[Int] {
-        def result = for(i <- input) yield Set(new ReportEntry with Message {
+        val result = for(i <- input) yield Set[ReportEntry](new ReportEntry with Message {
             val level = Information
             val message = "Analysed " + i
           })
       }
-      a.analyse(0) must not be empty
+      a.analyse(42) must not be empty
       a.analyse(2).partialMap {
         case x: Message =>
           x.message must_== "Analysed 2"
       }
     }
   }
-/*
+/* //XXX: Doesn't work with Scala 2.8.0.Beta1
   "A heat map analyser" should {
     val matrix = new MutableArrayMatrix[Float](16, 16)
 

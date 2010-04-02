@@ -1,8 +1,9 @@
 package org.purview.core.report
 
+import java.io.Serializable
 import org.purview.core.data.Color
 
-trait ReportLevel extends NotNull {
+trait ReportLevel extends NotNull with Serializable {
   val name: String
 }
 

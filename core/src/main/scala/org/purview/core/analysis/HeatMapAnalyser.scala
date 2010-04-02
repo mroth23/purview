@@ -23,16 +23,16 @@ import scala.collection.mutable.Queue
  */
 trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] extends Analyser[B] {
   /** The computation that generates the heat map */
-  def heatmap: Computation[Matrix[Float]]
+  val heatmap: Computation[Matrix[Float]]
 
   /** The report level to use by default when creating a report */
-  def reportLevel: ReportLevel = Information
+  val reportLevel: ReportLevel = Information
 
   /** The message to use for interesting heat map areas in the report */
-  def message: String = "Interesting peak"
+  val message: String = "Interesting peak"
 
   /** Should we convolve the result before scanning it? */
-  def convolve: Option[Array[Float]] = None
+  val convolve: Computation[Option[Array[Float]]] = Computation(None)
 
   /**
    * If multiple heat regions are to be found, this specifies the maximum
@@ -41,35 +41,43 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] exten
    * <pre>r</pre> will be included in the report that satisfy:<br/>
    * <pre>abs(max - r) < max * maxDeviationTolerance</pre>
    */
-  def maxDeviationTolerance: Float = 0.1f
+  val maxDeviationTolerance: Float = 0.1f
 
   /**
    * Specifies the minimum size a heat map region must have for it to be accepted.
    */
-  def minRegionSize: Int = 8
+  val minRegionSize: Int = 8
 
   /**
    * Specifies the minimum value a peak in the heat map must have for it to be accepted.
    */
-  def threshold: Float = 0
+  val threshold: Float = 0
 
   /**
    * Should nearby peaks be treated as the same peak region?
    */
-  def accumulate = true
+  val accumulate = true
 
-  private def maximi = 
+  /** Heatmap with the optional convolution row matrix applied */
+  private lazy val convolvedHeatmap = for {
+    raw <- heatmap
+    conv <- convolve
+  } yield if(conv.isDefined) LinearConvolve(conv.get)(raw) else raw
+
+  /** A matrix that has 'true' cells for "heated" areas and 'false' for other areas */
+  private lazy val maximi =
     for {
-      raw <- heatmap
-      in = if(convolve.isDefined) LinearConvolve(convolve.get)(raw) else raw
+      in <- convolvedHeatmap
       _ = status("Finding peaks in the generated data")
       max = in.max
       tolerance = max * maxDeviationTolerance
-    } yield ((raw, in), in map(value => value - max < tolerance && max - value < tolerance && value > threshold))
+    } yield in map(value => value - max < tolerance && max - value < tolerance && value > threshold)
 
+  /** Simple helper class */
   protected case class HeatRegion(var left: Int, var top: Int, var right: Int, var bottom: Int)
 
-  protected def heatRegions = for(max <- maximi; (in, candidateMatrix) = max) yield {
+  /** A sequence of actual found heat areas */
+  protected lazy val heatRegions = for(candidateMatrix <- maximi) yield {
     status("Calculating " + (if(accumulate) "and merging " else "") + "peak regions")
     val mask = new MutableArrayMatrix[Boolean](candidateMatrix.width, candidateMatrix.height)
     val width = candidateMatrix.width
@@ -132,40 +140,49 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] exten
       y += 1
     }
 
-    (in, result)
+    result
   }
 
-  def result: Computation[Set[ReportEntry]] = {
-    for(r <- heatRegions; (in, regions) = r) yield regions
-    .filter(r => r.bottom - r.top >= minRegionSize && r.right - r.left >= minRegionSize)
-    .map { region => //All of our peak regions
-      new ReportEntry with Point with Rectangle with Message {
-        val message = HeatMapAnalyser.this.message
-        val x = region.left
-        val y = region.top
-        val width = (region.right - region.left)
-        val height = (region.bottom - region.top)
-        val level = reportLevel
-      }
-    }.toSet + { //The convoluted input image
-      val max = in._2.max
-      (new ReportEntry with Point with Image with Message {
-        val message = "Convoluted output"
-        val level = Information
-        val x = 0
-        val y = 0
-        val image = new MatrixToImage()(in._2.map(x => Color(0.9f, x / max, x / max, x / max)))
-      }): ReportEntry
-    } + { //The unconvoluted input image
-      val max = in._1.max
-      (new ReportEntry with Point with Image with Message {
+  /** A report of all the found heat areas */
+  private lazy val regionReport: Computation[Set[ReportEntry]] = for {
+    regions <- heatRegions
+  } yield (for {
+    region <- regions
+    if(region.bottom - region.top >= minRegionSize && region.right - region.left >= minRegionSize)
+  } yield {
+    new ReportEntry with Point with Rectangle with Message {
+      val message = HeatMapAnalyser.this.message
+      val x = region.left
+      val y = region.top
+      val width = (region.right - region.left)
+      val height = (region.bottom - region.top)
+      val level = reportLevel
+    }
+  }).toSet
+
+  /** The generated result report */
+  lazy val result: Computation[Set[ReportEntry]] = for {
+    raw <- heatmap
+    conv <- convolvedHeatmap
+    report <- regionReport
+  } yield report + { //The unconvoluted input image
+    val max = raw.max //TODO: this has already been calculated before, OPTIMIZE!
+    (new ReportEntry with Point with Image with Message {
         val message = "Raw output"
         val level = Information
         val x = 0
         val y = 0
-        val image = new MatrixToImage()(in._1.map(x => Color(0.9f, x / max, x / max, x / max)))
+        val image = new MatrixToImage()(raw.map(x => Color(0.9f, x / max, x / max, x / max)))
       }): ReportEntry
-    }
+  } + { //The convoluted input image
+    val max = conv.max
+    (new ReportEntry with Point with Image with Message {
+        val message = "Convoluted output"
+        val level = Information
+        val x = 0
+        val y = 0
+        val image = new MatrixToImage()(conv.map(x => Color(0.9f, x / max, x / max, x / max)))
+      }): ReportEntry
   }
 }
 

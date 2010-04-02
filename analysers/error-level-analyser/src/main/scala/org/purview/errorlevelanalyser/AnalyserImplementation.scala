@@ -10,6 +10,7 @@ import org.purview.core.analysis.HeatMapImageAnalyser
 import org.purview.core.analysis.Metadata
 import org.purview.core.analysis.Settings
 import org.purview.core.analysis.settings.FloatRangeSetting
+import org.purview.core.process.Computation
 import org.purview.core.report._
 import org.purview.core.transforms.ImageToMatrix
 import org.purview.core.transforms.MatrixToImage
@@ -89,16 +90,16 @@ class AnalyserImplementation extends HeatMapImageAnalyser with Settings with Met
   private val gaussian30Kernel =
     (for(i <- -30 to 30) yield (30 - abs(i)) / (30f * 30f * 30f)).toArray
 
-  override val convolve = Some(gaussian30Kernel)
+  override val convolve: Computation[Option[Array[Float]]] = Computation(Some(gaussian30Kernel))
 
-  private def errorMatrix = input >- MatrixToImage() >- introduceJPEGArtifacts >- ImageToMatrix()
+  private val errorMatrix = input >- MatrixToImage() >- introduceJPEGArtifacts >- ImageToMatrix()
 
-  def diff = for(in <- input; artifacts <- errorMatrix) yield
+  val diff = for(in <- input; artifacts <- errorMatrix) yield
     in.zip(artifacts).map(x => {
         val w = (x._1 - x._2).weight / 2 //2 because of sqrt(4); we want to average the color
         if(w > artifactThreshold) w else 0
       })
 
   //Extreme blur!
-  def heatmap = diff
+  val heatmap = diff
 }

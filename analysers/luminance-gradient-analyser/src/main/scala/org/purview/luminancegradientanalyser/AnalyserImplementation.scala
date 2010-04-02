@@ -30,7 +30,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Metadata with Se
   private def scale = scaleSetting.value
   private def blending = blendSetting.value
 
-  def luminanceGradient = for(in <- input) yield {
+  val luminanceGradient = for(in <- input) yield {
     status("Calculating the luminance gradient for the image")
     for {
       (x, y, src) <- in.cells
@@ -87,7 +87,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Metadata with Se
         val level = Information
       })
 
-  def result = luminanceGradient >- MatrixToImage() >- imageReport
+  val result = luminanceGradient >- MatrixToImage() >- imageReport
 
 }
 

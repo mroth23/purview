@@ -297,7 +297,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Metadata with Se
    * - Report the remaining shifts
    */
 
-  def result = input >- grayscale >- Fragmentize(16, 16) >- makeBlocks >- sortBlocks >-
+  val result = input >- grayscale >- Fragmentize(16, 16) >- makeBlocks >- sortBlocks >-
   makeShifts >- groupShifts >- makeReport
 }
 

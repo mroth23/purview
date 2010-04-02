@@ -103,7 +103,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
         inputImageReduced.set(Some(ImageManager.saveImage(outImage)))
 
         val analysers = try {
-          SessionUtils.createAnalyserInstances()
+          SessionUtils.createAnalyserInstances[ImageMatrix]()
         } catch {
           case ex =>
             S.error("Error when initializing analyser")
