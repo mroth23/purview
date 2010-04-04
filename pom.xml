@@ -369,23 +369,11 @@
             <id>scala-tools.org/releases</id>
             <name>Scala-Tools Maven2 Releases Repository</name>
             <url>http://scala-tools.org/repo-releases</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
         </repository>
         <repository>
             <id>scala-tools.org/snapshots</id>
             <name>Scala-Tools Maven2 Snapshots Repository</name>
             <url>http://scala-tools.org/repo-snapshots</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
         </repository>
         <repository>
             <id>netbeans</id>
@@ -419,15 +407,10 @@
             <id>scala-tools.org/releases</id>
             <name>Scala-Tools Maven2 Releases Repository</name>
             <url>http://scala-tools.org/repo-releases</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
         </pluginRepository>
         <pluginRepository>
-            <id>maven-replacer-plugin reposoitory</id>
+            <id>googlecode.com/maven-replacer-plugin</id>
+            <name>Maven Replacer Plugin repository</name>
             <url>http://maven-replacer-plugin.googlecode.com/svn/release-repo</url>
         </pluginRepository>
     </pluginRepositories>

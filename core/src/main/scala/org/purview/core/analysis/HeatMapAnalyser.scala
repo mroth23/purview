@@ -21,7 +21,9 @@ import scala.collection.mutable.Queue
  * map as its result. The heat map is a Matrix of Floats, where regions with
  * high values indicate things to report.
  */
-trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] extends Analyser[B] {
+trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]]
+    extends Analyser[B] {
+
   /** The computation that generates the heat map */
   val heatmap: Computation[Matrix[Float]]
 
@@ -39,17 +41,19 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] exten
    * distance ratio that other regions may be from the strongest region.
    * So, if the strongest region has value <pre>x</pre>, all regions
    * <pre>r</pre> will be included in the report that satisfy:<br/>
-   * <pre>abs(max - r) < max * maxDeviationTolerance</pre>
+   * <pre>abs(max - r) &lt; max * maxDeviationTolerance</pre>
    */
   val maxDeviationTolerance: Float = 0.1f
 
   /**
-   * Specifies the minimum size a heat map region must have for it to be accepted.
+   * Specifies the minimum size a heat map region must have for it 
+   * to be accepted.
    */
   val minRegionSize: Int = 8
 
   /**
-   * Specifies the minimum value a peak in the heat map must have for it to be accepted.
+   * Specifies the minimum value a peak in the heat map must have
+   * for it to be accepted.
    */
   val threshold: Float = 0
 
@@ -64,22 +68,30 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] exten
     conv <- convolve
   } yield if(conv.isDefined) LinearConvolve(conv.get)(raw) else raw
 
-  /** A matrix that has 'true' cells for "heated" areas and 'false' for other areas */
+  /**
+   * A matrix that has 'true' cells for "heated" areas and 'false'
+   * for other areas
+   */
   private lazy val maximi =
     for {
       in <- convolvedHeatmap
       _ = status("Finding peaks in the generated data")
       max = in.max
       tolerance = max * maxDeviationTolerance
-    } yield in map(value => value - max < tolerance && max - value < tolerance && value > threshold)
+    } yield in map(value => value - max < tolerance &&
+                            max - value < tolerance &&
+                            value > threshold)
 
   /** Simple helper class */
-  protected case class HeatRegion(var left: Int, var top: Int, var right: Int, var bottom: Int)
+  protected case class HeatRegion(var left: Int, var top: Int, 
+                                  var right: Int, var bottom: Int)
 
   /** A sequence of actual found heat areas */
   protected lazy val heatRegions = for(candidateMatrix <- maximi) yield {
-    status("Calculating " + (if(accumulate) "and merging " else "") + "peak regions")
-    val mask = new MutableArrayMatrix[Boolean](candidateMatrix.width, candidateMatrix.height)
+    status("Calculating " + (if(accumulate) "and merging " else "") +
+           "peak regions")
+    val mask = new MutableArrayMatrix[Boolean](candidateMatrix.width,
+                                               candidateMatrix.height)
     val width = candidateMatrix.width
     val height = candidateMatrix.height
 
@@ -102,7 +114,6 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] exten
       val queue = new Queue[(Int, Int)]
       queue.enqueue((x, y))
 
-      //XXX: sometimes, for some reason, this gets stuck in an infinite loop. Why?
       while(!queue.isEmpty) {
         val pos = queue.dequeue()
         include(pos._1, pos._2, heatRegion)
@@ -148,7 +159,8 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] exten
     regions <- heatRegions
   } yield (for {
     region <- regions
-    if(region.bottom - region.top >= minRegionSize && region.right - region.left >= minRegionSize)
+    if(region.bottom - region.top  >= minRegionSize &&
+       region.right  - region.left >= minRegionSize)
   } yield {
     new ReportEntry with Point with Rectangle with Message {
       val message = HeatMapAnalyser.this.message
@@ -172,7 +184,9 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] exten
         val level = Information
         val x = 0
         val y = 0
-        val image = new MatrixToImage()(raw.map(x => Color(0.9f, x / max, x / max, x / max)))
+        val image = new MatrixToImage()(raw.map { x => 
+          Color(0.9f, x / max, x / max, x / max)
+        })
       }): ReportEntry
   } + { //The convoluted input image
     val max = conv.max
@@ -181,7 +195,9 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] exten
         val level = Information
         val x = 0
         val y = 0
-        val image = new MatrixToImage()(conv.map(x => Color(0.9f, x / max, x / max, x / max)))
+        val image = new MatrixToImage()(conv.map {x =>
+          Color(0.9f, x / max, x / max, x / max)
+        })
       }): ReportEntry
   }
 }
