@@ -11,14 +11,8 @@ import org.purview.core.data.ImmutableMatrix
 import org.purview.core.data.Matrix
 import org.purview.core.data.MutableArrayMatrix
 import org.purview.core.report.Error
-import org.purview.core.report.FreeShape
-import org.purview.core.report.FreeSourceShape
-import org.purview.core.report.Message
-import org.purview.core.report.Message
-import org.purview.core.report.Point
 import org.purview.core.report.ReportEntry
-import org.purview.core.report.SourcePoint
-import org.purview.core.report.SourcePoint
+import org.purview.core.report.ReportShapeMove
 import org.purview.core.transforms.Fragmentize
 import scala.collection.mutable.ArrayBuffer
 import scala.math._
@@ -273,16 +267,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
         val areaTo = new Area
         rectsTo.foreach(areaTo.add)
 
-        new ReportEntry with Message with Point with SourcePoint with FreeShape with FreeSourceShape {
-          val level = Error
-          val message = "This region was moved"
-          val sourceX = avgX.toInt
-          val sourceY = avgY.toInt
-          val x = sourceX + vector._1
-          val y = sourceY + vector._2
-          val sourceShape = areaFrom
-          val shape = areaTo
-        }
+        new ReportShapeMove(Error, "This region was moved", areaFrom, areaTo)
       }
     ).toSet
   }

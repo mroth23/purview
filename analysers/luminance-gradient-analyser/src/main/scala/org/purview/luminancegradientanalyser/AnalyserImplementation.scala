@@ -6,11 +6,10 @@ import org.purview.core.analysis.Settings
 import org.purview.core.analysis.settings.FloatRangeSetting
 import org.purview.core.data.Color
 import org.purview.core.data.ImageMatrix
-import org.purview.core.report.Image
 import org.purview.core.report.Information
 import org.purview.core.report.Message
-import org.purview.core.report.Point
 import org.purview.core.report.ReportEntry
+import org.purview.core.report.ReportImage
 import org.purview.core.transforms.MatrixToImage
 import scala.math._
 
@@ -78,16 +77,9 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
   }
 
   def imageReport(img: BufferedImage): Set[ReportEntry] =
-    Set(new ReportEntry with Image with Message {
-        val x = 0
-        val y = 0
-        val image = img
-        val message = "Output image"
-        val level = Information
-      })
+    Set(new ReportImage(Information, "Output image", 0, 0, img))
 
   val result = luminanceGradient >- MatrixToImage() >- imageReport
-
 }
 
 sealed case class ValueColorCell(value: Double, color: Color, x: Int, y: Int) extends Ordered[ValueColorCell] {

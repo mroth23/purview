@@ -7,6 +7,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
@@ -36,16 +37,14 @@ import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.purview.core.analysis.Analyser;
 import org.purview.core.data.ImageMatrix;
-import org.purview.core.report.Circle;
 import org.purview.core.report.FreeShape;
-import org.purview.core.report.FreeSourceShape;
-import org.purview.core.report.Image;
 import org.purview.core.report.LevelColor;
-import org.purview.core.report.Point;
-import org.purview.core.report.Rectangle;
+import org.purview.core.report.ReportCircle;
 import org.purview.core.report.ReportEntry;
+import org.purview.core.report.ReportImage;
 import org.purview.core.report.ReportLevel;
-import org.purview.core.report.SourcePoint;
+import org.purview.core.report.ReportRectangle;
+import org.purview.core.report.ReportShape;
 
 /**
  * Top component which displays something.
@@ -135,22 +134,27 @@ final class ResultsTopComponent extends TopComponent implements TreeSelectionLis
                 reportPanel.setReportEntry(entry);
 
                 //Scroll the view so that the report entry is visible
-                if (entry instanceof Point) {
-                    Point p = (Point) entry;
-                    if (entry instanceof Rectangle) {
-                        Rectangle r = (Rectangle) entry;
-                        reportPanel.scrollRectToVisible(
-                                new java.awt.Rectangle(p.x(), p.y(),
-                                r.width(), r.height()));
-                    } else if (entry instanceof Circle) {
-                        Circle c = (Circle) entry;
-                        reportPanel.scrollRectToVisible(
-                                new java.awt.Rectangle(p.x() - c.radius(), p.y() - c.radius(),
-                                c.radius() * 2, c.radius() * 2));
-                    } else if (!(entry instanceof Image)) {
-                        reportPanel.scrollRectToVisible(new java.awt.Rectangle(p.x(), p.y(), 0, 0));
-                    }
-                }
+                if(entry instanceof ReportImage) {
+                    ReportImage img = (ReportImage)entry;
+                    reportPanel.scrollRectToVisible(new Rectangle(
+                            img.x(), img.y(),
+                            img.image().getWidth(), img.image().getHeight()));
+                } else if(entry instanceof ReportRectangle) {
+                    ReportRectangle rect = (ReportRectangle)entry;
+                    reportPanel.scrollRectToVisible(new Rectangle(
+                            rect.x(), rect.y(),
+                            rect.width(), rect.height()));
+                } else if(entry instanceof ReportCircle) {
+                    ReportCircle circ = (ReportCircle) entry;
+                    reportPanel.scrollRectToVisible(new Rectangle(
+                            circ.x() - circ.radius(),
+                            circ.y() - circ.radius(),
+                            circ.radius() * 2,
+                            circ.radius() * 2));
+                } else if(entry instanceof ReportShape) {
+                    ReportShape shape = (ReportShape) entry;
+                    reportPanel.scrollRectToVisible(shape.shape().getBounds());
+                } //TODO: scroll to other report entries
 
                 //Repaint the whole view
                 reportPanel.repaint();
@@ -210,7 +214,8 @@ class ReportEntryTreeCellRenderer extends DefaultTreeCellRenderer {
                             RenderingHints.VALUE_ANTIALIAS_ON);
 
                     //Depending on the reporty entry type, choose a different icon shape
-                    if (entry instanceof Image) {
+                    //TODO: fix drawing!
+                    /*if (entry instanceof Image) {
                         Image i = (Image) entry;
                         g.drawImage(i.image(), 1, 1, 14, 14, tree);
                     } else {
@@ -238,7 +243,7 @@ class ReportEntryTreeCellRenderer extends DefaultTreeCellRenderer {
                         g.fill(shape);
                         g.setPaint(color);
                         g.draw(shape);
-                    }
+                    }*/
 
                     g.dispose();
                     //Store the ison in the cache
@@ -362,6 +367,8 @@ class ReportPanel extends JPanel implements Runnable {
 
             //Draw different things depending on the entry (self-explanatory)
             //TODO: This could be put into a ReportEntry trait, but should it be? Is this too implementation specific?
+            //TODO: fix drawing
+            /*
             if (entry instanceof Point) {
                 final Point point = (Point) entry;
 
@@ -402,7 +409,7 @@ class ReportPanel extends JPanel implements Runnable {
                             point.x(), point.y(),
                             arrowColor);
                 }
-            }
+            }*/
         }
     }
 
@@ -420,6 +427,8 @@ class ReportPanel extends JPanel implements Runnable {
             hasUpdater = true;
             //Try to update only those regions that need to be redrawn
             while (null != entry && isVisible()) {
+                //TODO: fix update algorithm
+                /*
                 if (entry instanceof Point) {
                     int x, y, width, height;
                     final Point point = (Point) entry;
@@ -465,7 +474,7 @@ class ReportPanel extends JPanel implements Runnable {
                     }
 
                     this.repaint((int) rect.getX(), (int) rect.getY(), (int) rect.getWidth(), (int) rect.getHeight());
-                }
+                }*/
 
                 try {
                     Thread.sleep(20);

@@ -3,26 +3,23 @@ package org.purview.core.analysis
 import org.purview.core.data.Color
 import org.purview.core.data.ImageMatrix
 import org.purview.core.data.Matrix
-import org.purview.core.report.Image
 import org.purview.core.report.Information
-import org.purview.core.report.Message
-import org.purview.core.report.Point
-import org.purview.core.report.Rectangle
 import org.purview.core.report.ReportEntry
+import org.purview.core.report.ReportImage
 import org.purview.core.report.ReportLevel
 import org.purview.core.data.MutableArrayMatrix
 import org.purview.core.process.Computation
 import org.purview.core.transforms.MatrixToImage
+import org.purview.core.report.ReportRectangle
 import org.purview.core.transforms.LinearConvolve
 import scala.collection.mutable.Queue
 
 /**
  * A HeatMapAnalyser is an Analyser that analyses a Matrix and outputs a heat
- * map as its result. The heat map is a Matrix of Floats, where regions with
- * high values indicate things to report.
+ * map as its result. The heat map is a Matrix of Floats, where regions with high
+ * values indicate things to report.
  */
-trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]]
-    extends Analyser[B] {
+trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] extends Analyser[B] {
 
   /** The computation that generates the heat map */
   val heatmap: Computation[Matrix[Float]]
@@ -46,7 +43,7 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]]
   val maxDeviationTolerance: Float = 0.1f
 
   /**
-   * Specifies the minimum size a heat map region must have for it 
+   * Specifies the minimum size a heat map region must have for it
    * to be accepted.
    */
   val minRegionSize: Int = 8
@@ -79,11 +76,11 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]]
       max = in.max
       tolerance = max * maxDeviationTolerance
     } yield in map(value => value - max < tolerance &&
-                            max - value < tolerance &&
-                            value > threshold)
+                   max - value < tolerance &&
+                   value > threshold)
 
   /** Simple helper class */
-  protected case class HeatRegion(var left: Int, var top: Int, 
+  protected case class HeatRegion(var left: Int, var top: Int,
                                   var right: Int, var bottom: Int)
 
   /** A sequence of actual found heat areas */
@@ -157,20 +154,18 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]]
   /** A report of all the found heat areas */
   private lazy val regionReport: Computation[Set[ReportEntry]] = for {
     regions <- heatRegions
-  } yield (for {
-    region <- regions
-    if(region.bottom - region.top  >= minRegionSize &&
-       region.right  - region.left >= minRegionSize)
   } yield {
-    new ReportEntry with Point with Rectangle with Message {
-      val message = HeatMapAnalyser.this.message
-      val x = region.left
-      val y = region.top
-      val width = (region.right - region.left)
-      val height = (region.bottom - region.top)
-      val level = reportLevel
-    }
-  }).toSet
+    val entries = for {
+      region <- regions
+      if region.bottom - region.top  >= minRegionSize
+      if region.right  - region.left >= minRegionSize
+    } yield
+      new ReportRectangle(reportLevel, HeatMapAnalyser.this.message,
+                          region.left, region.top,
+                          (region.right - region.left),
+                          (region.bottom - region.top))
+    entries.toSet
+  }
 
   /** The generated result report */
   lazy val result: Computation[Set[ReportEntry]] = for {
@@ -179,26 +174,12 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]]
     report <- regionReport
   } yield report + { //The unconvoluted input image
     val max = raw.max //TODO: this has already been calculated before, OPTIMIZE!
-    (new ReportEntry with Point with Image with Message {
-        val message = "Raw output"
-        val level = Information
-        val x = 0
-        val y = 0
-        val image = new MatrixToImage()(raw.map { x => 
-          Color(0.9f, x / max, x / max, x / max)
-        })
-      }): ReportEntry
+    new ReportImage(Information, "Raw output", 0, 0,
+                    new MatrixToImage()(raw.map { x => Color(0.9f, x / max, x / max, x / max)}))
   } + { //The convoluted input image
     val max = conv.max
-    (new ReportEntry with Point with Image with Message {
-        val message = "Convoluted output"
-        val level = Information
-        val x = 0
-        val y = 0
-        val image = new MatrixToImage()(conv.map {x =>
-          Color(0.9f, x / max, x / max, x / max)
-        })
-      }): ReportEntry
+    new ReportImage(Information, "Raw output", 0, 0,
+                    new MatrixToImage()(conv.map { x => Color(0.9f, x / max, x / max, x / max)}))
   }
 }
 

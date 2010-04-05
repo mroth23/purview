@@ -7,9 +7,7 @@ import java.awt.Shape
 import java.awt.geom.Ellipse2D
 import java.awt.geom.Line2D
 import java.awt.geom.Path2D
-import org.purview.core.report.Image
 import org.purview.core.report.LevelColor
-import org.purview.core.report.Point
 import org.purview.core.report.ReportEntry
 
 object ReportEntryRenderer {
@@ -36,12 +34,14 @@ object ReportEntryRenderer {
 
     g.setStroke(stroke)
 
+    //TODO: fix drawing
+    /*
     entry match {
       case point: Point =>
         if(!point.isInstanceOf[Image])
           makePoint(g, point.x, point.y, transpColor, color)
 
-    }
+    }*/
   }
 
   def makePoint(g: Graphics2D, x: Float, y: Float, fill: Color, outline: Color) {
