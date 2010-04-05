@@ -22,6 +22,8 @@ case class Analysis(matrix: ImageMatrix, name: String, analysers: Seq[Analyser[I
 
   def subProgress: Float = stats.oldSubProgress
   val subProgressChanged = new Signal1[Float]
+
+  val error = new Signal2[String, String]
   
   def hasFinished = _done
   val finished = new Signal0
@@ -63,7 +65,13 @@ case class Analysis(matrix: ImageMatrix, name: String, analysers: Seq[Analyser[I
   }
 
   def analyse(): Unit = Actor.actor {
-    val report = new AnalysisSession(analysers, matrix).run(stats)
+    val report = try {
+      new AnalysisSession(analysers, matrix).run(stats)
+    } catch {
+      case err => 
+        error.emit(err.getMessage, err.getStackTraceString)
+        Predef.error("Error in analysis")
+    }
     val sortedReport = for {
       (analyser, entries) <- report
       sortedEntries = entries.toSeq.sortBy(_.level.name)

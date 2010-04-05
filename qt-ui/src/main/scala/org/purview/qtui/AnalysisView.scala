@@ -4,6 +4,7 @@ import com.trolltech.qt.core.Qt
 import com.trolltech.qt.gui.QDockWidget
 import com.trolltech.qt.gui.QIcon
 import com.trolltech.qt.gui.QLabel
+import com.trolltech.qt.gui.QMessageBox
 import com.trolltech.qt.gui.QProgressBar
 import com.trolltech.qt.gui.QVBoxLayout
 import com.trolltech.qt.gui.QWidget
@@ -48,6 +49,7 @@ object AnalysisView extends QDockWidget {
         a.analyserChanged.disconnect(this)
         a.progressChanged.disconnect(this)
         a.subProgressChanged.disconnect(this)
+        a.error.disconnect(this)
       case _ =>
     }
     analysis match {
@@ -57,6 +59,7 @@ object AnalysisView extends QDockWidget {
         ana.subProgressChanged.connect(this, "setSubProgress(float)")
         ana.statusChanged.connect(this, "setStatus(String)")
         ana.analyserChanged.connect(this, "setAnalyser(String)")
+        ana.error.connect(this, "reportError(String, String)")
         progressBar.setDisabled(false)
         subProgressBar.setDisabled(false)
         setProgress(ana.progress)
@@ -87,4 +90,9 @@ object AnalysisView extends QDockWidget {
 
   private def setAnalyser(analyser: String) =
     analyserLabel.setText("Analyser: " + analyser)
+
+  private def reportError(message: String, stackTrace: String) =
+    QMessageBox.critical(this, "Error during analysis", {
+        <div><p><em>Message:</em></p><p>{message}</p><p><em>Stack trace:</em></p><p>{stackTrace}</p></div>
+      }.toString)
 }
