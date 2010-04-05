@@ -1,5 +1,8 @@
 package org.purview.qtui
 
+import com.trolltech.qt.core.QDir
+import com.trolltech.qt.core.QObject
+import com.trolltech.qt.core.QSignalMapper
 import com.trolltech.qt.core.Qt
 import com.trolltech.qt.gui.QAction
 import com.trolltech.qt.gui.QApplication
@@ -9,10 +12,14 @@ import com.trolltech.qt.gui.QMainWindow
 import com.trolltech.qt.gui.QMenu
 import com.trolltech.qt.gui.QMenuBar
 import com.trolltech.qt.gui.QMessageBox
+import com.trolltech.qt.gui.QPixmap
 import com.trolltech.qt.gui.QTabWidget
 import com.trolltech.qt.gui.QToolBar
 import java.io.File
 import javax.imageio.ImageIO
+import org.purview.core.analysis.Analyser
+import org.purview.core.data.ImageMatrix
+import org.purview.core.session.SessionUtils
 import org.purview.qtui.meta.ImageSession
 
 object MainWindow extends QMainWindow {
@@ -24,6 +31,7 @@ object MainWindow extends QMainWindow {
 
   addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, AnalysisView)
   addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, ResultsView)
+  private val shallowAnalysers = SessionUtils.createAnalyserInstances[ImageMatrix]
 
   private val tabWidget = new QTabWidget(this) {
     currentChanged.connect(MainWindow.this, "changeSession(int)")
@@ -119,6 +127,20 @@ object MainWindow extends QMainWindow {
     setEnabled(false)
     triggered.connect(MainWindow.this, "zoomOrig()")
   }
+
+  private val analyserMapper = new QSignalMapper(this) {
+    this.mappedQObject.connect(MainWindow.this, "analyserInfoClicked(QObject)")
+  }
+
+  private val analyserActions = for(analyser <- shallowAnalysers) yield
+    new QAction(this) {
+      setIcon(new QIcon("classpath:" + (analyser.iconResource getOrElse "icons/system-run.png")))
+      setText("About \"" + analyser.name + "\"")
+      setToolTip(analyser.description)
+      setData(analyser)
+      analyserMapper.setMapping(this, this)
+      triggered.connect(analyserMapper, "map()")
+    }
   
   private val menuFile = new QMenu(this) {
     setTitle("&File")
@@ -135,6 +157,8 @@ object MainWindow extends QMainWindow {
 
   private val menuHelp = new QMenu(this) {
     setTitle("&Help")
+    analyserActions.foreach(addAction)
+    addSeparator()
     addAction(aboutAction)
     addAction(aboutQtAction)
   }
@@ -251,4 +275,41 @@ object MainWindow extends QMainWindow {
                       "http://www.apache.org/licenses/</a> for more information.")
 
   def showAboutQtDialog() = QMessageBox.aboutQt(this)
+  private def analyserInfoClicked(obj: QObject) = {
+    val analyser = obj.asInstanceOf[QAction].data.asInstanceOf[Analyser[ImageMatrix]]
+
+    val mbText = {
+      <table>
+        <tr>
+          <td><em>Name:</em></td>
+          <td>{analyser.name}</td>
+        </tr>
+        <tr>
+          <td><em>Description:</em></td>
+          <td>{analyser.description}</td>
+        </tr>
+        {
+          analyser.author.map {auth =>
+            <tr>
+              <td><em>Author:</em></td>
+              <td>{auth}</td>
+            </tr>
+          } getOrElse ""
+        }
+        {
+          analyser.version.map {ver =>
+            <tr>
+              <td><em>Version:</em></td>
+              <td>{ver}</td>
+            </tr>
+          } getOrElse ""
+        }
+      </table>
+    }.toString
+    val buttons = new QMessageBox.StandardButtons(QMessageBox.StandardButton.Ok)
+    val messageBox = new QMessageBox(QMessageBox.Icon.NoIcon, "About " + analyser.name, mbText, buttons, this)
+    messageBox.setIconPixmap(new QPixmap("classpath:" + (analyser.iconResource getOrElse "icons/system-run.png"))
+                             .scaled(64, 64, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+    messageBox.exec()
+  }
 }
