@@ -28,6 +28,7 @@ object MainWindow extends QMainWindow {
 
   setWindowTitle("Purview 1.0")
   setWindowIcon(new QIcon("classpath:icons/purview.png"))
+  setMinimumSize(800, 600)
 
   addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, AnalysisView)
   AnalysisView.hide()
