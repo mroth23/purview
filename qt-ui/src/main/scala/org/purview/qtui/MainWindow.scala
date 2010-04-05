@@ -270,11 +270,32 @@ object MainWindow extends QMainWindow {
     tabWidget.currentWidget.asInstanceOf[ImageSessionWidget].configureAnalysers()
   
   def showAboutDialog() =
-    QMessageBox.about(this, "About Purview", "Copyright &copy; 2010 <em>David Flemström</em> and <em>Moritz Roth</em> " +
-                      "under the Apache 2.0 license. Please visit <a href=\"http://www.apache.org/licenses/\">" +
-                      "http://www.apache.org/licenses/</a> for more information.")
+    QMessageBox.about(this, "About Purview", {
+        <div>
+          <h3>About Purview</h3>
+          <p>
+            Purview is an automated image forensics tool, used for detecting digital image forgeries.
+          </p>
+          <p>
+            For more information, access to the source code and information
+            about the project in general, please see
+            <a href="http://github.com/dflemstr/purview">http://github.com/dflemstr/purview</a>
+          </p>
+          <p>
+            Purview is available under the Apache 2.0 license.
+            Please visit
+            <a href="http://www.apache.org/licenses/">http://www.apache.org/licenses/</a>
+            for more information.
+          </p>
+          <p>
+            Copyright &copy; 2010 <em>David Flemström</em> and <em>Moritz Roth</em>
+          </p>
+        </div>
+      }.toString
+    )
 
   def showAboutQtDialog() = QMessageBox.aboutQt(this)
+
   private def analyserInfoClicked(obj: QObject) = {
     val analyser = obj.asInstanceOf[QAction].data.asInstanceOf[Analyser[ImageMatrix]]
 
