@@ -69,6 +69,7 @@ class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDia
                 setOrientation(Qt.Orientation.Horizontal)
                 setGranularity(f.granularity)
                 setDoubleRange(f.min, f.max)
+                setDoubleValue(f.value)
               }
               spinner.valueChanged.connect(slider, "setDoubleValue(double)")
               slider.doubleValueChanged.connect(spinner, "setValue(double)")
@@ -87,6 +88,7 @@ class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDia
               val slider = new QSlider(this) {
                 setOrientation(Qt.Orientation.Horizontal)
                 setRange(i.min, i.max)
+                setValue(i.value)
               }
               spinner.valueChanged.connect(slider, "setValue(int)")
               slider.valueChanged.connect(spinner, "setValue(int)")
