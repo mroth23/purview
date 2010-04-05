@@ -9,6 +9,7 @@ import com.trolltech.qt.gui.QDialogButtonBox
 import com.trolltech.qt.gui.QDoubleSpinBox
 import com.trolltech.qt.gui.QFormLayout
 import com.trolltech.qt.gui.QIcon
+import com.trolltech.qt.gui.QLabel
 import com.trolltech.qt.gui.QPalette
 import com.trolltech.qt.gui.QSpinBox
 import com.trolltech.qt.gui.QToolBox
@@ -72,6 +73,8 @@ class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDia
               settingsCallbacks += spinner -> i
               spinner.valueChanged.connect(settingsMapper, "map()")
               spinner
+            case _ =>
+              new QLabel("<em>Unsupported setting</em>")
           }
           form.addRow(setting.name, widget)
         }
