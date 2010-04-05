@@ -1,7 +1,6 @@
 package org.purview.metadataanalyser
 
 import org.purview.core.analysis.Analyser
-import org.purview.core.analysis.Metadata
 import org.purview.core.data.ImageMatrix
 import org.purview.core.process.Computation
 import org.purview.core.report.Error
@@ -9,7 +8,7 @@ import org.purview.core.report.Message
 import org.purview.core.report.ReportEntry
 import org.purview.core.report.Warning
 
-class AnalyserImplementation extends Analyser[ImageMatrix] with Metadata {
+class AnalyserImplementation extends Analyser[ImageMatrix] {
   val name = "Metadata analyser"
   val description = "Detects suspicious metadata entries in the file of an image"
 

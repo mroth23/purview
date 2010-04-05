@@ -1,13 +1,12 @@
 package org.purview.nearestneighboranalyser
 
 import org.purview.core.analysis.HeatMapImageAnalyser
-import org.purview.core.analysis.Metadata
 import org.purview.core.data.Matrix
 import org.purview.core.process.Computation
 import org.purview.core.report.Warning
 import scala.math._
 
-class AnalyserImplementation extends HeatMapImageAnalyser with Metadata {
+class AnalyserImplementation extends HeatMapImageAnalyser {
   val name = "Nearest Neighbor"
   val description = "Finds nearest neighbor interpolated regions in an image"
 

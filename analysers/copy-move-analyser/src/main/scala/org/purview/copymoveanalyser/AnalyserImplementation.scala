@@ -3,7 +3,6 @@ package org.purview.copymoveanalyser
 import java.awt.geom.Area
 import java.awt.geom.Rectangle2D
 import org.purview.core.analysis.Analyser
-import org.purview.core.analysis.Metadata
 import org.purview.core.analysis.Settings
 import org.purview.core.analysis.settings.IntRangeSetting
 import org.purview.core.data.Color
@@ -25,7 +24,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.math._
 import scala.util.Sorting
 
-class AnalyserImplementation extends Analyser[ImageMatrix] with Metadata with Settings {
+class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
   val name = "Copy-Move"
   val description = "Finds cloned regions in an image"
 

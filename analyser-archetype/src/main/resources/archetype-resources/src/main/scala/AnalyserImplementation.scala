@@ -7,7 +7,7 @@ import org.purview.core.report._
 import org.purview.core.transforms._
 import scala.math._
 
-class AnalyserImplementation extends Analyser[ImageMatrix] with Metadata with Settings {
+class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
   val name = "${artifactId}"
   val description = "The ${artifactId} analyser"
 

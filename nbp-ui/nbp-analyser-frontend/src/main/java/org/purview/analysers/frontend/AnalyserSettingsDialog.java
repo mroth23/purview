@@ -20,7 +20,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.util.NbBundle;
 import org.purview.core.analysis.Analyser;
-import org.purview.core.analysis.Metadata;
 import org.purview.core.analysis.Settings;
 import org.purview.core.analysis.settings.FloatRangeSetting;
 import org.purview.core.analysis.settings.IntRangeSetting;
@@ -95,13 +94,7 @@ public class AnalyserSettingsDialog extends JDialog implements ActionListener, I
 
             box.addItemListener(this);
 
-            //Do we have a name to give the analyser?
-            if (analyser instanceof Metadata) {
-                box.setText(((Metadata) analyser).name());
-            } else {
-                box.setText(NbBundle.getMessage(AnalyserSettingsDialog.class,
-                        "LBL_UnknownAnalyser", ++unknownIndex));
-            }
+            box.setText(analyser.name());
 
             activeAnalysersTab.add(box);
         }
@@ -121,9 +114,7 @@ public class AnalyserSettingsDialog extends JDialog implements ActionListener, I
             if (analysers.get(analyser) && analyser instanceof Settings) {
                 final Settings settingsForAnalyser = (Settings) analyser;
                 final SettingsPanel panel = new SettingsPanel(settingsForAnalyser);
-                final String tabName = (analyser instanceof Metadata)
-                        ? NbBundle.getMessage(AnalyserSettingsDialog.class, "LBL_SettingsFor", ((Metadata) analyser).name())
-                        : NbBundle.getMessage(AnalyserSettingsDialog.class, "LBL_SettingsFor", "?");
+                final String tabName = NbBundle.getMessage(AnalyserSettingsDialog.class, "LBL_SettingsFor", analyser.name());
                 analyserTabs.add(tabName, panel);
             }
         }
@@ -267,7 +258,7 @@ class SettingsPanel extends JPanel implements ChangeListener {
             this.add(control);
             settingCallbacks.put(control, s);
         }
-        
+
         //Lay out our form properly
         SpringUtilities.makeCompactGrid(this, settingFields.length(), 2, 5, 5, 5, 5);
     }

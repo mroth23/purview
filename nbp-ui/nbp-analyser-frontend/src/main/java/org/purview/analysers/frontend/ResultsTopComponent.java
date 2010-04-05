@@ -35,7 +35,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.purview.core.analysis.Analyser;
-import org.purview.core.analysis.Metadata;
 import org.purview.core.data.ImageMatrix;
 import org.purview.core.report.Circle;
 import org.purview.core.report.FreeShape;
@@ -82,16 +81,9 @@ final class ResultsTopComponent extends TopComponent implements TreeSelectionLis
         final DefaultMutableTreeNode rootNode =
                 new DefaultMutableTreeNode(NbBundle.getMessage(ResultsTopComponent.class, "LBL_Report"));
 
-        //TODO: should we sync the "unknown index" with the one from the settings dialog?
-        int unknownAnalyserIdx = 0;
         callbacks = new HashMap<TreeNode, ReportEntry>();
         for (final Analyser<ImageMatrix> analyser : report.keySet()) {
-            //Somehow create a node for the analyser; it's easy if it has a name...
-            //But if it hasn't, assign a number to it and call it "Unknown analyser #"
-            final DefaultMutableTreeNode analyserNode = (analyser instanceof Metadata)
-                    ? new DefaultMutableTreeNode(((Metadata) analyser).name())
-                    : new DefaultMutableTreeNode(NbBundle.getMessage(ResultsTopComponent.class,
-                    "LBL_UnknownAnalyser", ++unknownAnalyserIdx));
+            final DefaultMutableTreeNode analyserNode = new DefaultMutableTreeNode(analyser.name());
             //TODO: add tooltips, etc
 
             for (final ReportEntry entry : report.get(analyser)) {

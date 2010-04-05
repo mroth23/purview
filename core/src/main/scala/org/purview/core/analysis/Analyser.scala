@@ -19,7 +19,7 @@ private[core] object Analyser {
 /**
  * An object that processes something and generates a report.
  */
-abstract class Analyser[@specialized("Int,Float,Boolean") A] extends NotNull {
+abstract class Analyser[@specialized("Int,Float,Boolean") A] extends Metadata with NotNull {
 
   /**
    * Runs this Analyser and generates a report
@@ -64,6 +64,8 @@ abstract class Analyser[@specialized("Int,Float,Boolean") A] extends NotNull {
    * @param status The progress to report; a number between 0 and 1
    */
   protected def progress(progress: Float) = Analyser.statistics.reportSubProgress(progress)
+
+  override def toString = "Analyser(" + name + "," + description + ")"
 }
 
 /**
@@ -77,10 +79,10 @@ trait Metadata {
   val description: String
 
   /** This object's version */
-  val version: String = ""
+  val version: Option[String] = None
 
   /** The creator of this object */
-  val author: String = ""
+  val author: Option[String] = None
 }
 
 /**

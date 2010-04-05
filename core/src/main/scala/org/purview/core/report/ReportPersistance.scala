@@ -11,7 +11,7 @@ import scala.xml.Elem
 object ReportPersistance {
   def encodeReportTree(reportTree: Map[Metadata, Set[ReportEntry]]) = {
     val analysers = for(metadata <- reportTree.keySet) yield
-      (<analyser name={metadata.name} description={metadata.description} author={metadata.author} version={metadata.version}>{
+      (<analyser name={metadata.name} description={metadata.description} author={metadata.author.orNull} version={metadata.version.orNull}>{
             reportTree(metadata).map(encodeReportEntry).toSeq
           }</analyser>)
 
@@ -36,8 +36,8 @@ object ReportPersistance {
         val metadata: Metadata = new Metadata {
           val name = (analyser\"@name").text
           val description = (analyser\"@description").text
-          override val author = (analyser\"@author").text
-          override val version = (analyser\"@version").text
+          override val author = Some((analyser\"@author").text) //TODO: fix null
+          override val version = Some((analyser\"@version").text)
         }
         val entries = ((analyser\"reportentry").partialMap { case e: Elem => decodeReportEntry(e) }).toSet
         (metadata, entries)

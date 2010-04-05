@@ -7,7 +7,6 @@ import javax.imageio.IIOImage
 import javax.imageio.ImageIO
 import javax.imageio.ImageWriteParam
 import org.purview.core.analysis.HeatMapImageAnalyser
-import org.purview.core.analysis.Metadata
 import org.purview.core.analysis.Settings
 import org.purview.core.analysis.settings.FloatRangeSetting
 import org.purview.core.process.Computation
@@ -17,8 +16,7 @@ import org.purview.core.transforms.MatrixToImage
 import scala.math._
 
 class AnalyserImplementation extends HeatMapImageAnalyser
-                                with Settings
-                                with Metadata {
+                                with Settings {
   val name = "Error level analyser"
   val description = "Uses compression errors in JPEG images to find errors"
 

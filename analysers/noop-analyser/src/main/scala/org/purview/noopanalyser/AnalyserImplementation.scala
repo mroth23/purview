@@ -6,7 +6,7 @@ import org.purview.core.process.Computation
 import org.purview.core.report._
 import org.purview.core.transforms._
 
-class AnalyserImplementation extends Analyser[ImageMatrix] with Metadata {
+class AnalyserImplementation extends Analyser[ImageMatrix] {
   val name = "No-Op Analyser"
   val description = "Returns the unmodified input image as its result"
 

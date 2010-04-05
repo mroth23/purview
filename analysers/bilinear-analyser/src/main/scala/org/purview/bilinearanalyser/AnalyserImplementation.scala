@@ -1,12 +1,11 @@
 package org.purview.bilinearanalyser
 
 import org.purview.core.analysis.HeatMapImageAnalyser
-import org.purview.core.analysis.Metadata
 import org.purview.core.process.Computation
 import org.purview.core.report.Warning
 import scala.math._
 
-class AnalyserImplementation extends HeatMapImageAnalyser with Metadata {
+class AnalyserImplementation extends HeatMapImageAnalyser {
   val name = "Bilinear"
   val description = "Finds bilinearly interpolated regions in an image"
 

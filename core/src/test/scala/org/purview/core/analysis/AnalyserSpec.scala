@@ -1,11 +1,7 @@
 package org.purview.core.analysis
 
-import org.purview.core.data.Matrix
-import org.purview.core.data.MutableArrayMatrix
 import org.purview.core.report.Information
 import org.purview.core.report.Message
-import org.purview.core.report.Point
-import org.purview.core.report.Rectangle
 import org.purview.core.report.ReportEntry
 import org.specs.SpecificationWithJUnit
 import scala.util.Random
@@ -16,6 +12,8 @@ class AnalyserSpec extends SpecificationWithJUnit {
   "An analyser" should {
     "be able to generate reports" in {
       val a = new Analyser[Int] {
+        val name = ""
+        val description = ""
         val result = for(i <- input) yield Set[ReportEntry](new ReportEntry with Message {
             val level = Information
             val message = "Analysed " + i

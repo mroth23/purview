@@ -13,12 +13,7 @@ class AnalysisSession[A](analysersToRun: Seq[Analyser[A]], input: A) {
     } yield {
       stats.reportProgress(i * progScale)
       stats.reportSubProgress(0)
-      analyser match {
-        case m: Metadata =>
-          stats.reportAnalyser(m.name)
-        case _ => //No metadata available
-          stats.reportAnalyser("Unknown")
-      }
+      stats.reportAnalyser(analyser.name)
       val res = analyser.analyseWithStats(input)
       res
     }
@@ -26,16 +21,6 @@ class AnalysisSession[A](analysersToRun: Seq[Analyser[A]], input: A) {
     stats.reportProgress(1)
     stats.reportSubProgress(1)
 
-    var i = 0
-
-    Map((analysersToRun partialMap {
-          case m: Metadata => m
-          case analyser =>
-            i += 1
-            new Metadata {
-              val name = "Unknown analyser " + i
-              val description = "Unknown"
-            }
-        } zip results): _*)
+    Map((analysersToRun zip results): _*)
   }
 }
