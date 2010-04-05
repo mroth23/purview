@@ -50,7 +50,8 @@ case class ImageSessionWidget(imageSession: ImageSession) extends QGraphicsView 
   }
 
   def configureAnalysers() {
-    println("TODO: configure analysers") //TODO: configure analysers
+    val diag = new SettingsDialog(imageSession, this)
+    diag.exec()
   }
 
   private def bufferedImageToPixmap(bufferedImage: BufferedImage) = {
