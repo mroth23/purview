@@ -167,7 +167,10 @@ case class ImageSessionWidget(imageSession: ImageSession) extends QGraphicsView 
           None
       }
 
-      graphicsItem.foreach(sessionScene.addItem)
+      graphicsItem.foreach { item =>
+        sessionScene.addItem(item)
+        ImageSessionWidget.this.centerOn(item)
+      }
     }
   }
 
