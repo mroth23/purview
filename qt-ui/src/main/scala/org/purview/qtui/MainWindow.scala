@@ -30,7 +30,9 @@ object MainWindow extends QMainWindow {
   setWindowIcon(new QIcon("classpath:icons/purview.png"))
 
   addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, AnalysisView)
+  AnalysisView.hide()
   addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, ResultsView)
+  ResultsView.hide()
   private val shallowAnalysers = SessionUtils.createAnalyserInstances[ImageMatrix]
 
   private val tabWidget = new QTabWidget(this) {
@@ -251,6 +253,7 @@ object MainWindow extends QMainWindow {
   }
 
   def analyse() = {
+    AnalysisView.show()
     val imgWidget = tabWidget.currentWidget.asInstanceOf[ImageSessionWidget]
     imgWidget.imageSession.analyse()
     imgWidget.imageSession.analysis.foreach(_.finished.connect(this, "refreshResultsView()"))
@@ -259,6 +262,7 @@ object MainWindow extends QMainWindow {
   }
 
   private def refreshResultsView() = {
+    ResultsView.show()
     val imgWidget = tabWidget.currentWidget.asInstanceOf[ImageSessionWidget]
     imgWidget.imageSession.analysis.foreach {a =>
       ResultsView.results = a.results
