@@ -13,6 +13,7 @@ import com.trolltech.qt.gui.QLabel
 import com.trolltech.qt.gui.QLayout
 import com.trolltech.qt.gui.QPalette
 import com.trolltech.qt.gui.QSpinBox
+import com.trolltech.qt.gui.QSlider
 import com.trolltech.qt.gui.QToolBox
 import com.trolltech.qt.gui.QHBoxLayout
 import com.trolltech.qt.gui.QVBoxLayout
@@ -24,6 +25,7 @@ import org.purview.core.analysis.settings.IntRangeSetting
 import org.purview.core.analysis.settings.Setting
 import org.purview.core.data.ImageMatrix
 import org.purview.qtui.meta.ImageSession
+import org.purview.qtui.widgets.QDoubleSlider
 
 class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDialog(parent) {
   setWindowTitle("Configure analysers")
@@ -63,10 +65,18 @@ class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDia
                 setRange(f.min, f.max)
                 setValue(f.value)
               }
+              val slider = new QDoubleSlider(this) {
+                setOrientation(Qt.Orientation.Horizontal)
+                setGranularity(f.granularity)
+                setDoubleRange(f.min, f.max)
+              }
+              spinner.valueChanged.connect(slider, "setDoubleValue(double)")
+              slider.doubleValueChanged.connect(spinner, "setValue(double)")
               settingsMapper.setMapping(spinner, spinner)
               settingsCallbacks += spinner -> f
               spinner.valueChanged.connect(settingsMapper, "map()")
               layout.addWidget(spinner)
+              layout.addWidget(slider)
               Left(layout)
             case i: IntRangeSetting =>
               val layout = new QHBoxLayout(this)
@@ -74,10 +84,17 @@ class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDia
                 setRange(i.min, i.max)
                 setValue(i.value)
               }
+              val slider = new QSlider(this) {
+                setOrientation(Qt.Orientation.Horizontal)
+                setRange(i.min, i.max)
+              }
+              spinner.valueChanged.connect(slider, "setValue(int)")
+              slider.valueChanged.connect(spinner, "setValue(int)")
               settingsMapper.setMapping(spinner, spinner)
               settingsCallbacks += spinner -> i
               spinner.valueChanged.connect(settingsMapper, "map()")
               layout.addWidget(spinner)
+              layout.addWidget(slider)
               Left(layout)
             case _ =>
               Right(new QLabel("<em>Unsupported setting</em>"))
