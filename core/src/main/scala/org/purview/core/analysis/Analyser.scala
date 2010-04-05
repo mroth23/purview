@@ -83,6 +83,9 @@ trait Metadata {
 
   /** The creator of this object */
   val author: Option[String] = None
+
+  /** The path to an icon resource that should be displayed for this object */
+  val iconResource: Option[String] = None
 }
 
 /**

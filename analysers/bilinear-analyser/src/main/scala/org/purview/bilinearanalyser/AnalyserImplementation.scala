@@ -9,6 +9,8 @@ class AnalyserImplementation extends HeatMapImageAnalyser {
   val name = "Bilinear"
   val description = "Finds bilinearly interpolated regions in an image"
 
+  override val iconResource = Some("icons/analysers/bilinear.png")
+
   override val message = "Bilinearly scaled region"
   override val reportLevel = Warning
 

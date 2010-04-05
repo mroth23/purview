@@ -10,6 +10,8 @@ class AnalyserImplementation extends HeatMapImageAnalyser {
   val name = "Nearest Neighbor"
   val description = "Finds nearest neighbor interpolated regions in an image"
 
+  override val iconResource = Some("icons/analysers/nearest-neighbor.png")
+
   override val message = "Nearest neighbor scaled region"
   override val reportLevel = Warning
 

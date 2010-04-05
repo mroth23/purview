@@ -28,6 +28,8 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
   val name = "Copy-Move"
   val description = "Finds cloned regions in an image"
 
+  override val iconResource = Some("icons/analysers/copy-move.png")
+
   val qualitySetting = IntRangeSetting("Quality", 0, 100)
   qualitySetting.value = 80 //default
   val thresholdSetting = IntRangeSetting("Threshold", 1, 1000)
