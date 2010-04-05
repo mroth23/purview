@@ -20,7 +20,7 @@ class AnalyserSpec extends SpecificationWithJUnit {
           })
       }
       a.analyse(42) must not be empty
-      a.analyse(2) collect {
+      a.analyse(2) partialMap {
         case x: Message =>
           x.message must_== "Analysed 2"
       }

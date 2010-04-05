@@ -55,7 +55,7 @@
 
     <properties>
         <java.version>1.5</java.version>
-        <scala.version>2.8.0-SNAPSHOT</scala.version>
+        <scala.version>2.8.0.Beta1</scala.version>
         <netbeans.version>RELEASE68</netbeans.version>
         <lift.version>2.0-scala280-SNAPSHOT</lift.version>
         <ui.brandingToken>purview</ui.brandingToken>
@@ -281,7 +281,7 @@
                             <arg>-target:jvm-${java.version}</arg>
                             <arg>-deprecation</arg>
                             <arg>-Yspecialize</arg>
-                            <arg>-Yinline</arg>
+                            <!--arg>-Yinline</arg-->
                             <arg>-Ytailrecommend</arg>
                             <!--arg>-Ywarn-dead-code</arg-->
                             <!--arg>-Ywarn-shadowing</arg-->

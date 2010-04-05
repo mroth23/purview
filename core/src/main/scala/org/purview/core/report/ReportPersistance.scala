@@ -39,7 +39,7 @@ object ReportPersistance {
           override val author = Some((analyser\"@author").text) //TODO: fix null
           override val version = Some((analyser\"@version").text)
         }
-        val entries = ((analyser\"reportentry") collect { case e: Elem => decodeReportEntry(e) }).toSet
+        val entries = ((analyser\"reportentry") partialMap { case e: Elem => decodeReportEntry(e) }).toSet
         (metadata, entries)
       }).toMap
 
