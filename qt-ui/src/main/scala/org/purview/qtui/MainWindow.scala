@@ -76,7 +76,7 @@ object MainWindow extends QMainWindow {
   }
 
   private val aboutAction = new QAction(this) {
-    setText("&About")
+    setText("&About Purview")
     setIcon(new QIcon("classpath:icons/dialog-information.png"))
     setShortcut("F1")
     triggered.connect(MainWindow.this, "showAboutDialog()")
