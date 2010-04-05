@@ -20,6 +20,7 @@ import com.trolltech.qt.gui.QPainterPath
 import com.trolltech.qt.gui.QPalette
 import com.trolltech.qt.gui.QPen
 import com.trolltech.qt.gui.QPixmap
+import com.trolltech.qt.opengl.QGLWidget
 import java.awt.Shape
 import java.awt.geom.PathIterator
 import java.awt.image.BufferedImage
@@ -39,6 +40,7 @@ case class ImageSessionWidget(imageSession: ImageSession) extends QGraphicsView 
   setWindowTitle(imageSession.imageFile.getName)
   setBackgroundRole(QPalette.ColorRole.Dark)
   setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
+  setViewport(new QGLWidget) //Use OpenGL for drawing
   setInteractive(true)
 
   private val bgBrush = new QBrush(palette.color(QPalette.ColorRole.Mid), Qt.BrushStyle.Dense4Pattern) {
