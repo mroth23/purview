@@ -33,6 +33,7 @@ object MainWindow extends QMainWindow {
   AnalysisView.hide()
   addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, ResultsView)
   ResultsView.hide()
+
   private val shallowAnalysers = SessionUtils.createAnalyserInstances[ImageMatrix]
 
   private val tabWidget = new QTabWidget(this) {
@@ -147,6 +148,8 @@ object MainWindow extends QMainWindow {
   private val menuFile = new QMenu(this) {
     setTitle("&File")
     addAction(openImageAction)
+    addAction(analyseAction)
+    addAction(configureAnalysersAction)
     addSeparator()
     addAction(exitAction)
   }
@@ -155,6 +158,10 @@ object MainWindow extends QMainWindow {
     setTitle("&Window")
     addAction(showAnalysisAction)
     addAction(showResultsAction)
+    addSeparator()
+    addAction(zoomInAction)
+    addAction(zoomOutAction)
+    addAction(zoomOrigAction)
   }
 
   private val menuHelp = new QMenu(this) {
