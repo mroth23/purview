@@ -19,6 +19,7 @@ import java.io.File
 import javax.imageio.ImageIO
 import org.purview.core.analysis.Analyser
 import org.purview.core.data.ImageMatrix
+import org.purview.core.report.ReportEntry
 import org.purview.core.session.SessionUtils
 import org.purview.qtui.meta.ImageSession
 
@@ -212,13 +213,13 @@ object MainWindow extends QMainWindow {
     setFileMode(QFileDialog.FileMode.ExistingFile)
     setNameFilter(ImageIO.getReaderFileSuffixes.mkString("Image files (*.", " *.", ")"))
     setDirectory(QDir.homePath)
-    this.setWindowTitle("Select image file")
   }
 
   def selectImage() = if(fileDiag.exec() != 0) {
     val filename = fileDiag.selectedFiles.get(0)
     val sessionWidget = new ImageSessionWidget(new ImageSession(new File(filename)))
     tabWidget.addTab(sessionWidget, new QIcon("classpath:icons/image-x-generic.png"), sessionWidget.windowTitle)
+    ResultsView.reportEntryChanged = List(sessionWidget.currentReportEntry_=)
     updateToolbar()
   }
 
@@ -227,6 +228,10 @@ object MainWindow extends QMainWindow {
     AnalysisView.analysis = imgWidget.imageSession.analysis
     ResultsView.results = imgWidget.imageSession.analysis.flatMap(_.results)
     imgWidget.imageSession.analysis.foreach(a => ResultsView.results = a.results)
+    imgWidget.currentReportEntry = ResultsView.reportEntry
+    Option(tabWidget.currentWidget.asInstanceOf[ImageSessionWidget]).foreach {w =>
+      ResultsView.reportEntryChanged = List(w.currentReportEntry_=)
+    }
     updateToolbar()
   }
 
@@ -235,6 +240,9 @@ object MainWindow extends QMainWindow {
     AnalysisView.analysis = None
     ResultsView.results = None
     tabWidget.removeTab(tab)
+    Option(tabWidget.currentWidget.asInstanceOf[ImageSessionWidget]).foreach {w =>
+      ResultsView.reportEntryChanged = List(w.currentReportEntry_=)
+    }
     updateToolbar()
   }
 

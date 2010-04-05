@@ -17,7 +17,7 @@ import org.purview.core.report.Warning
 import scala.collection.mutable
 
 object ResultsView extends QDockWidget {
-  val reportEntryChanged = new Signal1[Option[ReportEntry]]
+  var reportEntryChanged: List[Option[ReportEntry] => Any] = Nil
 
   setWindowTitle("Results")
   setWindowIcon(new QIcon("classpath:icons/dialog-ok.png"))
@@ -31,6 +31,14 @@ object ResultsView extends QDockWidget {
   treeWidget.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
   treeWidget.itemSelectionChanged.connect(this, "changeNode()")
   setWidget(treeWidget)
+
+  def reportEntry: Option[ReportEntry] = {
+    val selectedList = treeWidget.selectedItems
+    if(selectedList.size > 0)
+      Option(selectedList.get(0).data(0, Qt.ItemDataRole.UserRole).asInstanceOf[ReportEntry])
+    else
+      None
+  }
 
   private var _results: Option[Map[Metadata, Seq[ReportEntry]]] = None
   def results = _results
@@ -81,8 +89,7 @@ object ResultsView extends QDockWidget {
     val selectedList = treeWidget.selectedItems
     if(selectedList.size > 0) {
       val entry = selectedList.get(0).data(0, Qt.ItemDataRole.UserRole).asInstanceOf[ReportEntry]
-      
-      reportEntryChanged.emit(Option(entry))
+      reportEntryChanged.foreach(_(Option(entry)))
     }
   }
 }
