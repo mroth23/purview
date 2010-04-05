@@ -74,19 +74,27 @@
             </activation>
         </profile>
         <profile>
-            <id>external-qt-linux</id>
-            <activation>
-                <file>
-                    <exists>/usr/lib/libQtCore.so</exists>
-                </file>
-            </activation>
+            <id>external-qt-linux64</id>
             <build>
                 <resources>
                     <resource>
                         <directory>src/main/resources</directory>
                     </resource>
                     <resource>
-                        <directory>src/main/overlays</directory>
+                        <directory>src/main/overlays-linux64</directory>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+        <profile>
+            <id>external-qt-linux32</id>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                    </resource>
+                    <resource>
+                        <directory>src/main/overlays-linux32</directory>
                     </resource>
                 </resources>
             </build>

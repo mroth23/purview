@@ -2,7 +2,6 @@ package org.purview.qtui
 
 import com.trolltech.qt.core.QObject
 import com.trolltech.qt.core.QSignalMapper
-import com.trolltech.qt.core.Qt
 import com.trolltech.qt.gui.QCheckBox
 import com.trolltech.qt.gui.QDialog
 import com.trolltech.qt.gui.QDialogButtonBox

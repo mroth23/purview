@@ -1,0 +1,15 @@
+<qtjambi-deploy system="linux32">
+    <cache key="gcc-20090628-0950" />
+    <library name="lib/libstdc++.so.6" load="yes" />
+    <library name="lib/libqtjambi.so"/>
+    <library name="lib/libcom_trolltech_qt_core.so"/>
+    <library name="lib/libcom_trolltech_qt_gui.so"/>
+    <library name="lib/libcom_trolltech_qt_xml.so"/>
+    <library name="lib/libcom_trolltech_qt_sql.so"/>
+    <library name="lib/libcom_trolltech_qt_svg.so"/>
+    <library name="lib/libcom_trolltech_qt_network.so"/>
+    <library name="lib/libcom_trolltech_qt_opengl.so"/>
+    <library name="lib/libcom_trolltech_qt_phonon.so"/>
+    <library name="lib/libcom_trolltech_qt_webkit.so"/>
+    <library name="lib/libcom_trolltech_qt_xmlpatterns.so"/>
+</qtjambi-deploy>
