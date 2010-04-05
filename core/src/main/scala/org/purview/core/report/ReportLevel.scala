@@ -10,7 +10,7 @@ trait ReportLevel extends NotNull with Serializable {
 trait LevelColor extends ReportLevel {
   def color: Color
 }
-  
+
 object Debug extends ReportLevel
                 with LevelColor {
   val name = "Debug"

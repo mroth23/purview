@@ -18,7 +18,7 @@ object App {
     setAutoFillBackground(false)
     setWindowTitle("Loading Purview 1.0")
     resize(pixmap.width, pixmap.height)
-    
+
     override def paintEvent(e: QPaintEvent) = {
       val g = new QPainter(this)
       g.setCompositionMode(QPainter.CompositionMode.CompositionMode_DestinationOver)
@@ -31,7 +31,7 @@ object App {
 
   def main(args: Array[String]) {
     QApplication.initialize(args)
-    
+
     splash.show()
     val eventLoop = QEventLoop.fromNativePointer(QApplication.instance.nativePointer)
     eventLoop.processEvents()

@@ -6,7 +6,7 @@ import com.trolltech.qt.gui.QWidget
 class QDoubleSlider(parent: QWidget = null) extends QSlider(parent) {
   private var min, max, v = 0d
   private var gran = 100
-  
+
   val doubleValueChanged = new Signal1[Double]
 
   valueChanged.connect(this, "calculateDoubleValue(int)")

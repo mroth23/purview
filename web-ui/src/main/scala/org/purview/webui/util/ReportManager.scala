@@ -13,7 +13,7 @@ object ReportManager extends Logger {
     reports.get(id) getOrElse Map.empty
 
   def reportExists(id: String): Boolean = reports contains id
-  
+
   def makeId = Helpers.randomString(16)
 
   def saveReport(report: Map[Metadata, Set[ReportEntry]], id: String = makeId): Option[String] = {

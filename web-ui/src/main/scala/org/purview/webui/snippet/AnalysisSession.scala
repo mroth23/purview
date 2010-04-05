@@ -86,7 +86,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
             info(ex.getStackTraceString)
             S.redirectTo("/image")
         }
-        
+
         info("Started a new image session for image " + fileParam.fileName)
         inputImageName.set(Some(fileParam.fileName))
         inputImage.set(Some(image))
@@ -112,7 +112,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
         }
         AnalysisSession.analysers.set(analysers)
         activeAnalysers.set(analysers.map((_, false)).toMap)
-        
+
         S.redirectTo("/analysers")
     }
 
@@ -140,14 +140,14 @@ class AnalysisSession extends DispatchSnippet with Logger {
           activeAnalysers.set(activeAnalysers.is + (analyser -> value))
           redraw()
         }
-        
+
         bind("entry", entryTemplate,
              "enabled" -> SHtml.ajaxCheckbox(activeAnalysers(analyser), doSetEnabled),
              "name" -> name,
              "description" -> descr,
              "settings" -> (if(activeAnalysers(analyser)) makeSettings(analyser) _ else (x: NodeSeq) => NodeSeq.Empty))
       }
-  
+
     def makeSettings(analyser: Analyser[ImageMatrix])(settingsTemplate: NodeSeq): NodeSeq = analyser match {
       case settings: Settings =>
         bind("settings", settingsTemplate,
@@ -196,10 +196,10 @@ class AnalysisSession extends DispatchSnippet with Logger {
         SHtml.swappable(<span>{floatRange.value.toString}</span>,
                         SHtml.ajaxText(floatRange.value.toString, x => {doChangeValue(x); redraw()}))
     }
-    
+
     def doSubmit() = {
       import org.purview.core
-      
+
       val s = new AnalysisActor
       running.set(true)
       stats.set(Some(s))
@@ -230,7 +230,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
     }
 
     def redraw() = SetHtml(id, inner())
-    
+
     def inner(): NodeSeq = { //TODO: only update necessary parts!
       bind("analyserList", analyserListTemplate,
            "entry" -> makeEntry _,
@@ -242,7 +242,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
   def resultsView(resultsViewTemplate: NodeSeq): NodeSeq = {
     val id = randomString(16)
     val image = inputImage.is.get.load()
-    
+
     val res = (if(results.is.isEmpty) {
         val r = ReportManager.loadReport(resultsKey.is)
         if(r.isEmpty) info("Loaded empty results tree")
@@ -274,7 +274,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
           case m: Message => (_: NodeSeq) => Text(m.message)
           case _ => (n: NodeSeq) => n
         }
-        
+
         bind("reportEntry", reportEntryTemplate,
              "message" -> ((n: NodeSeq) => SHtml.a(() => {currentReportEntry = Some(entry); redraw}, labelResolver(n))))
       }.toList
@@ -289,7 +289,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
 
         val context = SVGGeneratorContext.createDefault(document)
         //context.setImageHandler(SVGImageHandler)
-            
+
         val g = new SVGGraphics2D(context, false)
         try {
           g.drawImage(image, 0, 0, null)
@@ -308,7 +308,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
         <div style={"width: " + image.getWidth + "px; height: " + image.getHeight + "px;"}>{svg}</div>
       case _ => viewTemplate
     }
-    
+
     def redraw() = SetHtml(id, inner())
 
     def inner() = {

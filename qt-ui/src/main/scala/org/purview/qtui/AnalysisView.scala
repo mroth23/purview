@@ -18,7 +18,7 @@ object AnalysisView extends QDockWidget {
   private val contents = new QWidget
 
   private val statusLabel = new QLabel(contents)
-  
+
   private val analyserLabel = new QLabel(contents)
 
   private val progressBar = new QProgressBar(contents) {
@@ -81,7 +81,7 @@ object AnalysisView extends QDockWidget {
 
   private def setProgress(progress: Float) =
     progressBar.setValue((progress * 100).toInt)
-  
+
   private def setSubProgress(progress: Float) =
     subProgressBar.setValue((progress * 100).toInt)
 

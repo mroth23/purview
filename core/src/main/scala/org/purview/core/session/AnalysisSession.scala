@@ -17,7 +17,7 @@ class AnalysisSession[A](analysersToRun: Seq[Analyser[A]], input: A) {
       val res = analyser.analyseWithStats(input)
       res
     }
-    
+
     stats.reportProgress(1)
     stats.reportSubProgress(1)
 

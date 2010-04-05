@@ -32,7 +32,7 @@ class Boot {
                If(() => ReportManager.reportExists(AnalysisSession.resultsKey.is), "No results to display"))) ::
       Menu(Loc("PurviewAbout", List("about"), "About Purview")) ::
       Nil
-      
+
     LiftRules.setSiteMap(SiteMap(entries: _*))
 
     LiftRules.dispatch.append {

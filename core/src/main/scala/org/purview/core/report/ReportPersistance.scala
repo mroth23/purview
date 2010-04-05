@@ -17,7 +17,7 @@ object ReportPersistance {
 
     <purviewreport version="1.0">{analysers}</purviewreport>
   }
-  
+
   def encodeReportEntry(entry: ReportEntry) = {
     val out = new ByteArrayOutputStream
     try {

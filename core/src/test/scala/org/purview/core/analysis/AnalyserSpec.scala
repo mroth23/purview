@@ -8,7 +8,7 @@ import scala.util.Random
 
 class AnalyserSpec extends SpecificationWithJUnit {
   def randomNumbers(max: Int): Stream[Int] = Stream.cons(Random.nextInt(max), randomNumbers(max))
-  
+
   "An analyser" should {
     "be able to generate reports" in {
       val a = new Analyser[Int] {

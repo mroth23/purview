@@ -18,7 +18,7 @@ class AnalyserImplementation extends HeatMapImageAnalyser {
     status("Performing a vertical amplitude scan")
 
     @inline def between(x: Int, low: Int, high: Int) = if(x < low) low else if(x > high) high else x
-    
+
     for((x, y, color) <- matrix.cells) yield
       if(y < matrix.height - 1)
         matrix(x, y + 1).weight - color.weight
@@ -34,7 +34,7 @@ class AnalyserImplementation extends HeatMapImageAnalyser {
     else
       0f
   }
-  
+
   private val gaussian5BlurKernel = Array[Float](0.0080f, 0.016f, 0.024f, 0.032f, 0.04f, 0.032f,  0.024f, 0.016f, 0.0080f)
 
   override val convolve: Computation[Option[Array[Float]]] = Computation(Some(gaussian5BlurKernel))

@@ -11,7 +11,7 @@ case class LinearConvolve(kernel: Array[Float]) extends Function1[Matrix[Float],
 
     val kLen = kernel.length
     val kCenter = (kLen - 1) / 2
-    
+
     val rWidth = input.width
     val rHeight = input.height
 
@@ -32,7 +32,7 @@ case class LinearConvolve(kernel: Array[Float]) extends Function1[Matrix[Float],
       }
       x += 1
     }
-    
+
     x = 0
     while(x < rWidth) {
       var y = 0

@@ -12,7 +12,7 @@ case class Convolve(kernel: Matrix[Float]) extends Function1[Matrix[Float], Matr
     val kHeight = kernel.height
     val kCenterX = (kWidth - 1) / 2
     val kCenterY = (kHeight - 1) / 2
-    
+
     val rWidth = input.width
     val rHeight = input.height
 

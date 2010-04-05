@@ -126,7 +126,7 @@ trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] exten
             queue.enqueue((minus, pos._2 - 1))
           if(pos._2 < height - 1 && free(minus, pos._2 + 1))
             queue.enqueue((minus, pos._2 + 1))
-          
+
           minus += 1
         }
       }

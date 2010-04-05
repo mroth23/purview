@@ -8,7 +8,7 @@ import org.purview.core.session.SessionUtils
 
 case class ImageSession(imageFile: File) extends QSignalEmitter {
   val reportEntryChanged = new Signal1[Option[ReportEntry]]
-  
+
   val matrix = ImageMatrix.fromFile(imageFile)
   var analysers = SessionUtils.createAnalyserInstances[ImageMatrix]().map(_ -> true).toMap
 
@@ -21,7 +21,7 @@ case class ImageSession(imageFile: File) extends QSignalEmitter {
 
   @volatile private var _analysis: Option[Analysis] = None
   def analysis = _analysis
-  
+
   def analyse() = {
     val anas = analysers.keySet.filter(analysers).toSeq
     val a = new Analysis(matrix, imageFile.getName, anas)

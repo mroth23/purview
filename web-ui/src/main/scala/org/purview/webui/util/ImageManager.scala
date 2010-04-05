@@ -41,7 +41,7 @@ object ImageManager extends FileManager {
     val id = Helpers.randomString(16)
     val file = createFile(id)
     file.createNewFile()
-    
+
     val in = Channels.newChannel(stream)
     val out = new FileOutputStream(file).getChannel
     try {

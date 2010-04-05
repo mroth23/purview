@@ -44,12 +44,12 @@ class AnalysisActor extends AnalysisStats with LiftActor {
     listeners.foreach(_ ! AnalysisActor.SubProgressUpdate(progress))
     lastSubProgress = progress
   }
-  
+
   override def reportAnalyser(analyser: String) = if(analyser != lastAnalyser) {
     listeners.foreach(_ ! AnalysisActor.AnalyserUpdate(analyser))
     lastAnalyser = analyser
   }
-  
+
   override def reportStatus(status: String) = if(status != lastStatus) {
     listeners.foreach(_ ! AnalysisActor.StatusUpdate(status))
     lastStatus = status

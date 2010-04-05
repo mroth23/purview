@@ -31,11 +31,11 @@ class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDia
   setWindowTitle("Configure analysers")
   setWindowIcon(new QIcon("classpath:icons/configure.png"))
   setFixedSize(500, 300)
-  
+
   private val orderedAnalysers = session.analysers.keySet.toSeq.sortWith(_.name < _.name)
 
   private var toggleAnalyserCallbacks: Map[QObject, Analyser[ImageMatrix]] = Map.empty
-  
+
   private val toggleAnalyserMapper = new QSignalMapper(this) {
     mappedQObject.connect(SettingsDialog.this, "toggleAnalyser(QObject)")
   }
@@ -146,12 +146,12 @@ class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDia
     button(QDialogButtonBox.StandardButton.Ok).setDefault(true)
     accepted.connect(SettingsDialog.this, "accept()")
   }
-  
+
   private val vBoxLayout = new QVBoxLayout(this) {
     addWidget(toolBox)
     addWidget(buttons)
   }
-  
+
   setLayout(vBoxLayout)
 
   private def toggleAnalyser(sender: QObject) = {

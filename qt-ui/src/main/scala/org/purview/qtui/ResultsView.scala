@@ -51,7 +51,7 @@ object ResultsView extends QDockWidget {
         analyserItem.setText(0, analyser.name)
 
         analyserItem.setIcon(0, new QIcon("classpath:icons/dialog-ok.png"))
-        
+
         analyserItem.setData(0, Qt.ItemDataRole.ToolTipRole, analyser.description)
         for(entry <- report(analyser)) {
           val reportItem = new QTreeWidgetItem(analyserItem)

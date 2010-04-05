@@ -43,7 +43,7 @@ trait Matrix[@specialized("Int,Float,Boolean") +A] extends NotNull {
       }
       y += 1
     }
-    
+
     result
   }
 
@@ -51,7 +51,7 @@ trait Matrix[@specialized("Int,Float,Boolean") +A] extends NotNull {
     val data = new GenericArray[(A, B)](width * height)
     require(this.width == that.width, "Matrices must have the same width")
     require(this.height == that.height, "Matrices must have the same height")
-    
+
     var y = 0
     while(y < height) {
       Analyser.statistics.reportSubProgress(y.toFloat / height)
@@ -62,7 +62,7 @@ trait Matrix[@specialized("Int,Float,Boolean") +A] extends NotNull {
       }
       y += 1
     }
-    
+
     new ImmutableMatrix(width, height, data)
   }
 

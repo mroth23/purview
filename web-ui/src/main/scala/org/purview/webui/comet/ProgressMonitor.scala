@@ -11,7 +11,7 @@ import scala.xml.Text
 class ProgressMonitor extends CometActor {
   val id = randomString(16)
   val contextPath = S.hostAndPath
-  
+
   private var lastProgress = 0
   private var lastSubProgress = 0
   private var lastStatus = ""
@@ -22,7 +22,7 @@ class ProgressMonitor extends CometActor {
   def fillPercent(percent: Int) =
     <div style={"width: " + percent + "%"} class={"ui-progressbar-value ui-widget-header " +
                                                   (if(percent > 99) "ui-corner-all" else "ui-corner-left")}></div>
-  
+
   def mainBar(percent: Int) = <div id={id + "-main"} class="ui-progressbar ui-widget ui-widget-content ui-corner-all">{fillPercent(percent)}</div>
 
   def subBar(percent: Int) = <div id={id + "-sub"} class="ui-progressbar ui-widget ui-widget-content ui-corner-all">{fillPercent(percent)}</div>
