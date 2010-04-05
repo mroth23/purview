@@ -86,7 +86,7 @@ object MainWindow extends QMainWindow {
     setShortcut("F1")
     triggered.connect(MainWindow.this, "showAboutDialog()")
   }
-  
+
   private val aboutQtAction = new QAction(this) {
     setText("About &Qt")
     setIcon(new QIcon("classpath:icons/qt.png"))
@@ -146,7 +146,7 @@ object MainWindow extends QMainWindow {
       analyserMapper.setMapping(this, this)
       triggered.connect(analyserMapper, "map()")
     }
-  
+
   private val menuFile = new QMenu(this) {
     setTitle("&File")
     addAction(openImageAction)
@@ -179,7 +179,7 @@ object MainWindow extends QMainWindow {
     setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
     addAction(openImageAction)
   }
-  
+
   private val analysisToolBar = new QToolBar(this) {
     setFloatable(true)
     setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
@@ -224,13 +224,12 @@ object MainWindow extends QMainWindow {
   }
 
   private def changeSession(sessionNr: Int) = {
-    val imgWidget = tabWidget.widget(sessionNr).asInstanceOf[ImageSessionWidget]
-    AnalysisView.analysis = imgWidget.imageSession.analysis
-    ResultsView.results = imgWidget.imageSession.analysis.flatMap(_.results)
-    imgWidget.imageSession.analysis.foreach(a => ResultsView.results = a.results)
-    imgWidget.currentReportEntry = ResultsView.reportEntry
     Option(tabWidget.currentWidget.asInstanceOf[ImageSessionWidget]).foreach {w =>
       ResultsView.reportEntryChanged = List(w.currentReportEntry_=)
+      AnalysisView.analysis = w.imageSession.analysis
+      ResultsView.results = w.imageSession.analysis.flatMap(_.results)
+      w.imageSession.analysis.foreach(a => ResultsView.results = a.results)
+      w.currentReportEntry = ResultsView.reportEntry
     }
     updateToolbar()
   }
@@ -288,7 +287,7 @@ object MainWindow extends QMainWindow {
 
   def configureAnalysers() =
     tabWidget.currentWidget.asInstanceOf[ImageSessionWidget].configureAnalysers()
-  
+
   def showAboutDialog() =
     QMessageBox.about(this, "About Purview", {
         <div>
