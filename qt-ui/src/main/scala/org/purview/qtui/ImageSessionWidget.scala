@@ -16,6 +16,7 @@ import com.trolltech.qt.gui.QGraphicsRectItem
 import com.trolltech.qt.gui.QGraphicsScene
 import com.trolltech.qt.gui.QGraphicsView
 import com.trolltech.qt.gui.QImage
+import com.trolltech.qt.gui.QPainter
 import com.trolltech.qt.gui.QPainterPath
 import com.trolltech.qt.gui.QPalette
 import com.trolltech.qt.gui.QPen
@@ -41,6 +42,8 @@ case class ImageSessionWidget(imageSession: ImageSession) extends QGraphicsView 
   setBackgroundRole(QPalette.ColorRole.Dark)
   setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
   setViewport(new QGLWidget) //Use OpenGL for drawing
+  setRenderHint(QPainter.RenderHint.Antialiasing)
+  setRenderHint(QPainter.RenderHint.HighQualityAntialiasing)
   setInteractive(true)
 
   private val bgBrush = new QBrush(palette.color(QPalette.ColorRole.Mid), Qt.BrushStyle.Dense4Pattern) {

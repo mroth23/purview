@@ -8,6 +8,7 @@ import com.trolltech.qt.gui.QPaintEvent
 import com.trolltech.qt.gui.QPainter
 import com.trolltech.qt.gui.QPixmap
 import com.trolltech.qt.gui.QWidget
+import com.trolltech.qt.opengl.QGLFormat
 
 object App {
   private class SplashScreen(pixmap: QPixmap) extends QWidget {
@@ -34,6 +35,10 @@ object App {
     splash.show()
     val eventLoop = QEventLoop.fromNativePointer(QApplication.instance.nativePointer)
     eventLoop.processEvents()
+
+    val format = QGLFormat.defaultFormat
+    format.setSampleBuffers(true)
+    QGLFormat.setDefaultFormat(format)
 
     MainWindow.show()
     val t = new QTimer()
