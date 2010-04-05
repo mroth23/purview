@@ -280,7 +280,7 @@
                         <args>
                             <arg>-target:jvm-${java.version}</arg>
                             <arg>-deprecation</arg>
-                            <arg>-Yspecialize</arg>
+                            <!--arg>-Yspecialize</arg-->
                             <!--arg>-Yinline</arg-->
                             <arg>-Ytailrecommend</arg>
                             <!--arg>-Ywarn-dead-code</arg-->
