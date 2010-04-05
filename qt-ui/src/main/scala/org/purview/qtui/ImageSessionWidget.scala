@@ -1,5 +1,8 @@
 package org.purview.qtui
 
+import com.trolltech.qt.core.Qt
+import com.trolltech.qt.gui.QBrush
+import com.trolltech.qt.gui.QColor
 import com.trolltech.qt.gui.QGraphicsItem
 import com.trolltech.qt.gui.QGraphicsScene
 import com.trolltech.qt.gui.QGraphicsView
@@ -17,6 +20,12 @@ case class ImageSessionWidget(imageSession: ImageSession) extends QGraphicsView 
   setViewport(new QGLWidget) //OpenGL drawing acceleration
   setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
   setInteractive(true)
+
+  private val bgBrush = new QBrush(palette.color(QPalette.ColorRole.Mid), Qt.BrushStyle.Dense4Pattern) {
+    setTransform(transform.scale(16, 16))
+  }
+  
+  setBackgroundBrush(bgBrush)
 
   private val pixmap = { //Convert the image to a QPixmap for performance's sake
     val tmp = new QPixmap(imageSession.imageFile.getAbsolutePath)
