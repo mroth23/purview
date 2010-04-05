@@ -13,6 +13,9 @@
 
     <properties>
         <main.class>org.purview.qtui.App</main.class>
+        <exclude.qt>unspecified</exclude.qt>
+        <exclude.phonon>unspecified</exclude.phonon>
+        <exclude.plugins>unspecified</exclude.plugins>
     </properties>
 
     <dependencies>
@@ -85,6 +88,11 @@
                     </resource>
                 </resources>
             </build>
+            <properties>
+                <exclude.qt>lib/libQt*.so.*</exclude.qt>
+                <exclude.phonon>lib/libphonon.so.*</exclude.phonon>
+                <exclude.plugins>lib/libphonon.so.*</exclude.plugins>
+            </properties>
         </profile>
         <profile>
             <id>external-qt-linux32</id>
@@ -98,6 +106,11 @@
                     </resource>
                 </resources>
             </build>
+            <properties>
+                <exclude.qt>lib/libQt*.so.*</exclude.qt>
+                <exclude.phonon>lib/libphonon.so.*</exclude.phonon>
+                <exclude.plugins>lib/libphonon.so.*</exclude.plugins>
+            </properties>
         </profile>
     </profiles>
 
@@ -136,9 +149,9 @@
                                 <filter>
                                     <artifact>net.sf.qtjambi:qtjambi-platform-linux*</artifact>
                                     <excludes>
-                                        <exclude>lib/libQt*.so.*</exclude>
-                                        <exclude>lib/libphonon.so.*</exclude>
-                                        <exclude>plugins/**</exclude>
+                                        <exclude>${exclude.qt}</exclude>
+                                        <exclude>${exclude.phonon}</exclude>
+                                        <exclude>${exclude.plugins}</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
