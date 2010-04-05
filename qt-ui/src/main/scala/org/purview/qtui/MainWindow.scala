@@ -25,7 +25,7 @@ object MainWindow extends QMainWindow {
   addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, AnalysisView)
   addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, ResultsView)
 
-  val tabWidget = new QTabWidget(this) {
+  private val tabWidget = new QTabWidget(this) {
     currentChanged.connect(MainWindow.this, "changeSession(int)")
     tabCloseRequested.connect(MainWindow.this, "updateToolbar()")
     tabCloseRequested.connect(MainWindow.this, "closeTab(int)")
@@ -33,21 +33,21 @@ object MainWindow extends QMainWindow {
     setTabsClosable(true)
   }
 
-  val openImageAction = new QAction(this) {
+  private val openImageAction = new QAction(this) {
     setText("&Open Image...")
     setShortcut("Ctrl+N")
     setIcon(new QIcon("classpath:icons/folder-image.png"))
     triggered.connect(MainWindow.this, "selectImage()")
   }
 
-  val exitAction = new QAction(this) {
+  private val exitAction = new QAction(this) {
     setText("E&xit")
     setShortcut("Ctrl+X")
     setIcon(new QIcon("classpath:icons/dialog-error.png"))
     triggered.connect(QApplication.instance(), "quit()")
   }
 
-  val showAnalysisAction = new QAction(this) {
+  private val showAnalysisAction = new QAction(this) {
     setText("&Analysis window")
     setShortcut("Ctrl+S")
     setIcon(AnalysisView.windowIcon)
@@ -57,7 +57,7 @@ object MainWindow extends QMainWindow {
     AnalysisView.visibilityChanged.connect(this: QAction /*!!*/, "setChecked(boolean)")
   }
 
-  val showResultsAction = new QAction(this) {
+  private val showResultsAction = new QAction(this) {
     setText("&Results window")
     setShortcut("Ctrl+R")
     setIcon(ResultsView.windowIcon)
@@ -67,7 +67,7 @@ object MainWindow extends QMainWindow {
     ResultsView.visibilityChanged.connect(this: QAction /*!!*/, "setChecked(boolean)")
   }
 
-  val aboutAction = new QAction(this) {
+  private val aboutAction = new QAction(this) {
     setText("&About")
     setIcon(new QIcon("classpath:icons/dialog-information.png"))
     setShortcut("F1")
@@ -80,7 +80,7 @@ object MainWindow extends QMainWindow {
     triggered.connect(MainWindow.this, "showAboutQtDialog()")
   }
 
-  val analyseAction = new QAction(this) {
+  private val analyseAction = new QAction(this) {
     setText("Analyse &image")
     setIcon(new QIcon("classpath:icons/system-run.png"))
     setShortcut("Ctrl+A")
@@ -88,7 +88,7 @@ object MainWindow extends QMainWindow {
     triggered.connect(MainWindow.this, "analyse()")
   }
 
-  val configureAnalysersAction = new QAction(this) {
+  private val configureAnalysersAction = new QAction(this) {
     setText("&Configure analysers...")
     setIcon(new QIcon("classpath:icons/configure.png"))
     setShortcut("Ctrl+C")
@@ -96,7 +96,7 @@ object MainWindow extends QMainWindow {
     triggered.connect(MainWindow.this, "configureAnalysers()")
   }
 
-  val zoomInAction = new QAction(this) {
+  private val zoomInAction = new QAction(this) {
     setText("Zoom &in")
     setShortcut("Ctrl++")
     setIcon(new QIcon("classpath:icons/zoom-in.png"))
@@ -104,7 +104,7 @@ object MainWindow extends QMainWindow {
     triggered.connect(MainWindow.this, "zoomIn()")
   }
 
-  val zoomOutAction = new QAction(this) {
+  private val zoomOutAction = new QAction(this) {
     setText("Zoom &out")
     setShortcut("Ctrl+-")
     setIcon(new QIcon("classpath:icons/zoom-out.png"))
@@ -112,7 +112,7 @@ object MainWindow extends QMainWindow {
     triggered.connect(MainWindow.this, "zoomOut()")
   }
 
-  val zoomOrigAction = new QAction(this) {
+  private val zoomOrigAction = new QAction(this) {
     setText("O&riginal size")
     setShortcut("Ctrl+0")
     setIcon(new QIcon("classpath:icons/zoom-original.png"))
@@ -120,39 +120,39 @@ object MainWindow extends QMainWindow {
     triggered.connect(MainWindow.this, "zoomOrig()")
   }
   
-  val menuFile = new QMenu(this) {
+  private val menuFile = new QMenu(this) {
     setTitle("&File")
     addAction(openImageAction)
     addSeparator()
     addAction(exitAction)
   }
 
-  val menuWindow = new QMenu(this) {
+  private val menuWindow = new QMenu(this) {
     setTitle("&Window")
     addAction(showAnalysisAction)
     addAction(showResultsAction)
   }
 
-  val menuHelp = new QMenu(this) {
+  private val menuHelp = new QMenu(this) {
     setTitle("&Help")
     addAction(aboutAction)
     addAction(aboutQtAction)
   }
 
-  val mainToolBar = new QToolBar(this) {
+  private val mainToolBar = new QToolBar(this) {
     setFloatable(true)
     setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
     addAction(openImageAction)
   }
   
-  val analysisToolBar = new QToolBar(this) {
+  private val analysisToolBar = new QToolBar(this) {
     setFloatable(true)
     setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
     addAction(analyseAction)
     addAction(configureAnalysersAction)
   }
 
-  val interactToolBar = new QToolBar(this) {
+  private val interactToolBar = new QToolBar(this) {
     setFloatable(true)
     setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
     addAction(zoomInAction)
@@ -161,7 +161,7 @@ object MainWindow extends QMainWindow {
     addAction(zoomOrigAction)
   }
 
-  val menu = new QMenuBar(this) {
+  private val menu = new QMenuBar(this) {
     addMenu(menuFile)
     addMenu(menuWindow)
     addMenu(menuHelp)
@@ -174,9 +174,12 @@ object MainWindow extends QMainWindow {
   setCentralWidget(tabWidget)
   setMenuBar(menu)
 
-  val fileDiag = new QFileDialog(this)
-  fileDiag.setFileMode(QFileDialog.FileMode.ExistingFile)
-  fileDiag.setNameFilter(ImageIO.getReaderFileSuffixes.mkString("Image files (*.", " *.", ")"))
+  private val fileDiag = new QFileDialog(this) {
+    setFileMode(QFileDialog.FileMode.ExistingFile)
+    setNameFilter(ImageIO.getReaderFileSuffixes.mkString("Image files (*.", " *.", ")"))
+    setDirectory(QDir.homePath)
+    this.setWindowTitle("Select image file")
+  }
 
   def selectImage() = if(fileDiag.exec() != 0) {
     val filename = fileDiag.selectedFiles.get(0)
@@ -185,7 +188,7 @@ object MainWindow extends QMainWindow {
     updateToolbar()
   }
 
-  def changeSession(sessionNr: Int) = {
+  private def changeSession(sessionNr: Int) = {
     val imgWidget = tabWidget.widget(sessionNr).asInstanceOf[ImageSessionWidget]
     AnalysisView.analysis = imgWidget.imageSession.analysis
     ResultsView.results = imgWidget.imageSession.analysis.flatMap(_.results)
@@ -210,7 +213,7 @@ object MainWindow extends QMainWindow {
   def zoomOrig() =
     tabWidget.currentWidget.asInstanceOf[ImageSessionWidget].resetTransform()
 
-  def updateToolbar() {
+  private def updateToolbar() {
     val enabled = (tabWidget.currentIndex > -1)
     val imgWidget = Option(tabWidget.currentWidget.asInstanceOf[ImageSessionWidget])
     analyseAction.setEnabled(imgWidget flatMap (_.imageSession.analysis) match {
@@ -231,7 +234,7 @@ object MainWindow extends QMainWindow {
     updateToolbar()
   }
 
-  def refreshResultsView() = {
+  private def refreshResultsView() = {
     val imgWidget = tabWidget.currentWidget.asInstanceOf[ImageSessionWidget]
     imgWidget.imageSession.analysis.foreach {a =>
       ResultsView.results = a.results
