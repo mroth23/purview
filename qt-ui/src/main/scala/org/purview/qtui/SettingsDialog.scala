@@ -2,6 +2,7 @@ package org.purview.qtui
 
 import com.trolltech.qt.core.QObject
 import com.trolltech.qt.core.QSignalMapper
+import com.trolltech.qt.core.Qt
 import com.trolltech.qt.gui.QCheckBox
 import com.trolltech.qt.gui.QDialog
 import com.trolltech.qt.gui.QDialogButtonBox
@@ -9,9 +10,11 @@ import com.trolltech.qt.gui.QDoubleSpinBox
 import com.trolltech.qt.gui.QFormLayout
 import com.trolltech.qt.gui.QIcon
 import com.trolltech.qt.gui.QLabel
+import com.trolltech.qt.gui.QLayout
 import com.trolltech.qt.gui.QPalette
 import com.trolltech.qt.gui.QSpinBox
 import com.trolltech.qt.gui.QToolBox
+import com.trolltech.qt.gui.QHBoxLayout
 import com.trolltech.qt.gui.QVBoxLayout
 import com.trolltech.qt.gui.QWidget
 import org.purview.core.analysis.Analyser
@@ -51,8 +54,9 @@ class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDia
         setPalette(p)
         val form = new QFormLayout(this)
         for(setting <- analyserWithSettings.settings) {
-          val widget = setting match {
+          val entry: Either[QLayout, QWidget] = setting match {
             case f: FloatRangeSetting =>
+              val layout = new QHBoxLayout(this)
               val spinner = new QDoubleSpinBox(this) {
                 setDecimals(math.floor(math.log(f.granularity) / math.log(10)).toInt)
                 setSingleStep(1 / f.granularity)
@@ -62,8 +66,10 @@ class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDia
               settingsMapper.setMapping(spinner, spinner)
               settingsCallbacks += spinner -> f
               spinner.valueChanged.connect(settingsMapper, "map()")
-              spinner
+              layout.addWidget(spinner)
+              Left(layout)
             case i: IntRangeSetting =>
+              val layout = new QHBoxLayout(this)
               val spinner = new QSpinBox(this) {
                 setRange(i.min, i.max)
                 setValue(i.value)
@@ -71,11 +77,17 @@ class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDia
               settingsMapper.setMapping(spinner, spinner)
               settingsCallbacks += spinner -> i
               spinner.valueChanged.connect(settingsMapper, "map()")
-              spinner
+              layout.addWidget(spinner)
+              Left(layout)
             case _ =>
-              new QLabel("<em>Unsupported setting</em>")
+              Right(new QLabel("<em>Unsupported setting</em>"))
           }
-          form.addRow(setting.name, widget)
+          entry match {
+            case Right(widget) =>
+              form.addRow(setting.name, widget)
+            case Left(layout) =>
+              form.addRow(setting.name, layout)
+          }
         }
         setLayout(form)
       }
