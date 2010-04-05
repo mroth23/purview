@@ -73,6 +73,12 @@ object MainWindow extends QMainWindow {
     setShortcut("F1")
     triggered.connect(MainWindow.this, "showAboutDialog()")
   }
+  
+  private val aboutQtAction = new QAction(this) {
+    setText("About &Qt")
+    setIcon(new QIcon("classpath:icons/qt.png"))
+    triggered.connect(MainWindow.this, "showAboutQtDialog()")
+  }
 
   val analyseAction = new QAction(this) {
     setText("Analyse &image")
@@ -130,6 +136,7 @@ object MainWindow extends QMainWindow {
   val menuHelp = new QMenu(this) {
     setTitle("&Help")
     addAction(aboutAction)
+    addAction(aboutQtAction)
   }
 
   val mainToolBar = new QToolBar(this) {
@@ -239,4 +246,6 @@ object MainWindow extends QMainWindow {
     QMessageBox.about(this, "About Purview", "Copyright &copy; 2010 <em>David Flemström</em> and <em>Moritz Roth</em> " +
                       "under the Apache 2.0 license. Please visit <a href=\"http://www.apache.org/licenses/\">" +
                       "http://www.apache.org/licenses/</a> for more information.")
+
+  def showAboutQtDialog() = QMessageBox.aboutQt(this)
 }
