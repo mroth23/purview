@@ -41,7 +41,7 @@ class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDia
     mappedQObject.connect(SettingsDialog.this, "changeSetting(QObject)")
   }
 
-  val analyserPages: Map[Analyser[ImageMatrix], QWidget] = orderedAnalysers partialMap {
+  val analyserPages: Map[Analyser[ImageMatrix], QWidget] = orderedAnalysers collect {
     case analyserWithSettings: Settings =>
       val page = new QWidget {
         val p = palette
@@ -54,7 +54,7 @@ class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDia
           val widget = setting match {
             case f: FloatRangeSetting =>
               val spinner = new QDoubleSpinBox(this) {
-                setDecimals(Math.floor(Math.log(f.granularity) / Math.log(10)).toInt)
+                setDecimals(math.floor(math.log(f.granularity) / math.log(10)).toInt)
                 setSingleStep(1 / f.granularity)
                 setRange(f.min, f.max)
                 setValue(f.value)

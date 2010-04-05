@@ -49,13 +49,13 @@
         <module>analysers</module>
         <module>nbp-ui</module>
         <module>analyser-archetype</module>
-        <module>web-ui</module>
+        <!--module>web-ui</module--><!--TODO: re-enable when Lift works with 2.8.0-SNAPSHOT or later -->
         <module>qt-ui</module>
     </modules>
 
     <properties>
         <java.version>1.5</java.version>
-        <scala.version>2.8.0.Beta1</scala.version>
+        <scala.version>2.8.0-SNAPSHOT</scala.version>
         <netbeans.version>RELEASE68</netbeans.version>
         <lift.version>2.0-scala280-SNAPSHOT</lift.version>
         <ui.brandingToken>purview</ui.brandingToken>
@@ -280,9 +280,9 @@
                         <args>
                             <arg>-target:jvm-${java.version}</arg>
                             <arg>-deprecation</arg>
-                            <!--arg>-Yspecialize</arg-->
-                            <!--arg>-Yinline</arg-->
-                            <!--arg>-Ytailrecommend</arg-->
+                            <arg>-Yspecialize</arg>
+                            <arg>-Yinline</arg>
+                            <arg>-Ytailrecommend</arg>
                             <!--arg>-Ywarn-dead-code</arg-->
                             <!--arg>-Ywarn-shadowing</arg-->
                             <!--arg>-Xstrict-warnings</arg-->

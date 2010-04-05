@@ -47,7 +47,7 @@ object Color {
     override def toAWTColor = AWTColor.white
     override def toRGB = AWTColor.white.getRGB
   }
-  
+
   val LightGray = new Color(1, 0.75f, 0.75f, 0.75f) {
     override def toHTML = "lightgray"
     override def toAWTColor = AWTColor.lightGray
@@ -104,21 +104,21 @@ object Color {
 }
 
 class Color(val a: Float, val r: Float, val g: Float, val b: Float) extends Product with NotNull {
-  @inline def alpha = a
-  @inline def red = r
-  @inline def green = g
-  @inline def blue = b
+  @inline final def alpha = a
+  @inline final def red = r
+  @inline final def green = g
+  @inline final def blue = b
 
-  @inline def alphaByte = mkByte(a * 255 toInt)
-  @inline def redByte   = mkByte(r * 255 toInt)
-  @inline def greenByte = mkByte(g * 255 toInt)
-  @inline def blueByte  = mkByte(b * 255 toInt)
-  
-  @inline def toTuple = (a, r, g, b)
-  @inline def toAWTColor = new AWTColor(r, g, b, a)
-  @inline def toRGB = alphaByte << 24 | redByte << 16 | greenByte << 8 | blueByte
+  final def alphaByte = mkByte(a * 255 toInt)
+  final def redByte   = mkByte(r * 255 toInt)
+  final def greenByte = mkByte(g * 255 toInt)
+  final def blueByte  = mkByte(b * 255 toInt)
+
+  @inline final def toTuple = (a, r, g, b)
+  def toAWTColor = new AWTColor(r, g, b, a)
+  def toRGB = alphaByte << 24 | redByte << 16 | greenByte << 8 | blueByte
   def toHTML = '#' + padHex(redByte) + padHex(greenByte) + padHex(blueByte)
-  
+
   def +(that: Color) = Color(this.a + that.a, this.r + that.r, this.g + that.g, this.b + that.b)
   def -(that: Color) = Color(this.a - that.a, this.r - that.r, this.g - that.g, this.b - that.b)
   def *(that: Color) = Color(this.a * that.a, this.r * that.r, this.g * that.g, this.b * that.b)
@@ -128,7 +128,7 @@ class Color(val a: Float, val r: Float, val g: Float, val b: Float) extends Prod
 
   def abs = Color(a.abs, r.abs, g.abs, b.abs)
 
-  def weight = sqrt(a * a + r * r + g * g + b * b).toFloat
+  @inline final def weight = sqrt(a * a + r * r + g * g + b * b).toFloat
 
   @inline private def padHex(x: Int) = {
     val hex = Integer.toHexString(x)

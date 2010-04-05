@@ -33,12 +33,12 @@ trait Computation[@specialized("Int,Float,Boolean") A] {
       def calculateValue(session: Computation.Session): B = f(Computation.this.value(session))
     }
   
-  @inline final def >-[B](f: A => B) = map(f)
+  final def >-[B](f: A => B) = map(f)
 
   def flatMap[B](f: A => Computation[B]): Computation[B] =
     new Computation[B] {
       def calculateValue(session: Computation.Session): B = f(Computation.this.value(session)).value(session)
     }
 
-  @inline final def >>=[B](f: A => Computation[B]) = flatMap(f)
+  final def >>=[B](f: A => Computation[B]) = flatMap(f)
 }
