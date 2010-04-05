@@ -75,6 +75,7 @@ case class ImageSessionWidget(imageSession: ImageSession) extends QGraphicsView 
   srcPen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
 
   val arrowPen = new QPen(QColor.white, 2)
+  arrowPen.setJoinStyle(Qt.PenJoinStyle.MiterJoin)
   val arrowBrush = new QBrush(QColor.white)
 
   var _currentReportEntry: Option[ReportEntry] = None
