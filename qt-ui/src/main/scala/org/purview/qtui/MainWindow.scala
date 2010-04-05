@@ -260,7 +260,7 @@ object MainWindow extends QMainWindow {
     val imgWidget = Option(tabWidget.currentWidget.asInstanceOf[ImageSessionWidget])
     analyseAction.setEnabled(imgWidget flatMap (_.imageSession.analysis) match {
         case Some(analysis) => analysis.results.isDefined
-        case None => true
+        case None => enabled
       })
     configureAnalysersAction.setEnabled(enabled)
     zoomInAction.setEnabled(enabled)
