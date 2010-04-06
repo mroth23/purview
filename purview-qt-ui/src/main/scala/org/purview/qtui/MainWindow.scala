@@ -19,7 +19,6 @@ import java.io.File
 import javax.imageio.ImageIO
 import org.purview.core.analysis.Analyser
 import org.purview.core.data.ImageMatrix
-import org.purview.core.report.ReportEntry
 import org.purview.core.session.SessionUtils
 import org.purview.qtui.meta.ImageSession
 
@@ -54,8 +53,8 @@ object MainWindow extends QMainWindow {
   }
 
   private val exitAction = new QAction(this) {
-    setText("E&xit")
-    setShortcut("Ctrl+X")
+    setText("&Quit Purview")
+    setShortcut("Ctrl+Q")
     setIcon(new QIcon("classpath:icons/dialog-error.png"))
     triggered.connect(QApplication.instance(), "quit()")
   }
@@ -65,7 +64,7 @@ object MainWindow extends QMainWindow {
     setShortcut("Ctrl+S")
     setIcon(AnalysisView.windowIcon)
     setCheckable(true)
-    setChecked(true)
+    setChecked(false)
     toggled.connect(AnalysisView, "setVisible(boolean)")
     AnalysisView.visibilityChanged.connect(this: QAction /*!!*/, "setChecked(boolean)")
   }
@@ -75,20 +74,20 @@ object MainWindow extends QMainWindow {
     setShortcut("Ctrl+R")
     setIcon(ResultsView.windowIcon)
     setCheckable(true)
-    setChecked(true)
+    setChecked(false)
     toggled.connect(ResultsView, "setVisible(boolean)")
     ResultsView.visibilityChanged.connect(this: QAction /*!!*/, "setChecked(boolean)")
   }
 
   private val aboutAction = new QAction(this) {
-    setText("&About Purview")
+    setText("&About Purview...")
     setIcon(new QIcon("classpath:icons/dialog-information.png"))
     setShortcut("F1")
     triggered.connect(MainWindow.this, "showAboutDialog()")
   }
 
   private val aboutQtAction = new QAction(this) {
-    setText("About &Qt")
+    setText("About &Qt...")
     setIcon(new QIcon("classpath:icons/qt.png"))
     triggered.connect(MainWindow.this, "showAboutQtDialog()")
   }
@@ -134,13 +133,13 @@ object MainWindow extends QMainWindow {
   }
 
   private val analyserMapper = new QSignalMapper(this) {
-    this.mappedQObject.connect(MainWindow.this, "analyserInfoClicked(QObject)")
+    mappedQObject.connect(MainWindow.this, "analyserInfoClicked(QObject)")
   }
 
   private val analyserActions = for(analyser <- shallowAnalysers) yield
     new QAction(this) {
       setIcon(new QIcon("classpath:" + (analyser.iconResource getOrElse "icons/system-run.png")))
-      setText("About \"" + analyser.name + "\"")
+      setText("About \"" + analyser.name + "\"...")
       setToolTip(analyser.description)
       setData(analyser)
       analyserMapper.setMapping(this, this)
@@ -202,6 +201,12 @@ object MainWindow extends QMainWindow {
     addMenu(menuHelp)
   }
 
+  private val fileDiag = new QFileDialog(this)
+  //Don't subclass QFileDialog; we won't get native-looking dialogs then!
+  fileDiag.setFileMode(QFileDialog.FileMode.ExistingFile)
+  fileDiag.setNameFilter(ImageIO.getReaderFileSuffixes.mkString("Image files (*.", " *.", ")"))
+  fileDiag.setDirectory(QDir.homePath)
+
   addToolBar(mainToolBar)
   addToolBar(analysisToolBar)
   addToolBar(interactToolBar)
@@ -209,40 +214,23 @@ object MainWindow extends QMainWindow {
   setCentralWidget(tabWidget)
   setMenuBar(menu)
 
-  private val fileDiag = new QFileDialog(this) {
-    setFileMode(QFileDialog.FileMode.ExistingFile)
-    setNameFilter(ImageIO.getReaderFileSuffixes.mkString("Image files (*.", " *.", ")"))
-    setDirectory(QDir.homePath)
-  }
-
   def selectImage() = if(fileDiag.exec() != 0) {
     val filename = fileDiag.selectedFiles.get(0)
     val sessionWidget = new ImageSessionWidget(new ImageSession(new File(filename)))
     tabWidget.addTab(sessionWidget, new QIcon("classpath:icons/image-x-generic.png"), sessionWidget.windowTitle)
-    ResultsView.reportEntryChanged = List(sessionWidget.currentReportEntry_=)
     updateToolbar()
   }
 
   private def changeSession(sessionNr: Int) = {
-    Option(tabWidget.currentWidget.asInstanceOf[ImageSessionWidget]).foreach {w =>
-      ResultsView.reportEntryChanged = List(w.currentReportEntry_=)
-      AnalysisView.analysis = w.imageSession.analysis
-      ResultsView.results = w.imageSession.analysis.flatMap(_.results)
-      w.imageSession.analysis.foreach(a => ResultsView.results = a.results)
-      w.currentReportEntry = ResultsView.reportEntry
-    }
+    val ana = Option(tabWidget.currentWidget.asInstanceOf[ImageSessionWidget]) flatMap {_.imageSession.analysis}
+    AnalysisView.analysis = ana
+    ResultsView.analysis = ana
     updateToolbar()
   }
 
   def closeTab(tab: Int) = {
     tabWidget.widget(tab).close()
-    AnalysisView.analysis = None
-    ResultsView.results = None
     tabWidget.removeTab(tab)
-    Option(tabWidget.currentWidget.asInstanceOf[ImageSessionWidget]).foreach {w =>
-      ResultsView.reportEntryChanged = List(w.currentReportEntry_=)
-    }
-    updateToolbar()
   }
 
   def zoomIn() =
@@ -270,7 +258,7 @@ object MainWindow extends QMainWindow {
   def analyse() = {
     AnalysisView.show()
     val imgWidget = tabWidget.currentWidget.asInstanceOf[ImageSessionWidget]
-    imgWidget.imageSession.analyse()
+    imgWidget.analyse()
     imgWidget.imageSession.analysis.foreach(_.finished.connect(this, "refreshResultsView()"))
     AnalysisView.analysis = imgWidget.imageSession.analysis
     updateToolbar()
@@ -278,9 +266,9 @@ object MainWindow extends QMainWindow {
 
   private def refreshResultsView() = {
     ResultsView.show()
-    val imgWidget = tabWidget.currentWidget.asInstanceOf[ImageSessionWidget]
-    imgWidget.imageSession.analysis.foreach {a =>
-      ResultsView.results = a.results
+    val imgWidget = Option(tabWidget.currentWidget.asInstanceOf[ImageSessionWidget])
+    ResultsView.analysis = imgWidget.flatMap(_.imageSession.analysis)
+    ResultsView.analysis.foreach {a =>
       a.finished.disconnect(this)
     }
   }
@@ -347,7 +335,7 @@ object MainWindow extends QMainWindow {
       </table>
     }.toString
     val buttons = new QMessageBox.StandardButtons(QMessageBox.StandardButton.Ok)
-    val messageBox = new QMessageBox(QMessageBox.Icon.NoIcon, "About " + analyser.name, mbText, buttons, this)
+    val messageBox = new QMessageBox(QMessageBox.Icon.NoIcon, "About \"" + analyser.name + "\"", mbText, buttons, this)
     messageBox.setIconPixmap(new QPixmap("classpath:" + (analyser.iconResource getOrElse "icons/system-run.png"))
                              .scaled(64, 64, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
     messageBox.exec()

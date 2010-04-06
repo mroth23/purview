@@ -14,82 +14,65 @@ import org.purview.core.report.Information
 import org.purview.core.report.Message
 import org.purview.core.report.ReportEntry
 import org.purview.core.report.Warning
+import org.purview.qtui.meta.Analysis
 import scala.collection.mutable
 
 object ResultsView extends QDockWidget {
-  var reportEntryChanged: List[Option[ReportEntry] => Any] = Nil
-
   setWindowTitle("Results")
   setWindowIcon(new QIcon("classpath:icons/dialog-ok.png"))
   setAllowedAreas(Qt.DockWidgetArea.LeftDockWidgetArea, Qt.DockWidgetArea.RightDockWidgetArea)
 
-  private val treeWidget = new QTreeWidget(this)
-  treeWidget.setColumnCount(1)
-  treeWidget.setAlternatingRowColors(true)
-  treeWidget.setAnimated(true)
-  treeWidget.setHeaderHidden(true)
-  treeWidget.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-  treeWidget.itemSelectionChanged.connect(this, "changeNode()")
-  setWidget(treeWidget)
+  private val treeForResults = new mutable.WeakHashMap[Option[Map[Metadata, Seq[ReportEntry]]], QTreeWidget]
+  treeForResults(None) = mkTree(None, None)
+  setWidget(treeForResults(None))
 
-  def reportEntry: Option[ReportEntry] = {
-    val selectedList = treeWidget.selectedItems
-    if(selectedList.size > 0)
-      Option(selectedList.get(0).data(0, Qt.ItemDataRole.UserRole).asInstanceOf[ReportEntry])
-    else
-      None
+  private var _analysis: Option[Analysis] = None
+  def analysis = _analysis
+  def analysis_=(maybeAnalysis: Option[Analysis]) = {
+    val maybeResults = maybeAnalysis.flatMap(_.results)
+    setWidget(treeForResults.getOrElseUpdate(maybeResults,
+                                             mkTree(maybeResults, maybeAnalysis)))
+    _analysis = maybeAnalysis
   }
 
-  private var _results: Option[Map[Metadata, Seq[ReportEntry]]] = None
-  def results = _results
-  def results_=(maybeResults: Option[Map[Metadata, Seq[ReportEntry]]]) = {
-    treeWidget.clear()
+  private def mkTree(report: Option[Map[Metadata, Seq[ReportEntry]]], analysis: Option[Analysis]) = new QTreeWidget(this) {
+    setColumnCount(1)
+    setAlternatingRowColors(true)
+    setAnimated(true)
+    setHeaderHidden(true)
+    setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+    report.foreach(mkTreeItem)
+    itemSelectionChanged.connect(this, "changeNode()")
 
-    def mkTree(report: Map[Metadata, Seq[ReportEntry]]) =
+    def mkTreeItem(report: Map[Metadata, Seq[ReportEntry]]) =
       for(analyser <- report.keySet.toSeq.sortWith(_.name < _.name)) yield {
-        val analyserItem = new QTreeWidgetItem(treeWidget)
-        analyserItem.setText(0, analyser.name)
-
-        analyserItem.setIcon(0, new QIcon("classpath:icons/dialog-ok.png"))
-
-        analyserItem.setData(0, Qt.ItemDataRole.ToolTipRole, analyser.description)
+        val analyserItem = new QTreeWidgetItem(this) {
+          setText(0, analyser.name)
+          setIcon(0, new QIcon("classpath:icons/dialog-ok.png"))
+          setData(0, Qt.ItemDataRole.ToolTipRole, analyser.description)
+        }
         for(entry <- report(analyser)) {
-          val reportItem = new QTreeWidgetItem(analyserItem)
-          reportItem.setData(0, Qt.ItemDataRole.ToolTipRole, entry.level.name)
-          reportItem.setData(0, Qt.ItemDataRole.UserRole, entry)
-          entry match {
-            case m: Message =>
-              reportItem.setText(0, m.message)
-            case _ =>
-              reportItem.setText(0, "?")
-          }
-          entry.level match {
-            case Debug =>
-              reportItem.setIcon(0, new QIcon("classpath:icons/security-high.png"))
-            case Information =>
-              reportItem.setIcon(0, new QIcon("classpath:icons/dialog-information.png"))
-            case Warning =>
-              reportItem.setIcon(0, new QIcon("classpath:icons/dialog-warning.png"))
-            case Error =>
-              reportItem.setIcon(0, new QIcon("classpath:icons/dialog-error.png"))
-            case Critical =>
-              reportItem.setIcon(0, new QIcon("classpath:icons/security-low.png"))
-            case _ =>
-              reportItem.setIcon(0, new QIcon("classpath:icons/security-medium.png"))
+          val reportItem = new QTreeWidgetItem(analyserItem) {
+            setData(0, Qt.ItemDataRole.ToolTipRole, entry.level.name)
+            setData(0, Qt.ItemDataRole.UserRole, entry)
+            entry match {
+              case m: Message =>  setText(0, m.message)
+              case _ =>           setText(0, "?")
+            }
+            entry.level match {
+              case Debug =>       setIcon(0, new QIcon("classpath:icons/security-high.png"))
+              case Information => setIcon(0, new QIcon("classpath:icons/dialog-information.png"))
+              case Warning =>     setIcon(0, new QIcon("classpath:icons/dialog-warning.png"))
+              case Error =>       setIcon(0, new QIcon("classpath:icons/dialog-error.png"))
+              case Critical =>    setIcon(0, new QIcon("classpath:icons/security-low.png"))
+              case _ =>           setIcon(0, new QIcon("classpath:icons/security-medium.png"))
+            }
           }
         }
-        analyserItem
+        addTopLevelItem(analyserItem)
       }
 
-    for (report <- maybeResults)
-      mkTree(report).foreach(treeWidget.addTopLevelItem)
-  }
-
-  private def changeNode() {
-    val selectedList = treeWidget.selectedItems
-    if(selectedList.size > 0) {
-      val entry = selectedList.get(0).data(0, Qt.ItemDataRole.UserRole).asInstanceOf[ReportEntry]
-      reportEntryChanged.foreach(_(Option(entry)))
-    }
+    def changeNode() = if(selectedItems.size > 0)
+      analysis.foreach(_.changeReportEntry(Option(selectedItems.get(0).data(0, Qt.ItemDataRole.UserRole).asInstanceOf[ReportEntry])))
   }
 }

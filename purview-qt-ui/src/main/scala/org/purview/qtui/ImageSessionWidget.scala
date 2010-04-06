@@ -66,6 +66,11 @@ case class ImageSessionWidget(imageSession: ImageSession) extends QGraphicsView 
 
   private var graphicsItem: Option[QGraphicsItemInterface] = None
 
+  def analyse() = {
+    imageSession.analyse()
+    imageSession.analysis.foreach(_.reportEntryChanged ::= currentReportEntry_=)
+  }
+
   val srcColor = QColor.blue
   val transpSrcColor = srcColor.clone
   transpSrcColor.setAlphaF(srcColor.alphaF / 2)

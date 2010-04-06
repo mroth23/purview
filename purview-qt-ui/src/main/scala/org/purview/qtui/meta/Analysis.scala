@@ -28,7 +28,6 @@ case class Analysis(matrix: ImageMatrix, name: String, analysers: Seq[Analyser[I
   def hasFinished = _done
   val finished = new Signal0
 
-
   @volatile private var _done = false
   @volatile private var _results: Option[Map[Metadata, Seq[ReportEntry]]] = None
   def results = _results
@@ -82,4 +81,9 @@ case class Analysis(matrix: ImageMatrix, name: String, analysers: Seq[Analyser[I
     _done = true
     finished.emit()
   }
+
+  var reportEntryChanged: List[Option[ReportEntry] => Any] = Nil
+
+  def changeReportEntry(reportEntry: Option[ReportEntry]) =
+    reportEntryChanged.foreach(_(reportEntry))
 }
