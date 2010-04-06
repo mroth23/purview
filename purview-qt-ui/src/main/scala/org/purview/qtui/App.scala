@@ -16,7 +16,7 @@ object App {
     setWindowFlags(Qt.WindowType.SplashScreen)
     setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
     setAutoFillBackground(false)
-    setWindowTitle("Loading Purview 1.0")
+    setWindowTitle("Loading Purview 1.1-SNAPSHOT")
     resize(pixmap.width, pixmap.height)
 
     override def paintEvent(e: QPaintEvent) = {
