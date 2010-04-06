@@ -1,5 +1,6 @@
 package org.purview.qtui
 
+import com.trolltech.qt.core.QCoreApplication
 import com.trolltech.qt.core.QEventLoop
 import com.trolltech.qt.core.QTimer
 import com.trolltech.qt.core.Qt
@@ -33,8 +34,7 @@ object App {
     QApplication.initialize(args)
 
     splash.show()
-    val eventLoop = QEventLoop.fromNativePointer(QApplication.instance.nativePointer)
-    eventLoop.processEvents()
+    QCoreApplication.processEvents()
 
     val format = QGLFormat.defaultFormat
     format.setSampleBuffers(true)
