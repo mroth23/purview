@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.purview</groupId>
         <artifactId>purview-nbp-ui</artifactId>
-        <version>1.0</version>
+        <version>1.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>purview-nbp-application</artifactId>
