@@ -82,7 +82,7 @@ case class ImageSessionWidget(imageSession: ImageSession) extends QGraphicsView 
   arrowPen.setJoinStyle(Qt.PenJoinStyle.MiterJoin)
   val arrowBrush = new QBrush(QColor.white)
 
-  var _currentReportEntry: Option[ReportEntry] = None
+  private var _currentReportEntry: Option[ReportEntry] = None
   def currentReportEntry = _currentReportEntry
   def currentReportEntry_=(reportEntry: Option[ReportEntry]) = {
     _currentReportEntry = reportEntry
