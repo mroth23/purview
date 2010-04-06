@@ -1,0 +1,21 @@
+<lift:surround with="default" at="content">
+    <p>
+        Please select an image below to use for this analysis session.
+    </p>
+    <lift:AnalysisSession.create form="post" multipart="true">
+        <table>
+            <tfoot>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td><create:submit>Start session</create:submit></td>
+                </tr>
+            </tfoot>
+            <tbody>
+                <tr>
+                    <td>Image</td>
+                    <td><create:image/></td>
+                </tr>
+            </tbody>
+        </table>
+    </lift:AnalysisSession.create>
+</lift:surround>
