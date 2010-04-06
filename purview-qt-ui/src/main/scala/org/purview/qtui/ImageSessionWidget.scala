@@ -46,9 +46,8 @@ case class ImageSessionWidget(imageSession: ImageSession) extends QGraphicsView 
   setRenderHint(QPainter.RenderHint.HighQualityAntialiasing)
   setInteractive(true)
 
-  private val bgBrush = new QBrush(palette.color(QPalette.ColorRole.Mid), Qt.BrushStyle.Dense4Pattern) {
-    setTransform(transform.scale(16, 16))
-  }
+  private val bgBrush = new QBrush(palette.color(QPalette.ColorRole.Mid), Qt.BrushStyle.Dense4Pattern)
+  bgBrush.setTransform(transform.scale(16, 16))
 
   setBackgroundBrush(bgBrush)
 
