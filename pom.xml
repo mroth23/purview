@@ -45,12 +45,12 @@
     </scm>
 
     <modules>
-        <module>core</module>
-        <module>analysers</module>
-        <module>nbp-ui</module>
-        <module>analyser-archetype</module>
-        <!--module>web-ui</module--><!--TODO: re-enable when Lift works with 2.8.0-SNAPSHOT or later -->
-        <module>qt-ui</module>
+        <module>purview-core</module>
+        <module>purview-analysers</module>
+        <module>purview-nbp-ui</module>
+        <module>purview-analyser-archetype</module>
+        <!--module>purview-web-ui</module--><!--TODO: re-enable when Lift works with 2.8.0-SNAPSHOT or later -->
+        <module>purview-qt-ui</module>
     </modules>
 
     <properties>
