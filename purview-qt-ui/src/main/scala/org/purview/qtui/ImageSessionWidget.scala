@@ -46,9 +46,8 @@ case class ImageSessionWidget(imageSession: ImageSession) extends QGraphicsView 
   setRenderHint(QPainter.RenderHint.HighQualityAntialiasing)
   setInteractive(true)
 
-  private val bgBrush = new QBrush(palette.color(QPalette.ColorRole.Mid), Qt.BrushStyle.Dense4Pattern) {
-    setTransform(transform.scale(16, 16))
-  }
+  private val bgBrush = new QBrush(palette.color(QPalette.ColorRole.Mid), Qt.BrushStyle.Dense4Pattern)
+  bgBrush.setTransform(transform.scale(16, 16))
 
   setBackgroundBrush(bgBrush)
 
@@ -83,7 +82,7 @@ case class ImageSessionWidget(imageSession: ImageSession) extends QGraphicsView 
   arrowPen.setJoinStyle(Qt.PenJoinStyle.MiterJoin)
   val arrowBrush = new QBrush(QColor.white)
 
-  var _currentReportEntry: Option[ReportEntry] = None
+  private var _currentReportEntry: Option[ReportEntry] = None
   def currentReportEntry = _currentReportEntry
   def currentReportEntry_=(reportEntry: Option[ReportEntry]) = {
     _currentReportEntry = reportEntry
@@ -174,7 +173,7 @@ case class ImageSessionWidget(imageSession: ImageSession) extends QGraphicsView 
 
       graphicsItem.foreach { item =>
         sessionScene.addItem(item)
-        ImageSessionWidget.this.centerOn(item)
+        ImageSessionWidget.this.ensureVisible(item, 16, 16)
       }
     }
   }
