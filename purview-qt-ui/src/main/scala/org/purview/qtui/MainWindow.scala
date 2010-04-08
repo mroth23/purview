@@ -1,8 +1,6 @@
 package org.purview.qtui
 
 import com.trolltech.qt.core.QDir
-import com.trolltech.qt.core.QObject
-import com.trolltech.qt.core.QSignalMapper
 import com.trolltech.qt.core.Qt
 import com.trolltech.qt.gui.QAction
 import com.trolltech.qt.gui.QApplication
@@ -35,21 +33,52 @@ object MainWindow extends QMainWindow {
   addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, ResultsView)
   ResultsView.hide()
 
+  //A simple helper method for modifying something when it's constructed
+  private def construct[A](what: A)(constructionBody: A => Any) = {
+    constructionBody(what)
+    what
+  }
+
   private val shallowAnalysers = SessionUtils.createAnalyserInstances[ImageMatrix]
 
+  private val fileDiag = construct(new QFileDialog(this)) { dialog =>
+    dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+    dialog.setNameFilter(ImageIO.getReaderFileSuffixes.mkString("Image files (*.", " *.", ")"))
+    dialog.setDirectory(QDir.homePath)
+  }
+
   private val tabWidget = new QTabWidget(this) {
-    currentChanged.connect(MainWindow.this, "changeSession(int)")
+    currentChanged.connect(this, "changeSession(int)")
+    tabCloseRequested.connect(this, "closeTab(int)")
     tabCloseRequested.connect(MainWindow.this, "updateToolbar()")
-    tabCloseRequested.connect(MainWindow.this, "closeTab(int)")
     setDocumentMode(true)
     setTabsClosable(true)
+
+    private def changeSession(sessionNr: Int) = {
+      val ana = Option(currentWidget.asInstanceOf[ImageSessionWidget]) flatMap {_.imageSession.analysis}
+      AnalysisView.analysis = ana
+      ResultsView.analysis = ana
+      updateToolbar()
+    }
+
+    def closeTab(tab: Int) = {
+      widget(tab).close()
+      removeTab(tab)
+    }
   }
 
   private val openImageAction = new QAction(this) {
     setText("&Open Image...")
     setShortcut("Ctrl+N")
     setIcon(new QIcon("classpath:icons/folder-image.png"))
-    triggered.connect(MainWindow.this, "selectImage()")
+    triggered.connect(this, "selectImage()")
+
+    private def selectImage() = if(fileDiag.exec() != 0) {
+      val filename = fileDiag.selectedFiles.get(0)
+      val sessionWidget = new ImageSessionWidget(new ImageSession(new File(filename)))
+      tabWidget.addTab(sessionWidget, new QIcon("classpath:icons/image-x-generic.png"), sessionWidget.windowTitle)
+      updateToolbar()
+    }
   }
 
   private val exitAction = new QAction(this) {
@@ -83,13 +112,15 @@ object MainWindow extends QMainWindow {
     setText("&About Purview...")
     setIcon(new QIcon("classpath:icons/dialog-information.png"))
     setShortcut("F1")
-    triggered.connect(MainWindow.this, "showAboutDialog()")
+    triggered.connect(this, "showAboutDialog()")
+    private def showAboutDialog() = QMessageBox.about(MainWindow.this, "About Purview", MainWindowTemplates.aboutText)
   }
 
   private val aboutQtAction = new QAction(this) {
     setText("About &Qt...")
     setIcon(new QIcon("classpath:icons/qt.png"))
-    triggered.connect(MainWindow.this, "showAboutQtDialog()")
+    triggered.connect(this, "showAboutQtDialog()")
+    private def showAboutQtDialog() = QMessageBox.aboutQt(MainWindow.this)
   }
 
   private val analyseAction = new QAction(this) {
@@ -97,7 +128,23 @@ object MainWindow extends QMainWindow {
     setIcon(new QIcon("classpath:icons/system-run.png"))
     setShortcut("Ctrl+A")
     setEnabled(false)
-    triggered.connect(MainWindow.this, "analyse()")
+    triggered.connect(this, "analyse()")
+    private def analyse() = {
+      AnalysisView.show()
+      val imgWidget = tabWidget.currentWidget.asInstanceOf[ImageSessionWidget]
+      imgWidget.analyse()
+      imgWidget.imageSession.analysis.foreach(_.finished.connect(this, "refreshResultsView()"))
+      AnalysisView.analysis = imgWidget.imageSession.analysis
+      updateToolbar()
+    }
+    private def refreshResultsView() = {
+      ResultsView.show()
+      val imgWidget = Option(tabWidget.currentWidget.asInstanceOf[ImageSessionWidget])
+      ResultsView.analysis = imgWidget.flatMap(_.imageSession.analysis)
+      ResultsView.analysis.foreach {a =>
+        a.finished.disconnect(this)
+      }
+    }
   }
 
   private val configureAnalysersAction = new QAction(this) {
@@ -105,7 +152,8 @@ object MainWindow extends QMainWindow {
     setIcon(new QIcon("classpath:icons/configure.png"))
     setShortcut("Ctrl+C")
     setEnabled(false)
-    triggered.connect(MainWindow.this, "configureAnalysers()")
+    triggered.connect(this, "configureAnalysers()")
+    private def configureAnalysers() = tabWidget.currentWidget.asInstanceOf[ImageSessionWidget].configureAnalysers()
   }
 
   private val zoomInAction = new QAction(this) {
@@ -113,7 +161,8 @@ object MainWindow extends QMainWindow {
     setShortcut("Ctrl++")
     setIcon(new QIcon("classpath:icons/zoom-in.png"))
     setEnabled(false)
-    triggered.connect(MainWindow.this, "zoomIn()")
+    triggered.connect(this, "zoomIn()")
+    def zoomIn() = tabWidget.currentWidget.asInstanceOf[ImageSessionWidget].scale(1.25, 1.25)
   }
 
   private val zoomOutAction = new QAction(this) {
@@ -121,7 +170,8 @@ object MainWindow extends QMainWindow {
     setShortcut("Ctrl+-")
     setIcon(new QIcon("classpath:icons/zoom-out.png"))
     setEnabled(false)
-    triggered.connect(MainWindow.this, "zoomOut()")
+    triggered.connect(this, "zoomOut()")
+    private def zoomOut() = tabWidget.currentWidget.asInstanceOf[ImageSessionWidget].scale(0.8, 0.8)
   }
 
   private val zoomOrigAction = new QAction(this) {
@@ -129,11 +179,8 @@ object MainWindow extends QMainWindow {
     setShortcut("Ctrl+0")
     setIcon(new QIcon("classpath:icons/zoom-original.png"))
     setEnabled(false)
-    triggered.connect(MainWindow.this, "zoomOrig()")
-  }
-
-  private val analyserMapper = new QSignalMapper(this) {
-    mappedQObject.connect(MainWindow.this, "analyserInfoClicked(QObject)")
+    triggered.connect(this, "zoomOrig()")
+    private def zoomOrig() = tabWidget.currentWidget.asInstanceOf[ImageSessionWidget].resetTransform()
   }
 
   private val analyserActions = for(analyser <- shallowAnalysers) yield
@@ -142,8 +189,18 @@ object MainWindow extends QMainWindow {
       setText("About \"" + analyser.name + "\"...")
       setToolTip(analyser.description)
       setData(analyser)
-      analyserMapper.setMapping(this, this)
-      triggered.connect(analyserMapper, "map()")
+      triggered.connect(this, "analyserInfoClicked()")
+      private def analyserInfoClicked() = {
+        val buttons = new QMessageBox.StandardButtons(QMessageBox.StandardButton.Ok)
+        val messageBox = new QMessageBox(QMessageBox.Icon.NoIcon, "About \"" + analyser.name + "\"",
+                                         MainWindowTemplates.aboutAnalyserText(analyser), buttons, MainWindow.this)
+        val pixmap = new QPixmap("classpath:" + (analyser.iconResource getOrElse "icons/system-run.png"))
+        val scaledPixmap = pixmap.scaled(64, 64,
+                                         Qt.AspectRatioMode.KeepAspectRatio,
+                                         Qt.TransformationMode.SmoothTransformation)
+        messageBox.setIconPixmap(scaledPixmap)
+        messageBox.exec()
+      }
     }
 
   private val menuFile = new QMenu(this) {
@@ -201,12 +258,6 @@ object MainWindow extends QMainWindow {
     addMenu(menuHelp)
   }
 
-  private val fileDiag = new QFileDialog(this)
-  //Don't subclass QFileDialog; we won't get native-looking dialogs then!
-  fileDiag.setFileMode(QFileDialog.FileMode.ExistingFile)
-  fileDiag.setNameFilter(ImageIO.getReaderFileSuffixes.mkString("Image files (*.", " *.", ")"))
-  fileDiag.setDirectory(QDir.homePath)
-
   addToolBar(mainToolBar)
   addToolBar(analysisToolBar)
   addToolBar(interactToolBar)
@@ -214,35 +265,7 @@ object MainWindow extends QMainWindow {
   setCentralWidget(tabWidget)
   setMenuBar(menu)
 
-  def selectImage() = if(fileDiag.exec() != 0) {
-    val filename = fileDiag.selectedFiles.get(0)
-    val sessionWidget = new ImageSessionWidget(new ImageSession(new File(filename)))
-    tabWidget.addTab(sessionWidget, new QIcon("classpath:icons/image-x-generic.png"), sessionWidget.windowTitle)
-    updateToolbar()
-  }
-
-  private def changeSession(sessionNr: Int) = {
-    val ana = Option(tabWidget.currentWidget.asInstanceOf[ImageSessionWidget]) flatMap {_.imageSession.analysis}
-    AnalysisView.analysis = ana
-    ResultsView.analysis = ana
-    updateToolbar()
-  }
-
-  def closeTab(tab: Int) = {
-    tabWidget.widget(tab).close()
-    tabWidget.removeTab(tab)
-  }
-
-  def zoomIn() =
-    tabWidget.currentWidget.asInstanceOf[ImageSessionWidget].scale(1.25, 1.25)
-
-  def zoomOut() =
-    tabWidget.currentWidget.asInstanceOf[ImageSessionWidget].scale(0.8, 0.8)
-
-  def zoomOrig() =
-    tabWidget.currentWidget.asInstanceOf[ImageSessionWidget].resetTransform()
-
-  private def updateToolbar() {
+  protected def updateToolbar() {
     val enabled = (tabWidget.currentIndex > -1)
     val imgWidget = Option(tabWidget.currentWidget.asInstanceOf[ImageSessionWidget])
     analyseAction.setEnabled(imgWidget flatMap (_.imageSession.analysis) match {
@@ -254,90 +277,58 @@ object MainWindow extends QMainWindow {
     zoomOutAction.setEnabled(enabled)
     zoomOrigAction.setEnabled(enabled)
   }
+}
 
-  def analyse() = {
-    AnalysisView.show()
-    val imgWidget = tabWidget.currentWidget.asInstanceOf[ImageSessionWidget]
-    imgWidget.analyse()
-    imgWidget.imageSession.analysis.foreach(_.finished.connect(this, "refreshResultsView()"))
-    AnalysisView.analysis = imgWidget.imageSession.analysis
-    updateToolbar()
-  }
-
-  private def refreshResultsView() = {
-    ResultsView.show()
-    val imgWidget = Option(tabWidget.currentWidget.asInstanceOf[ImageSessionWidget])
-    ResultsView.analysis = imgWidget.flatMap(_.imageSession.analysis)
-    ResultsView.analysis.foreach {a =>
-      a.finished.disconnect(this)
-    }
-  }
-
-  def configureAnalysers() =
-    tabWidget.currentWidget.asInstanceOf[ImageSessionWidget].configureAnalysers()
-
-  def showAboutDialog() =
-    QMessageBox.about(this, "About Purview", {
-        <div>
-          <h3>About Purview</h3>
-          <p>
-            Purview is an automated image forensics tool, used for detecting digital image forgeries.
-          </p>
-          <p>
-            For more information, access to the source code and information
-            about the project in general, please see
-            <a href="http://github.com/dflemstr/purview">http://github.com/dflemstr/purview</a>
-          </p>
-          <p>
-            Purview is available under the Apache 2.0 license.
-            Please visit
-            <a href="http://www.apache.org/licenses/">http://www.apache.org/licenses/</a>
-            for more information.
-          </p>
-          <p>
-            Copyright &copy; 2010 <em>David Flemström</em> and <em>Moritz Roth</em>
-          </p>
-        </div>
-      }.toString
-    )
-
-  def showAboutQtDialog() = QMessageBox.aboutQt(this)
-
-  private def analyserInfoClicked(obj: QObject) = {
-    val analyser = obj.asInstanceOf[QAction].data.asInstanceOf[Analyser[ImageMatrix]]
-
-    val mbText = {
-      <table>
-        <tr>
-          <td><em>Name:</em></td>
-          <td>{analyser.name}</td>
-        </tr>
-        <tr>
-          <td><em>Description:</em></td>
-          <td>{analyser.description}</td>
-        </tr>
-        {
-          analyser.author.map {auth =>
-            <tr>
-              <td><em>Author:</em></td>
-              <td>{auth}</td>
-            </tr>
-          } getOrElse ""
-        }
-        {
-          analyser.version.map {ver =>
-            <tr>
-              <td><em>Version:</em></td>
-              <td>{ver}</td>
-            </tr>
-          } getOrElse ""
-        }
-      </table>
-    }.toString
-    val buttons = new QMessageBox.StandardButtons(QMessageBox.StandardButton.Ok)
-    val messageBox = new QMessageBox(QMessageBox.Icon.NoIcon, "About \"" + analyser.name + "\"", mbText, buttons, this)
-    messageBox.setIconPixmap(new QPixmap("classpath:" + (analyser.iconResource getOrElse "icons/system-run.png"))
-                             .scaled(64, 64, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
-    messageBox.exec()
-  }
+object MainWindowTemplates {
+  val aboutText = {
+    <div>
+      <h3>About Purview</h3>
+      <p>
+        Purview is an automated image forensics tool, used for detecting digital image forgeries.
+      </p>
+      <p>
+        For more information, access to the source code and information
+        about the project in general, please see
+        <a href="http://github.com/dflemstr/purview">http://github.com/dflemstr/purview</a>
+      </p>
+      <p>
+        Purview is available under the Apache 2.0 license.
+        Please visit
+        <a href="http://www.apache.org/licenses/">http://www.apache.org/licenses/</a>
+        for more information.
+      </p>
+      <p>
+        Copyright &copy; 2010 <em>David Flemström</em> and <em>Moritz Roth</em>
+      </p>
+    </div>
+  }.toString
+  
+  def aboutAnalyserText(analyser: Analyser[ImageMatrix]) = {
+    <table>
+      <tr>
+        <td><em>Name:</em></td>
+        <td>{analyser.name}</td>
+      </tr>
+      <tr>
+        <td><em>Description:</em></td>
+        <td>{analyser.description}</td>
+      </tr>
+      {
+        analyser.author.map {auth =>
+          <tr>
+            <td><em>Author:</em></td>
+            <td>{auth}</td>
+          </tr>
+        } getOrElse ""
+      }
+      {
+        analyser.version.map {ver =>
+          <tr>
+            <td><em>Version:</em></td>
+            <td>{ver}</td>
+          </tr>
+        } getOrElse ""
+      }
+    </table>
+  }.toString
 }

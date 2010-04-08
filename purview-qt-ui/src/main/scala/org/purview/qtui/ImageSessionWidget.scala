@@ -1,13 +1,10 @@
 package org.purview.qtui
 
 import com.trolltech.qt.core.QPointF
-import com.trolltech.qt.core.QTimeLine
 import com.trolltech.qt.core.Qt
 import com.trolltech.qt.gui.QBrush
 import com.trolltech.qt.gui.QColor
 import com.trolltech.qt.gui.QGraphicsEllipseItem
-import com.trolltech.qt.gui.QGraphicsItem
-import com.trolltech.qt.gui.QGraphicsItemAnimation
 import com.trolltech.qt.gui.QGraphicsItemGroup
 import com.trolltech.qt.gui.QGraphicsItemInterface
 import com.trolltech.qt.gui.QGraphicsPathItem

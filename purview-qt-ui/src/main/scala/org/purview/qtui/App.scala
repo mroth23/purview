@@ -1,7 +1,6 @@
 package org.purview.qtui
 
 import com.trolltech.qt.core.QCoreApplication
-import com.trolltech.qt.core.QEventLoop
 import com.trolltech.qt.core.QTimer
 import com.trolltech.qt.core.Qt
 import com.trolltech.qt.gui.QApplication
@@ -42,13 +41,12 @@ object App {
 
     MainWindow.show()
     val t = new QTimer()
-    t.setInterval(2000)
+    t.setInterval(3000)
     t.setSingleShot(true)
     t.timeout.connect(this, "hideSplash()")
     t.start()
 
     QApplication.exec()
-    System.exit(0)
   }
 
   private def hideSplash() {
