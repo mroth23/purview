@@ -190,20 +190,20 @@ object ImageUtils {
   def convertToQPainterPath(shape: Shape) = painterPathCache.getOrElseUpdate(shape, shapeToPainterPath(shape))
 
   val ArrowWidth = 12f
-  val ArrowAngle = math.toRadians(20)
+  val ArrowAngle = Math.toRadians(20)
 
   def makeArrow(p1: QPointF, p2: QPointF): QPainterPath = {
     val p = new QPainterPath
     val dx = p2.x - p1.x
     val dy = p2.y - p1.y
-    val theta = math.atan2(dy, dx) + math.Pi
+    val theta = Math.atan2(dy, dx) + Math.Pi
 
-    val mx = (p2.x + ArrowWidth / 2 * math.cos(theta)).toFloat
-    val my = (p2.y + ArrowWidth / 2 * math.sin(theta)).toFloat
-    val ax1 = p2.x + ArrowWidth * math.cos(theta + ArrowAngle)
-    val ay1 = p2.y + ArrowWidth * math.sin(theta + ArrowAngle)
-    val ax2 = p2.x + ArrowWidth * math.cos(theta - ArrowAngle)
-    val ay2 = p2.y + ArrowWidth * math.sin(theta - ArrowAngle)
+    val mx = (p2.x + ArrowWidth / 2 * Math.cos(theta)).toFloat
+    val my = (p2.y + ArrowWidth / 2 * Math.sin(theta)).toFloat
+    val ax1 = p2.x + ArrowWidth * Math.cos(theta + ArrowAngle)
+    val ay1 = p2.y + ArrowWidth * Math.sin(theta + ArrowAngle)
+    val ax2 = p2.x + ArrowWidth * Math.cos(theta - ArrowAngle)
+    val ay2 = p2.y + ArrowWidth * Math.sin(theta - ArrowAngle)
 
     p.moveTo(p2.x, p2.y)
     p.lineTo(ax1, ay1)
@@ -215,6 +215,7 @@ object ImageUtils {
     p
   }
 
+  /** Convert a Java Shape to a Qt PainterPath */
   private def shapeToPainterPath(shape: Shape) = {
     val path = new QPainterPath
     val iter = shape.getPathIterator(null)
@@ -247,6 +248,7 @@ object ImageUtils {
     path
   }
 
+  /** Convert a java BufferedImage to a Qt Image */
   private def bufferedImageToPixmap(bufferedImage: BufferedImage) = {
     val result = new QImage(bufferedImage.getWidth, bufferedImage.getHeight, QImage.Format.Format_ARGB32)
     val w = bufferedImage.getWidth
