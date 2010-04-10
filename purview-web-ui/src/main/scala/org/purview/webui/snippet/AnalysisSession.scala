@@ -64,17 +64,21 @@ class AnalysisSession extends DispatchSnippet with Logger {
           ImageUtils.createInputImage(fileParam.fileName, fileParam.fileStream)
         } catch {
           case ex =>
-            S.error("Couldn't open the uploaded image")
+            S.error("Couldn't open the uploaded file")
             info(ex.getStackTraceString)
-            S.redirectTo("/create")
+            S.redirectTo("/image")
         }
+
+        if(inputImage.original.file.length() > 10 * 1024 * 1024)
+          S.warning("You uploaded a large image (> 10 MiB). This might lead to a slow analysis.")
+
         val analysers = try {
           SessionUtils.createAnalyserInstances[ImageMatrix]()
         } catch {
           case ex =>
-            S.error("Error when initializing analyser")
+            S.error("Error when initializing an analyser (check the server logs for more information)")
             info(ex.getStackTraceString)
-            S.redirectTo("/create")
+            S.redirectTo("/image")
         }
 
         val analysisId = {
@@ -99,6 +103,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
 
         analyses.set(analyses.is + (analysisId -> analysis))
 
+        S.notice("The image was successfully uploaded!")
         S.redirectTo("/analysers/" + analysisId)
     }
 
@@ -120,7 +125,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
   def analyserList(analyserListTemplate: NodeSeq) = {
     val analysisId = S.param("analysisId") openOr ""
     def analysis = analyses.is.getOrElse(analysisId, {
-        S.error("No active analysis")
+        S.error("Can't view analysers: No active analysis")
         S.redirectTo("/")
       })
     def makeEntry(entryTemplate: NodeSeq): NodeSeq =
@@ -214,7 +219,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
         ImageMatrix.fromFile(mgImage.file)
       } catch {
         case _ =>
-          S.error("The uploaded file has ceased to exist!") //Who knows...
+          S.error("Cannot analyse image, The uploaded file has ceased to exist!") //Who knows...
           S.redirectTo("/image")
       }
 
@@ -244,7 +249,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
     val elemId = randomString(16)
     val analysisId = S.param("analysisId") openOr ""
     def analysis = analyses.is.getOrElse(analysisId, {
-        S.error("No active analysis")
+        S.error("Can't view any results; no active analysis")
         S.redirectTo("/")
       })
     val image = analysis.inputImage.original.load()
@@ -315,6 +320,6 @@ class AnalysisSession extends DispatchSnippet with Logger {
            "tree" -> makeTree _,
            "view" -> makeView _)
     }
-    <div id={elemId}>{inner()}</div>
+    <div id={elemId} style="padding: 0.1em;">{inner()}</div>
   }
 }

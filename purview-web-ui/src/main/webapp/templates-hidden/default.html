@@ -8,6 +8,7 @@
 
         <lift:CSS.blueprint />
         <lift:CSS.fancyType />
+        <link href="../css/main.css" type="text/css" rel="stylesheet" media="screen, projection, print" />
         <script id="jquery" src="/classpath/jquery.js" type="text/javascript"/>
         <script id="json" src="/classpath/json.js" type="text/javascript"/>
         <style type="text/css">
@@ -75,7 +76,8 @@
                 <lift:bind name="content" />
 
                 <hr/>
-                <p>Server statistics:</p>
+                <h3>Server statistics</h3>
+                <lift:System.gc/>
                 <lift:comet type="SystemMonitor">
                     <monitor:graph><em>Loading graph...</em></monitor:graph>
                 </lift:comet>

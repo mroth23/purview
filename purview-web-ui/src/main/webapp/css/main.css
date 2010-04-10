@@ -1,0 +1,15 @@
+.error, .notice, .success {
+    padding: .1em .5em .15em;
+}
+
+.error ul, .notice ul, .success ul {
+    margin: 0;
+    display: inline;
+    list-style: outside none;
+}
+
+.error li, .notice li, .success li {
+    margin: 0;
+    padding: 0;
+    display: block;
+}
