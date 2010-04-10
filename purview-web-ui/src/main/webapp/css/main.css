@@ -1,3 +1,40 @@
+p + p {
+    margin-top: -0.5em;
+    text-indent: 0;
+}
+
+.sidebar ul {
+    margin:0;
+    padding:0;
+    border-bottom:1px solid #ccc;
+}
+
+.sidebar ul li {
+    margin:0;
+    padding:0;
+    list-style:none;
+    border:1px solid #ccc;
+    border-bottom:none;
+}
+
+.sidebar ul li a {
+    display:block;
+    padding:3px;
+    text-indent:30px;
+    text-decoration:none;
+}
+
+.sidebar ul li span {
+    display:block;
+    padding:3px;
+    text-indent:30px;
+    text-decoration:none;
+}
+
+.sidebar ul li a:hover {
+    background-color: #eee;
+}
+
 .error, .notice, .success {
     padding: .1em .5em .15em;
 }
