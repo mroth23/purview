@@ -7,8 +7,16 @@ import java.awt.Shape
 import java.awt.geom.Ellipse2D
 import java.awt.geom.Line2D
 import java.awt.geom.Path2D
+import java.awt.geom.Rectangle2D
 import org.purview.core.report.LevelColor
+import org.purview.core.report.ReportCircle
+import org.purview.core.report.ReportCircleMove
 import org.purview.core.report.ReportEntry
+import org.purview.core.report.ReportImage
+import org.purview.core.report.ReportRectangle
+import org.purview.core.report.ReportRectangleMove
+import org.purview.core.report.ReportShape
+import org.purview.core.report.ReportShapeMove
 
 object ReportEntryRenderer {
   val POINT_RADIUS = 2f
@@ -34,14 +42,33 @@ object ReportEntryRenderer {
 
     g.setStroke(stroke)
 
-    //TODO: fix drawing
-    /*
     entry match {
-      case point: Point =>
-        if(!point.isInstanceOf[Image])
-          makePoint(g, point.x, point.y, transpColor, color)
-
-    }*/
+        case ReportImage(_, _, x, y, image) =>
+          g.drawImage(image, x, y, null)
+        case ReportRectangle(_, _, x, y, width, height) =>
+          makeShape(g, new Rectangle2D.Float(x, y, width, height), transpColor, color)
+        case ReportCircle(_, _, x, y, radius) =>
+          makeShape(g, new Ellipse2D.Float(x - radius, y - radius, radius * 2, radius * 2), transpColor, color)
+        case ReportShape(_, _, shape) =>
+          makeShape(g, shape, transpColor, color)
+        case ReportRectangleMove(_, _, srcX, srcY, tgtX, tgtY, width, height) =>
+          makeShape(g, new Rectangle2D.Float(srcX, srcY, width, height), transpSourceColor, sourceColor)
+          makeShape(g, new Rectangle2D.Float(tgtX, tgtY, width, height), transpColor, color)
+          makeArrow(g, srcX, srcY, tgtX, tgtY, Color.white)
+        case ReportCircleMove(_, _, srcX, srcY, tgtX, tgtY, radius) =>
+          makeShape(g, new Rectangle2D.Float(srcX - radius, srcY - radius, radius * 2, radius * 2), transpSourceColor, sourceColor)
+          makeShape(g, new Rectangle2D.Float(tgtX - radius, tgtY - radius, radius * 2, radius * 2), transpColor, color)
+          makeArrow(g, srcX, srcY, tgtX, tgtY, Color.white)
+        case ReportShapeMove(_, _, sourceShape, targetShape) =>
+          makeShape(g, sourceShape, transpSourceColor, sourceColor)
+          makeShape(g, targetShape, transpColor, color)
+          makeArrow(g,
+                    sourceShape.getBounds.getCenterX.toFloat, sourceShape.getBounds.getCenterY.toFloat,
+                    targetShape.getBounds.getCenterX.toFloat, targetShape.getBounds.getCenterY.toFloat,
+                    Color.white)
+        case _ =>
+          None
+      }
   }
 
   def makePoint(g: Graphics2D, x: Float, y: Float, fill: Color, outline: Color) {

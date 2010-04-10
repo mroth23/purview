@@ -12,6 +12,12 @@
         <script id="json" src="/classpath/json.js" type="text/javascript"/>
         <style type="text/css">
             /* <![CDATA[ */
+
+            p + p {
+                margin-top: -0.5em;
+                text-indent: 0;
+            }
+
             .sidebar ul {
                 margin:0;
                 padding:0;
@@ -67,6 +73,13 @@
                     <lift:notice_class>success</lift:notice_class>
                 </lift:Msgs>
                 <lift:bind name="content" />
+
+                <hr/>
+                <p>Server statistics:</p>
+                <lift:comet type="SystemMonitor">
+                    <monitor:graph><em>Loading graph...</em></monitor:graph>
+                </lift:comet>
+                <div id="graph" class="span-19" style="height: 200px;"></div>
             </div>
         </div>
     </body>

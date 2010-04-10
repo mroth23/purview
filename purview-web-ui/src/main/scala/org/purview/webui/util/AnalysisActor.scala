@@ -1,7 +1,9 @@
 package org.purview.webui.util
 
 import net.liftweb.actor.LiftActor
+import net.liftweb.common.Logger
 import org.purview.core.session.AnalysisStats
+import scala.actors.Actor
 
 object AnalysisActor {
   case class AddListener(listener: LiftActor)
@@ -14,7 +16,7 @@ object AnalysisActor {
   object Done
 }
 
-class AnalysisActor extends AnalysisStats with LiftActor {
+class AnalysisActor extends AnalysisStats with Actor with Logger {
   private var listeners: List[LiftActor] = Nil
   private var lastProgress = 0f
   private var lastSubProgress = 0f
@@ -23,16 +25,18 @@ class AnalysisActor extends AnalysisStats with LiftActor {
 
   private val ProgressRoughness = 100
 
-  def messageHandler = {
-    case AnalysisActor.AddListener(listener) =>
-      if(!listeners.contains(listener))
-        listeners ::= listener
-      listener ! AnalysisActor.ProgressUpdate(lastProgress)
-      listener ! AnalysisActor.SubProgressUpdate(lastSubProgress)
-      listener ! AnalysisActor.StatusUpdate(lastStatus)
-      listener ! AnalysisActor.AnalyserUpdate(lastAnalyser)
-    case AnalysisActor.RemoveListener(listener) =>
-      listeners = listeners.filterNot (_ == listener)
+  def act = Actor.loop {
+    Actor.react {
+      case AnalysisActor.AddListener(listener) =>
+        if(!listeners.contains(listener))
+          listeners ::= listener
+        listener ! AnalysisActor.ProgressUpdate(lastProgress)
+        listener ! AnalysisActor.SubProgressUpdate(lastSubProgress)
+        listener ! AnalysisActor.StatusUpdate(lastStatus)
+        listener ! AnalysisActor.AnalyserUpdate(lastAnalyser)
+      case AnalysisActor.RemoveListener(listener) =>
+        listeners = listeners.filterNot (_ == listener)
+    }
   }
 
   override def reportProgress(progress: Float) = if((progress * ProgressRoughness).toInt != (lastProgress * ProgressRoughness).toInt) {

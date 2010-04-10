@@ -2,10 +2,8 @@ package org.purview.webui.util
 
 import java.awt.Image
 import java.awt.image.BufferedImage
-import java.awt.image.DataBufferInt
 import java.awt.image.RenderedImage
 import java.awt.image.renderable.RenderableImage
-import java.util.Arrays
 import net.liftweb.http.S
 import org.apache.batik.svggen.SVGSyntax._
 import org.apache.batik.util.SVGConstants._
