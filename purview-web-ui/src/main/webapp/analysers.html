@@ -6,7 +6,7 @@
             <script type="text/javascript" src="/js/analysers.js"></script>
         </head>
         <p>
-            The image "<lift:AnalysisSession.imageName/>" is currently active.
+            The image <q><lift:AnalysisSession.imageName/></q> is currently active.
         </p>
         <p>
             Please select which analysers to use for the image. If the analyser has
@@ -14,31 +14,35 @@
         </p>
         <lift:AnalysisSession.analyserList form="post">
             <fieldset>
-                <legend>Enabled analysers</legend>
+                <legend>Analysers</legend>
                 <analyserList:entry>
                     <p>
-                        <entry:enabled/>
-                        <label><entry:name/></label>
-                        <entry:settings>
-                            <a href="#" class="settings-button fl_right">Settings...</a>
-                            <div class="settings-form">
-                                <h2>Analyser settings</h2>
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Setting</th>
-                                            <th style="width: 3em;">Value</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <settings:setting>
-                                            <tr><td><setting:name/></td><td><setting:form/></td></tr>
-                                        </settings:setting>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </entry:settings>
-                        <br/><entry:description/>
+                        <div class="fl_left clear analyser-checkbox">
+                            <entry:enabled/>
+                        </div>
+                        <div class="analyser-entry">
+                            <span class="bold"><entry:name/></span>
+                            <entry:settings>
+                                <a href="#" class="settings-button fl_right">Settings...</a>
+                                <div class="settings-form">
+                                    <h2>Analyser settings</h2>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Setting</th>
+                                                <th style="width: 3em;">Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <settings:setting>
+                                                <tr><td><setting:name/></td><td><setting:form/></td></tr>
+                                            </settings:setting>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </entry:settings><br/>
+                            <entry:description/>
+                        </div>
                     </p>
                 </analyserList:entry>
             </fieldset>

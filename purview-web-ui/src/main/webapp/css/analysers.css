@@ -2,6 +2,14 @@ div.settings-form {
     display: none;
 }
 
+.analyser-entry {
+    margin-left: 2em;
+}
+
+.analyser-checkbox {
+    height: 2em;
+}
+
 #simplemodal-overlay {
     background-color: black;
 }

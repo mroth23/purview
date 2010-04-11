@@ -2,21 +2,13 @@
     <lift:bind-at name="content">
         <lift:Process.progress>
             <p>
-                Analyser: <progress:analyser/>
-                <progress:mainBar>
-                    <div id="some-id" class="ui-progressbar ui-widget ui-widget-content ui-corner-all">
-                        <div style="width: 30%;" class="ui-progressbar-value ui-widget-header ui-corner-left"></div>
-                    </div>
-                </progress:mainBar>
+                <label for="analyser-entry" class="bold">Analyser:</label> <span id="analyser-entry"><progress:analyser/></span>
             </p>
+            <progress:mainBar/>
             <p>
-                Status: <progress:status/>
-                <progress:subBar>
-                    <div id="some-id" class="ui-progressbar ui-widget ui-widget-content ui-corner-all">
-                        <div style="width: 50%" class="ui-progressbar-value ui-widget-header ui-corner-left"></div>
-                    </div>
-                </progress:subBar>
+                <label for="status-entry" class="bold">Status:</label> <span id="status-entry"><progress:status/></span>
             </p>
+            <progress:subBar/>
         </lift:Process.progress>
     </lift:bind-at>
     <lift:bind-at name="sidebar">
