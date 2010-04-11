@@ -64,7 +64,7 @@ class Boot {
 
     ResponseInfo.docType = {
       case _ if S.getDocType._1 => S.getDocType._2
-      case _ => Full(DocType.xhtmlStrict)
+      case _ => Full(DocType.xhtml11)
     }
 
     Flot.init()
