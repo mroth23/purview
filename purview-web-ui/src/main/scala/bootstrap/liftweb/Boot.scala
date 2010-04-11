@@ -49,11 +49,11 @@ class Boot {
     LiftRules.setSiteMap(SiteMap(entries: _*))
 
     LiftRules.statelessRewrite.append {
-      case RewriteRequest(ParsePath(List("analysers", id), _, _, _), _, _) =>
+      case RewriteRequest(ParsePath(List("image", id, "analysers"), _, _, _), _, _) =>
         RewriteResponse("analysers" :: Nil, Map("analysisId" -> id))
-      case RewriteRequest(ParsePath(List("process", id), _, _, _), _, _) =>
+      case RewriteRequest(ParsePath(List("image", id, "process"), _, _, _), _, _) =>
         RewriteResponse("process" :: Nil, Map("analysisId" -> id))
-      case RewriteRequest(ParsePath(List("results", id), _, _, _), _, _) =>
+      case RewriteRequest(ParsePath(List("image", id, "results"), _, _, _), _, _) =>
         RewriteResponse("results" :: Nil, Map("analysisId" -> id))
     }
 

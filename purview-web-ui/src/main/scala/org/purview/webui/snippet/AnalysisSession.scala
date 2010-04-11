@@ -106,7 +106,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
         analyses.set(analyses.is + (analysisId -> analysis))
 
         S.notice("The image was successfully uploaded!")
-        S.redirectTo("/analysers/" + analysisId)
+        S.redirectTo("/image/" + analysisId + "/analysers")
     }
 
     bind("create", createTemplate,
@@ -243,7 +243,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
           }
         })
       thread.start()
-      S.redirectTo("/process/" + analysisId)
+      S.redirectTo("/image/" + analysisId + "/process")
     }
 
     bind("analyserList", analyserListTemplate,

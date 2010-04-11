@@ -62,7 +62,7 @@ class ProgressMonitor extends CometActor {
       partialUpdate(SetHtml(id + "-status", Text("Done")))
       lastAnalyser = "None"
       partialUpdate(SetHtml(id + "-analyser", Text("None")))
-      partialUpdate(RedirectTo(contextPath + "/results/" + (name openOr "")))
+      partialUpdate(RedirectTo(contextPath + "/image/" + (name openOr "") + "/results"))
     case AnalysisActor.Error(error) =>
       this.error(error)
   }
