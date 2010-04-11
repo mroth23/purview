@@ -2,10 +2,6 @@ div.settings-form {
     display: none;
 }
 
-td.narrow {
-      width: 5em;
-}
-
 #simplemodal-overlay {
     background-color: black;
 }

@@ -11,6 +11,7 @@ Licence: <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commo
 @import url(tables.css);
 @import url(featured_slide.css);
 @import url(loginslider.css);
+@import url(messages.css);
 
 body{
     margin:0;

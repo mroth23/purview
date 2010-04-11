@@ -12,6 +12,7 @@
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.0/jquery-ui.min.js"></script>
         <script type="text/javascript" src="/classpath/json.js" id="json"></script>
         <script type="text/javascript" src="/js/jquery.slidepanel.setup.js"></script>
+        <script type="text/javascript" src="/js/messages.js"></script>
     </head>
     <body>
         <div class="wrapper col0">
@@ -80,12 +81,12 @@
         <div class="wrapper col3">
             <div id="container">
                 <div id="content" style="overflow: auto;">
-                    <h2><lift:Menu.title/></h2>
                     <lift:Msgs>
-                        <lift:error_class>error</lift:error_class>
-                        <lift:warning_class>notice</lift:warning_class>
-                        <lift:notice_class>success</lift:notice_class>
+                        <lift:error_class>message error</lift:error_class>
+                        <lift:warning_class>message notice</lift:warning_class>
+                        <lift:notice_class>message success</lift:notice_class>
                     </lift:Msgs>
+                    <h2><lift:Menu.title/></h2>
                     <lift:bind name="content"/>
                 </div>
                 <div id="column">
