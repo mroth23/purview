@@ -6,6 +6,7 @@ Author URI: http://www.os-templates.com/
 Licence: <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-Share Alike 3.0 Unported License</a>
 */
 
+@import url(fonts.css);
 @import url(navi.css);
 @import url(forms.css);
 @import url(tables.css);
@@ -17,7 +18,7 @@ body{
     margin:0;
     padding:0;
     font-size:12px;
-    font-family:verdana, Arial, Helvetica, sans-serif;
+    font-family:Aller, verdana, Arial, Helvetica, sans-serif;
     color:#333333;
     background-color:#FFFFFF;
 }
@@ -56,7 +57,7 @@ div.wrapper h1, div.wrapper h2, div.wrapper h3, div.wrapper h4, div.wrapper h5, 
     font-size:20px;
     font-weight:normal;
     line-height:normal;
-    font-family:Georgia, "Times New Roman", Times, serif;
+    font-family:AllerDisplay, Georgia, "Times New Roman", Times, serif;
 }
 
 .col0{color:#FFFFFF; background-color:#2D3134; border-top:5px solid #4A5155;}
@@ -332,7 +333,7 @@ div.wrapper h1, div.wrapper h2, div.wrapper h3, div.wrapper h4, div.wrapper h5, 
     margin:0;
     padding:0 0 8px 0;
     font-weight:normal;
-    font-family:Georgia, "Times New Roman", Times, serif;
+    font-family:AllerDisplay,Georgia, "Times New Roman", Times, serif;
     line-height:normal;
     border-bottom:1px dotted #999999;
 }
