@@ -1,14 +1,6 @@
-/*
-Template Name: School Education
-File: Forms CSS
-Author: OS Templates
-Author URI: http://www.os-templates.com/
-Licence: <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-Share Alike 3.0 Unported License</a>
-*/
-
 form, fieldset, legend{margin:0; padding:0; border:none;}
 legend{display:none;}
-input, textarea, select{font-size:12px; font-family:Fontin, Verdana, Arial, Helvetica, sans-serif;}
+input, textarea, select{font-size:12px; font-family:TitilliumText14L600wt, Verdana, Arial, Helvetica, sans-serif !important;}
 
 /* ----------------------------------------------Forms in Content Area-------------------------------------*/
 

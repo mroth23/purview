@@ -1,0 +1,41 @@
+@font-face {
+    font-family: 'TitilliumText14LRegular';
+    src: url('type/TitilliumText1.eot');
+    src: local('TitilliumText14L'), local('TitilliumText14L-Bold'), url('type/TitilliumText1.woff') format('woff'), url('type/TitilliumText1.ttf') format('truetype'), url('type/TitilliumText1.svg#TitilliumText14L-Bold') format('svg');
+}
+
+@font-face {
+    font-family: 'TitilliumText14L250wt';
+    src: url('type/TitilliumText250wt.eot');
+    src: local('TitilliumText14L'), local('TitilliumText14L-250wt'), url('type/TitilliumText250wt.woff') format('woff'), url('type/TitilliumText250wt.ttf') format('truetype'), url('type/TitilliumText250wt.svg#TitilliumText14L-250wt') format('svg');
+}
+
+@font-face {
+    font-family: 'TitilliumText14L400wt';
+    src: url('type/TitilliumText400wt.eot');
+    src: local('TitilliumText14L'), local('TitilliumText14L-400wt'), url('type/TitilliumText400wt.woff') format('woff'), url('type/TitilliumText400wt.ttf') format('truetype'), url('type/TitilliumText400wt.svg#TitilliumText14L-400wt') format('svg');
+}
+
+@font-face {
+    font-family: 'TitilliumText14L600wt';
+    src: url('type/TitilliumText600wt.eot');
+    src: local('TitilliumText14L'), local('TitilliumText14L-600wt'), url('type/TitilliumText600wt.woff') format('woff'), url('type/TitilliumText600wt.ttf') format('truetype'), url('type/TitilliumText600wt.svg#TitilliumText14L-600wt') format('svg');
+}
+
+@font-face {
+    font-family: 'TitilliumText14L800wt';
+    src: url('type/TitilliumText800wt.eot');
+    src: local('TitilliumText14L'), local('TitilliumText14L-800wt'), url('type/TitilliumText800wt.woff') format('woff'), url('type/TitilliumText800wt.ttf') format('truetype'), url('type/TitilliumText800wt.svg#TitilliumText14L-800wt') format('svg');
+}
+
+@font-face {
+    font-family: 'TitilliumText14L999wt';
+    src: url('type/TitilliumText999wt.eot');
+    src: local('TitilliumText14L'), local('TitilliumText14L-999wt'), url('type/TitilliumText999wt.woff') format('woff'), url('type/TitilliumText999wt.ttf') format('truetype'), url('type/TitilliumText999wt.svg#TitilliumText14L-999wt') format('svg');
+}
+
+@font-face {
+    font-family: 'TitilliumTitle01Thin';
+    src: url('type/Titillium_title03.eot');
+    src: local('TitilliumTitle01'), local('TitilliumTitle01-Thin'), url('type/Titillium_title03.woff') format('woff'), url('type/Titillium_title03.ttf') format('truetype'), url('type/Titillium_title03.svg#TitilliumTitle01-Thin') format('svg');
+}

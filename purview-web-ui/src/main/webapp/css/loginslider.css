@@ -1,20 +1,10 @@
-/*
-Template Name: School Education
-File: LoginSlider CSS
-Author: OS Templates
-Author URI: http://www.os-templates.com/
-Licence: <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-Share Alike 3.0 Unported License</a>
-
-Inspired By: Sliding Login Panel with jQuery from http://web-kreation.com/index.php/tutorials/nice-clean-sliding-login-panel-built-with-jquery/
-*/
-
 #topbar{
     position:relative;
     margin:0 auto 0;
     display:block;
     width:960px;
     font-size:12px;
-    font-family:Fontin, Verdana, Arial, Helvetica, sans-serif;
+    font-family:TitilliumText14L999wt, Verdana, Arial, Helvetica, sans-serif;
 }
 
 #topbar a{
@@ -75,7 +65,7 @@ Inspired By: Sliding Login Panel with jQuery from http://web-kreation.com/index.
 
 #topbar form, #topbar fieldset, #topbar legend{margin:0; padding:0; border:none;}
 #topbar legend{display:none;}
-#topbar input, #topbar textarea, #topbar select{font-size:12px; font-family:Fontin, Verdana, Arial, Helvetica, sans-serif;}
+#topbar input, #topbar textarea, #topbar select{font-size:12px; font-family:TitilliumText14L400wt, Verdana, Arial, Helvetica, sans-serif;}
 
 #topbar label{
     display:block;
@@ -107,7 +97,7 @@ Inspired By: Sliding Login Panel with jQuery from http://web-kreation.com/index.
     width:auto;
     margin:0 5px 0 0;
     padding:0;
-} 
+}
 
 /* ----------------------------------------------Tab Panel-------------------------------------*/
 

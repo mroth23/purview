@@ -1,11 +1,3 @@
-/*
-Template Name: School Education
-File: Featured Slider CSS
-Author: OS Templates
-Author URI: http://www.os-templates.com/
-Licence: <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-Share Alike 3.0 Unported License</a>
-*/
-
 #featured_slide {
     position:relative;
     margin:0 auto 0;
@@ -14,7 +6,7 @@ Licence: <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commo
     height:300px;
     overflow:hidden;
     font-size:13px;
-    font-family:Fontin, Verdana, Arial, Helvetica, sans-serif;
+    font-family:TitilliumText14L800wt, Verdana, Arial, Helvetica, sans-serif;
     color:#FFFFFF;
     background-color:#22C0FD;
 }
@@ -39,8 +31,7 @@ Licence: <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commo
     line-height:normal;
     font-size:32px;
     font-weight:normal;
-    font-family:Fontin, Georgia, "Times New Roman", Times, serif;
-    font-variant:small-caps;
+    font-family:TitilliumTitle01Thin, "Bitstream Vera Sans", "Droid Sans", "MS Sans Serif", sans-serif;
     border-bottom:1px dotted #CCCCCC;
 }
 
