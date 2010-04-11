@@ -168,7 +168,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
       }
 
     def settingForm(s: Setting[_]) = {
-      val elemId = randomString(16)
+      val elemId = nextFuncName
       def makeSetting() = s match {
         case intRange: IntRangeSetting =>
           def doChangeValue(newVal: String) = try {
@@ -252,7 +252,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
   }
 
   object currentReportEntry extends RequestVar[Option[ReportEntry]](None)
-  object resultsElemId extends RequestVar[String](randomString(16))
+  object resultsElemId extends RequestVar[String](nextFuncName)
   object redrawFunc extends RequestVar[() => JsCmd](() => JsCmds.Noop)
 
   def resultsTree(resultsTreeTemplate: NodeSeq): NodeSeq = {

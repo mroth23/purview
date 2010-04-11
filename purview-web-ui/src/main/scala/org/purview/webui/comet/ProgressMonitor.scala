@@ -10,7 +10,7 @@ import org.purview.webui.util.AnalysisActor
 import scala.xml.Text
 
 class ProgressMonitor extends CometActor {
-  val id = randomString(16)
+  val id = nextFuncName
   val contextPath = S.hostAndPath
 
   override def defaultPrefix = Full("progress")

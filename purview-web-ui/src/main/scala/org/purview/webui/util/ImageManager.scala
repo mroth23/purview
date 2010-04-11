@@ -38,7 +38,7 @@ object ImageManager extends FileManager {
   }
 
   def saveImage(stream: InputStream): Image = {
-    val id = Helpers.randomString(16)
+    val id = Helpers.nextFuncName
     val file = createFile(id)
     file.createNewFile()
 
@@ -54,14 +54,14 @@ object ImageManager extends FileManager {
   }
 
   def saveImage(image: RenderedImage): Image = {
-    val id = Helpers.randomString(16)
+    val id = Helpers.nextFuncName
     val file = createFile(id)
     ImageIO.write(image, "png", file)
     new FileImage(id, file)
   }
 
   def saveImage(in: ReadableByteChannel): Image = {
-    val id = Helpers.randomString(16)
+    val id = Helpers.nextFuncName
     val file = createFile(id)
     val out = new FileOutputStream(file).getChannel
     try {
