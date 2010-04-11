@@ -84,7 +84,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
         }
 
         val analysisId = {
-          val baseName = fileParam.fileName.replaceAll("[^a-zA-Z0-9_]", "_")
+          val baseName = fileParam.fileName.replaceAll("[^a-zA-Z0-9_.]", "_")
           var res = baseName
           var i = 0
           while(analyses.is.contains(res)) {
