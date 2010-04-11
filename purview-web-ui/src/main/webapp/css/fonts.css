@@ -1,46 +1,31 @@
 @font-face {
-    font-family: Aller;
+    font-family: Fontin;
     font-weight: normal;
     font-style: normal;
-    src: url(/fonts/Aller_Rg.ttf);
+    font-variant: normal;
+    src: local(Fontin), url(/fonts/Fontin-Regular.ttf) format(truetype);
 }
 
 @font-face {
-    font-family: Aller;
+    font-family: Fontin;
     font-weight: normal;
     font-style: italic;
-    src: url(/fonts/Aller_It.ttf);
+    font-variant: normal;
+    src: local(Fontin), url(/fonts/Fontin-Italic.ttf) format(truetype);
 }
 
 @font-face {
-    font-family: Aller;
+    font-family: Fontin;
     font-weight: bold;
     font-style: normal;
-    src: url(/fonts/Aller_Bd.ttf);
+    font-variant: normal;
+    src: local(Fontin), url(/fonts/Fontin-Bold.ttf) format(truetype);
 }
 
 @font-face {
-    font-family: Aller;
-    font-weight: bold;
-    font-style: italic;
-    src: url(/fonts/Aller_BdIt.ttf);
-}
-
-@font-face {
-    font-family: Aller;
-    font-weight: lighter;
+    font-family: Fontin;
+    font-weight: normal;
     font-style: normal;
-    src: url(/fonts/Aller_Lt.ttf);
-}
-
-@font-face {
-    font-family: Aller;
-    font-weight: lighter;
-    font-style: italic;
-    src: url(/fonts/Aller_LtIt.ttf);
-}
-
-@font-face {
-    font-family: AllerDisplay;
-    src: url(/fonts/AllerDisplay.ttf);
+    font-variant: small-caps;
+    src: local(Fontin), url(/fonts/Fontin-SmallCaps.ttf) format(truetype);
 }
