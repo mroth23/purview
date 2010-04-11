@@ -2,9 +2,12 @@ package bootstrap.liftweb
 
 import net.liftweb.util.Helpers._
 import net.liftweb.sitemap.Loc._
+import net.liftweb.common.Full
+import net.liftweb.http.DocType
 import net.liftweb.http.LiftRules
 import net.liftweb.http.ParsePath
 import net.liftweb.http.Req
+import net.liftweb.http.ResponseInfo
 import net.liftweb.http.RewriteRequest
 import net.liftweb.http.RewriteResponse
 import net.liftweb.http.S
@@ -57,6 +60,11 @@ class Boot {
     LiftRules.dispatch.append {
       case Req("imagefile" :: id :: Nil, _, _) =>
         () => ImageManager.serveImage(id)
+    }
+
+    ResponseInfo.docType = {
+      case _ if S.getDocType._1 => S.getDocType._2
+      case _ => Full(DocType.xhtmlStrict)
     }
 
     Flot.init()

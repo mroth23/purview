@@ -19,7 +19,12 @@ import scala.xml.UnprefixedAttribute
 class SystemMonitor extends CometActor {
   override def defaultPrefix = Full("graph")
   val id = Helpers.randomString(16)
-  val attrs = S.attrs
+  val attrs = S.attrs.filter {
+    case (Left(x), _) if x == "name" => false
+    case (Left(x), _) if x == "type" => false
+    case (Left(x), _) if x == "with" => false
+    case _ => true
+  }
 
   var options : FlotOptions = new FlotOptions {}
   var series : List[FlotSerie] = Nil
