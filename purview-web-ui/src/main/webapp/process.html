@@ -1,36 +1,28 @@
-<lift:surround with="default" at="content">
-    <head>
-        <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
-        <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
-    </head>
-    <lift:Process.progress>
-        <table>
-            <tr>
-                <td class="span-2">Analyser</td>
-                <td class="span-17"><progress:analyser>Some analyser</progress:analyser></td>
-            </tr>
-            <tr>
-                <td>Status</td>
-                <td><progress:status>Some status</progress:status></td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <progress:mainBar>
-                        <div id="some-id" class="ui-progressbar ui-widget ui-widget-content ui-corner-all">
-                            <div style="width: 30%;" class="ui-progressbar-value ui-widget-header ui-corner-left"></div>
-                        </div>
-                    </progress:mainBar>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <progress:subBar>
-                        <div id="some-id" class="ui-progressbar ui-widget ui-widget-content ui-corner-all">
-                            <div style="width: 50%" class="ui-progressbar-value ui-widget-header ui-corner-left"></div>
-                        </div>
-                    </progress:subBar>
-                </td>
-            </tr>
-        </table>
-    </lift:Process.progress>
+<lift:surround with="default">
+    <lift:bind-at name="content">
+        <lift:Process.progress>
+            <p>
+                Analyser: <progress:analyser/>
+                <progress:mainBar>
+                    <div id="some-id" class="ui-progressbar ui-widget ui-widget-content ui-corner-all">
+                        <div style="width: 30%;" class="ui-progressbar-value ui-widget-header ui-corner-left"></div>
+                    </div>
+                </progress:mainBar>
+            </p>
+            <p>
+                Status: <progress:status/>
+                <progress:subBar>
+                    <div id="some-id" class="ui-progressbar ui-widget ui-widget-content ui-corner-all">
+                        <div style="width: 50%" class="ui-progressbar-value ui-widget-header ui-corner-left"></div>
+                    </div>
+                </progress:subBar>
+            </p>
+        </lift:Process.progress>
+    </lift:bind-at>
+    <lift:bind-at name="sidebar">
+        <div class="holder">
+            <h2>Current image</h2>
+            <lift:AnalysisSession.image style="max-width: 300px;"/>
+        </div>
+    </lift:bind-at>
 </lift:surround>

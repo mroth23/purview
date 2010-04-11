@@ -4,7 +4,7 @@
     <filter>
         <filter-name>LiftFilter</filter-name>
         <display-name>Lift Filter</display-name>
-        <description>The Filter that intercepts lift calls</description>
+        <description>The filter that intercepts Lift calls</description>
         <filter-class>net.liftweb.http.LiftFilter</filter-class>
     </filter>
     <filter-mapping>

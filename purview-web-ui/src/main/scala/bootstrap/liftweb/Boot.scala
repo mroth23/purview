@@ -29,8 +29,8 @@ class Boot {
     def analysisId = S.param("analysisId") openOr ""
     //Build site map
     val entries =
-      Menu(Loc("PurviewHome", List("index"), "Home")) ::
-      Menu(Loc("PurviewImage", List("image"), "Choose image")) ::
+      Menu(Loc("PurviewHome", List("index"), "Purview Home")) ::
+      Menu(Loc("PurviewImage", List("image"), "Analyse image")) ::
       Menu(Loc("PurviewSession", List("analysers"), "Configure analysers",
                If(() => AnalysisSession.analyses.is.contains(analysisId), "There's no active image"),
                Hidden)) ::

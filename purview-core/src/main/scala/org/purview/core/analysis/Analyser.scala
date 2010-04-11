@@ -68,6 +68,16 @@ abstract class Analyser[@specialized("Int,Float,Boolean") A] extends Metadata wi
   override def toString = "Analyser(" + name + "," + description + ")"
 }
 
+object Metadata {
+  def copy(what: Metadata) = new Metadata {
+    val name = what.name
+    val description = what.description
+    override val version = what.version
+    override val author = what.author
+    override val iconResource = what.iconResource
+  }
+}
+
 /**
  * Adds metadata information to an object, like for instance an Analyser.
  */

@@ -1,51 +1,65 @@
-<lift:surround with="default" at="content">
-    <p>
-        The image "<lift:AnalysisSession.imageName>test.png</lift:AnalysisSession.imageName>" is currently active.
-    </p>
-    <lift:AnalysisSession.image><img src="test-hidden/test.png" alt="test"/></lift:AnalysisSession.image>
-    <p>
-        Please select which analysers to use for the image. If the analyser has
-        settings, you can change them by clicking on their values.
-    </p>
-    <lift:AnalysisSession.analyserList form="post">
-        <table>
-            <thead>
-                <tr>
-                    <th class="span-1">&nbsp;</th>
-                    <th class="span-3">Analyser</th>
-                    <th class="span-6">Setting</th>
-                    <th class="span-9">Value</th>
-                </tr>
-            </thead>
-            <tfoot>
-                <tr>
-                    <td>&nbsp;</td>
-                    <td><analyserList:submit><input type="submit" value="Start analysis"/></analyserList:submit></td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                </tr>
-            </tfoot>
-            <tbody>
-                <analyserList:entry>
+<lift:surround with="default">
+    <lift:bind-at name="content">
+        <head>
+            <link rel="stylesheet" href="/css/analysers.css" type="text/css"/>
+            <script type="text/javascript" src="/js/jquery.simplemodal.js"></script>
+            <script type="text/javascript" src="/js/analysers.js"></script>
+        </head>
+        <p>
+            The image "<lift:AnalysisSession.imageName/>" is currently active.
+        </p>
+        <p>
+            Please select which analysers to use for the image. If the analyser has
+            settings, you can change them by clicking on their values.
+        </p>
+        <lift:AnalysisSession.analyserList form="post">
+            <table>
+                <thead>
                     <tr>
-                        <td><entry:enabled><input value="true" type="checkbox"/></entry:enabled></td>
-                        <td colspan="3">
-                            <em><entry:name>Some analyser</entry:name></em><br/>
-                            <entry:description>Lorem ipsum dolor sit amet.</entry:description>
-                        </td>
+                        <th>&nbsp;</th>
+                        <th>Analyser</th>
                     </tr>
-                    <entry:settings>
-                        <settings:setting>
-                            <tr>
-                                <td>&nbsp;</td>
-                                <td>&nbsp;</td>
-                                <td><setting:name>Some setting</setting:name></td>
-                                <td><setting:form>42</setting:form></td>
-                            </tr>
-                        </settings:setting>
-                    </entry:settings>
-                </analyserList:entry>
-            </tbody>
-        </table>
-    </lift:AnalysisSession.analyserList>
+                </thead>
+                <tbody>
+                    <analyserList:entry>
+                        <tr>
+                            <td><entry:enabled/></td>
+                            <td>
+                                <em><entry:name/></em><br/>
+                                <entry:description/>
+                                <entry:settings>
+                                    <a href="#" class="settings-button fl_right">Settings...</a>
+                                    <div class="settings-form">
+                                        <h2>Analyser settings</h2>
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Setting</th>
+                                                    <th class="narrow">Value</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <settings:setting>
+                                                    <tr><td><setting:name/></td><td><setting:form/></td></tr>
+                                                </settings:setting>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </entry:settings>
+                            </td>
+                        </tr>
+                    </analyserList:entry>
+                </tbody>
+            </table>
+            <p>
+                <analyserList:submit/>
+            </p>
+        </lift:AnalysisSession.analyserList>
+    </lift:bind-at>
+    <lift:bind-at name="sidebar">
+        <div class="holder">
+            <h2>Current image</h2>
+            <lift:AnalysisSession.image style="max-width: 300px;"/>
+        </div>
+    </lift:bind-at>
 </lift:surround>

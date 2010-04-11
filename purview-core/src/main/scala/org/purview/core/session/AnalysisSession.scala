@@ -21,6 +21,6 @@ class AnalysisSession[A](analysersToRun: Seq[Analyser[A]], input: A) {
     stats.reportProgress(1)
     stats.reportSubProgress(1)
 
-    Map((analysersToRun zip results): _*)
+    Map((analysersToRun map Metadata.copy zip results): _*)
   }
 }

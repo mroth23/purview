@@ -3,25 +3,14 @@
         Please select an image below to use for this analysis session.
     </p>
     <lift:AnalysisSession.create form="post" multipart="true">
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Field</th>
-                </tr>
-            </thead>
-            <tfoot>
-                <tr>
-                    <td>&nbsp;</td>
-                    <td><create:submit><input type="submit" value="Start session"/></create:submit></td>
-                </tr>
-            </tfoot>
-            <tbody>
-                <tr>
-                    <td>Image</td>
-                    <td><create:image><input type="file" name="some-id"/></create:image></td>
-                </tr>
-            </tbody>
-        </table>
+        <fieldset>
+            <legend>Upload image</legend>
+            <label for="image-field">Image:
+                <create:image><input type="file" name="some-id"/></create:image>
+            </label>
+            <p>
+                <create:submit><input type="submit" value="Start session"/></create:submit>
+            </p>
+        </fieldset>
     </lift:AnalysisSession.create>
 </lift:surround>

@@ -4,7 +4,7 @@ import org.purview.core.analysis.Analyser
 import org.purview.core.data.ImageMatrix
 
 case class Analysis(inputImage: InputImage,
-                    analysers: Analysers,
+                    analysers: Option[Analysers],
                     runtime: Option[AnalysisRuntime])
 
 case class InputImage(name: String,

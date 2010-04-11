@@ -1,46 +1,172 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:lift="http://liftweb.net/">
     <head>
         <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+        <meta http-equiv="imagetoolbar" content="no" />
         <meta name="description" content="An image processing framework" />
         <meta name="keywords" content="purview,image processing,image forensics,image,image analysis,forgery detection" />
 
         <title>Purview - <lift:Menu.title/></title>
-        <link href="/css/blueprint/screen.css" type="text/css" rel="stylesheet" media="screen, projection" />
-        <link href="/css/blueprint/print.css" type="text/css" rel="stylesheet" media="print" />
-        <link href="/css/fancy-type/screen.css" type="text/css" rel="stylesheet" media="screen, projection" />
-        <link href="/css/main.css" type="text/css" rel="stylesheet" media="screen, projection, print" />
-        <!--[if IE]><link rel="stylesheet" href="/css/blueprint/ie.css" type="text/css" media="screen, projection"><![endif]-->
-        <script id="jquery" src="/classpath/jquery.js" type="text/javascript"/>
-        <script id="json" src="/classpath/json.js" type="text/javascript"/>
+        <link rel="stylesheet" href="/css/layout.css" type="text/css" />
+        <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/themes/ui-darkness/jquery-ui.css" type="text/css"/>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.0/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="/classpath/json.js" id="json"></script>
+        <script type="text/javascript" src="/js/jquery.slidepanel.setup.js"></script>
     </head>
     <body>
-        <div class="container" style="overflow: visible;">
-            <div class="column span-24 last">
-                <h1 class="alt">Purview 1.1-SNAPSHOT</h1>
+        <div class="wrapper col0">
+            <div id="topbar">
+                <div id="slidepanel">
+                    <div class="topbox">
+                        <h2>Server administration</h2>
+                        <p>
+                            This panel gives you access to some server administration features.
+                        </p>
+                        <p>
+                            Some of the options that are available here might potentially
+                            be dangerous, so use them sparingly, and always think before you type.
+                        </p>
+                    </div>
+                    <div class="topbox">
+                        <h3>Memory</h3>
+                        <p>
+                            <lift:System.gc/>
+                        </p>
+                    </div>
+                    <div class="topbox last">
+                    </div>
+                    <br class="clear" />
+                </div>
+                <div id="loginpanel">
+                    <ul>
+                        <li class="left">Server adm. &raquo;</li>
+                        <li class="right" id="toggle"><a id="slideit" href="#slidepanel">Open panel</a><a id="closeit" style="display: none;" href="#slidepanel">Close panel</a></li>
+                    </ul>
+                </div>
+                <br class="clear" />
             </div>
-
-            <hr/>
-
-            <div class="column span-5 sidebar">
-                <lift:Menu.builder/>
+        </div>
+        <div class="wrapper col1">
+            <div id="header">
+                <div id="logo">
+                    <h1><a href="/">Purview 1.1</a></h1>
+                    <p>Image forgery detection application</p>
+                </div>
+                <div id="topnav">
+                    <lift:Menu.builder li_item:class="active" linkToSelf="true"/>
+                </div>
+                <br class="clear" />
             </div>
-
-            <div class="column span-19 last">
-                <h2><lift:Menu.title/></h2>
-                <lift:Msgs>
-                    <lift:error_class>error</lift:error_class>
-                    <lift:warning_class>notice</lift:warning_class>
-                    <lift:notice_class>success</lift:notice_class>
-                </lift:Msgs>
-                <lift:bind name="content" />
-
-                <hr/>
-                <h3>Server statistics</h3>
-                <lift:System.gc/>
-                <lift:comet type="SystemMonitor">
-                    <monitor:graph><em>Loading graph...</em></monitor:graph>
-                </lift:comet>
-                <div id="graph" class="span-19" style="height: 200px;"></div>
+        </div>
+        <div class="wrapper col2">
+            <lift:bind name="header">
+                <lift:Navigation.breadcrumb>
+                    <div id="breadcrumb">
+                        <ul>
+                            <li class="first">Recent actions</li>
+                            <breadcrumb:history>
+                                <li>&#187;</li>
+                                <li><history:link/></li>
+                            </breadcrumb:history>
+                            <breadcrumb:current>
+                                <li>&#187;</li>
+                                <li class="current"><current:link/></li>
+                            </breadcrumb:current>
+                        </ul>
+                    </div>
+                </lift:Navigation.breadcrumb>
+            </lift:bind>
+        </div>
+        <div class="wrapper col3">
+            <div id="container">
+                <div id="content" style="overflow: auto;">
+                    <h2><lift:Menu.title/></h2>
+                    <lift:Msgs>
+                        <lift:error_class>error</lift:error_class>
+                        <lift:warning_class>notice</lift:warning_class>
+                        <lift:notice_class>success</lift:notice_class>
+                    </lift:Msgs>
+                    <lift:bind name="content"/>
+                </div>
+                <div id="column">
+                    <lift:bind name="sidebar">
+                    </lift:bind>
+                    <div class="holder">
+                        <h2>Server statistics</h2>
+                        <lift:comet type="SystemMonitor" name="main-monitor" style="height: 200px; width: 300px;"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="wrapper col4">
+            <div id="footer">
+                <div class="footbox">
+                    <h2>Running analyses</h2>
+                    <ul>
+                        <li><a href="#">Lorem ipsum dolor</a></li>
+                        <li><a href="#">Suspendisse in neque</a></li>
+                        <li><a href="#">Praesent et eros</a></li>
+                        <li><a href="#">Lorem ipsum dolor</a></li>
+                        <li><a href="#">Suspendisse in neque</a></li>
+                        <li class="last"><a href="#">Praesent et eros</a></li>
+                    </ul>
+                </div>
+                <div class="footbox">
+                    <h2>Completed analyses</h2>
+                    <ul>
+                        <li><a href="#">Lorem ipsum dolor</a></li>
+                        <li><a href="#">Suspendisse in neque</a></li>
+                        <li><a href="#">Praesent et eros</a></li>
+                        <li><a href="#">Lorem ipsum dolor</a></li>
+                        <li><a href="#">Suspendisse in neque</a></li>
+                        <li class="last"><a href="#">Praesent et eros</a></li>
+                    </ul>
+                </div>
+                <div class="footbox">
+                    <h2>User statistics</h2>
+                    <ul>
+                        <li><a href="#">Lorem ipsum dolor</a></li>
+                        <li><a href="#">Suspendisse in neque</a></li>
+                        <li><a href="#">Praesent et eros</a></li>
+                        <li><a href="#">Lorem ipsum dolor</a></li>
+                        <li><a href="#">Suspendisse in neque</a></li>
+                        <li class="last"><a href="#">Praesent et eros</a></li>
+                    </ul>
+                </div>
+                <div class="footbox">
+                    <h2>Site information</h2>
+                    <ul>
+                        <li><a href="#">Lorem ipsum dolor</a></li>
+                        <li><a href="#">Suspendisse in neque</a></li>
+                        <li><a href="#">Praesent et eros</a></li>
+                        <li><a href="#">Lorem ipsum dolor</a></li>
+                        <li><a href="#">Suspendisse in neque</a></li>
+                        <li class="last"><a href="#">Praesent et eros</a></li>
+                    </ul>
+                </div>
+                <div class="footbox last">
+                    <h2>Server information</h2>
+                    <ul>
+                        <li><a href="#">Lorem ipsum dolor</a></li>
+                        <li><a href="#">Suspendisse in neque</a></li>
+                        <li><a href="#">Praesent et eros</a></li>
+                        <li><a href="#">Lorem ipsum dolor</a></li>
+                        <li><a href="#">Suspendisse in neque</a></li>
+                        <li class="last"><a href="#">Praesent et eros</a></li>
+                    </ul>
+                </div>
+                <br class="clear" />
+            </div>
+        </div>
+        <div class="wrapper col5">
+            <div id="copyright">
+                <p class="fl_left">
+                    Copyright &copy; 2010 <em>David Flemström</em> &amp; <em>Moritz Roth</em> -
+                    All Rights Reserved -
+                    <lift:Menu.item name="PurviewAbout" donthide="donthide">More information</lift:Menu.item> -
+                    <a href="http://github.com/dflemstr/purview">Project home page</a>
+                </p>
+                <br class="clear" />
             </div>
         </div>
     </body>

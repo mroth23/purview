@@ -1,8 +1,88 @@
-<lift:surround with="default" at="content">
-    <p>
-        Welcome to Purview 1.1-SNAPSHOT!
-    </p>
-    <p>
-        Please <lift:Menu.item name="PurviewImage">choose an image</lift:Menu.item> to start an analysis!
-    </p>
+<lift:surround with="default">
+    <lift:bind-at name="header">
+        <head>
+            <link rel="stylesheet" href="/css/layout.css" type="text/css" />
+            <script type="text/javascript" src="/js/jquery.cycle.js"></script>
+            <script type="text/javascript" src="/js/jquery.cycle.setup.js"></script>
+        </head>
+        <div id="featured_slide">
+            <div class="featured_box"><img src="images/slides/compression-errors.png" alt="Compression errors" />
+                <div class="floater">
+                    <h2>1. Find compression errors</h2>
+                    <p>
+                        By recompressing JPEG images, it is possible to detect
+                        regions in an image that are of a different quality relative to its
+                        surroundings.
+                    </p>
+                    <p>
+                        Purview is able to detect such quality differences via a
+                        sophisticated image recompression algorithm.
+                    </p>
+                </div>
+            </div>
+            <div class="featured_box"><img src="images/slides/scaled-regions.png" alt="Scaled regions" />
+                <div class="floater">
+                    <h2>2. Highlight scaled regions</h2>
+                    <p>
+                        Purview lets you analyse your image to find areas that have been scaled.
+                    </p>
+                    <p>
+                        Currently supported scaling algorithms:
+                    </p>
+                    <ol>
+                        <li>Nearest-neighbor interpolation</li>
+                        <li>Bilinear resampling</li>
+                        <li>Bicubic interpolation</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="featured_box"><img src="images/slides/cloned-regions.png" alt="Cloned regions" />
+                <div class="floater">
+                    <h2>3. Detect cloned regions</h2>
+                    <p>
+                        You thought that it was a good idea to cover something up
+                        using the <q>Clone stamp</q> tool?
+                    </p>
+                    <p>
+                        Well, you better think again! Purview is able to detect
+                        cloned regions in an image!
+                    </p>
+                </div>
+            </div>
+            <div class="featured_box"><img src="/images/slides/metadata.png" alt="" />
+                <div class="floater">
+                    <h2>4. Analyse metadata</h2>
+                    <p>
+                        Most image editors leave behind various traces in an image's
+                        meta data.
+                    </p>
+                    <p>
+                        Via a simple metadata recognition database, Purview is
+                        able to detect images that have been edited by specific editors.
+                    </p>
+                </div>
+            </div>
+            <div class="featured_box"><img src="/images/slides/extensions.png" alt="Extensions" />
+                <div class="floater">
+                    <h2>5. Extensions</h2>
+                    <p>
+                        Doesn't Purview currently detect an image forgery technique that
+                        you know of?
+                    </p>
+                    <p>
+                        No problem, Purview is completely modular and
+                        can easily be extended with new analysers!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </lift:bind-at>
+    <lift:bind-at name="content">
+        <p>
+            Welcome to Purview 1.1-SNAPSHOT!
+        </p>
+        <p>
+            Please <lift:Menu.item name="PurviewImage">choose an image</lift:Menu.item> to start an analysis!
+        </p>
+    </lift:bind-at>
 </lift:surround>

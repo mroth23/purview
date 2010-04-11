@@ -1,26 +1,28 @@
-<lift:surround with="default" at="content">
-    <p>
-        Analysis results:
-    </p>
-    <lift:AnalysisSession.resultsView>
-        <div class="span-5 column">
-            <resultsView:tree>
-                <ul>
-                    <tree:analyserEntry>
-                        <li>
-                        <analyserEntry:analyserName>Some analyser</analyserEntry:analyserName>
+<lift:surround with="default">
+    <lift:bind-at name="content">
+        <head>
+            <link rel="stylesheet" type="text/css" href="/css/results.css"/>
+        </head>
+        <p>
+            Please choose a report entry in the side bar to view it below.
+        </p>
+        <lift:AnalysisSession.resultsView/>
+    </lift:bind-at>
+    <lift:bind-at name="sidebar">
+        <h2>Navigation</h2>
+        <lift:AnalysisSession.resultsTree>
+            <ul>
+                <tree:analyserEntry>
+                    <li>
+                        <analyserEntry:analyserName/>
                         <ul>
                             <analyserEntry:reportEntry>
-                                <li><reportEntry:message>Some report entry</reportEntry:message></li>
+                                <li class="report-entry"><reportEntry:message/></li>
                             </analyserEntry:reportEntry>
                         </ul>
-                        </li>
-                    </tree:analyserEntry>
-                </ul>
-            </resultsView:tree>
-        </div>
-        <div class="span-13 column last" style="overflow: auto;">
-            <resultsView:view><img src="test-hidden/test.png" alt="test"/></resultsView:view>
-        </div>
-    </lift:AnalysisSession.resultsView>
+                    </li>
+                </tree:analyserEntry>
+            </ul>
+        </lift:AnalysisSession.resultsTree>
+    </lift:bind-at>
 </lift:surround>

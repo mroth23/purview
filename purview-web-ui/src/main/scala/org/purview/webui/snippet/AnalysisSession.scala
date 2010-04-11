@@ -10,6 +10,7 @@ import net.liftweb.http.S
 import net.liftweb.http.SHtml
 import net.liftweb.http.SessionVar
 import net.liftweb.http.js.JsCmd
+import net.liftweb.http.js.JsCmds
 import net.liftweb.http.js.JsCmds._
 import net.liftweb.util.Helpers
 import net.liftweb.util.Helpers._
@@ -52,6 +53,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
     case "imageName" => imageName
     case "analyserList" => analyserList
     case "resultsView" => resultsView
+    case "resultsTree" => resultsTree
   }
 
   private object uploadedFile extends RequestVar[Option[FileParamHolder]](None)
@@ -94,10 +96,10 @@ class AnalysisSession extends DispatchSnippet with Logger {
 
         val analysis = Analysis(
           inputImage = inputImage,
-          analysers = Analysers(
-            instances = analysers,
-            enabled = analysers.map((_, false)).toMap
-          ),
+          analysers = Some(Analysers(
+              instances = analysers,
+              enabled = analysers.map((_, false)).toMap
+            )),
           runtime = None
         )
 
@@ -108,7 +110,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
     }
 
     bind("create", createTemplate,
-         "image" -> SHtml.fileUpload(x => uploadedFile.set(Some(x))),
+         "image" -> <span id="image-field">{SHtml.fileUpload(x => uploadedFile.set(Some(x)))}</span>,
          "submit" -> SHtml.submit("Start session", doCreate))
   }
 
@@ -119,7 +121,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
 
   def image(otherwise: NodeSeq) =
     analyses.is.get(S.param("analysisId") openOr "") map { x =>
-      (<img src={S.hostAndPath + "/imagefile/" + x.inputImage.scaled.id} alt={x.inputImage.name}/>)
+      (<img src={S.hostAndPath + "/imagefile/" + x.inputImage.scaled.id} alt={x.inputImage.name}/>) % S.attrsToMetaData
     } getOrElse otherwise
 
   def analyserList(analyserListTemplate: NodeSeq) = {
@@ -128,16 +130,20 @@ class AnalysisSession extends DispatchSnippet with Logger {
         S.error("Can't view analysers: No active analysis")
         S.redirectTo("/")
       })
+    def analysers = analysis.analysers getOrElse {
+      S.error("No loaded analysers")
+      S.redirectTo("/image")
+    }
     def makeEntry(entryTemplate: NodeSeq): NodeSeq =
-      analysis.analysers.instances.flatMap { analyser =>
+      analysis.analysers.get.instances.flatMap { analyser =>
 
         def doSetEnabled(value: Boolean) = {
-          val newAnalysers = analysis.analysers.copy(enabled = analysis.analysers.enabled + (analyser -> value))
-          val newAnalysis = analysis.copy(analysers = newAnalysers)
+          val newAnalysers = analysers.copy(enabled = analysers.enabled + (analyser -> value))
+          val newAnalysis = analysis.copy(analysers = Some(newAnalysers))
           analyses.set(analyses.is + (analysisId -> newAnalysis))
         }
 
-        val analyserEnabled = analysis.analysers.enabled(analyser)
+        val analyserEnabled = analysers.enabled(analyser)
 
         bind("entry", entryTemplate,
              "enabled" -> SHtml.checkbox(analyserEnabled, doSetEnabled),
@@ -225,7 +231,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
 
       analyses.set(analyses.is + (analysisId -> analysis.copy(runtime = Some(runtime))))
 
-      val session = new core.session.AnalysisSession[ImageMatrix](analysis.analysers.instances.filter(analysis.analysers.enabled), image)
+      val session = new core.session.AnalysisSession[ImageMatrix](analysis.analysers.get.instances.filter(analysis.analysers.get.enabled), image)
       val thread = new Thread(new Runnable {
           def run() = {
             try {
@@ -245,21 +251,19 @@ class AnalysisSession extends DispatchSnippet with Logger {
          "submit" -> SHtml.submit("Start analysis", doSubmit))
   }
 
-  def resultsView(resultsViewTemplate: NodeSeq): NodeSeq = {
-    val elemId = randomString(16)
+  object currentReportEntry extends RequestVar[Option[ReportEntry]](None)
+  object resultsElemId extends RequestVar[String](randomString(16))
+  object redrawFunc extends RequestVar[() => JsCmd](() => JsCmds.Noop)
+
+  def resultsTree(resultsTreeTemplate: NodeSeq): NodeSeq = {
     val analysisId = S.param("analysisId") openOr ""
-    def analysis = analyses.is.getOrElse(analysisId, {
+    val analysis = analyses.is.getOrElse(analysisId, {
         S.error("Can't view any results; no active analysis")
         S.redirectTo("/")
       })
-    val image = analysis.inputImage.original.load()
-
     val report = ReportManager.loadReport(analysis.runtime.map(_.resultsKey) getOrElse "")
     val res = report.map(x => x._1 -> x._2.toSeq.sortWith((x, y) => x.level.name < y.level.name))
-
     val metas = res.keySet.toSeq.sortWith((x, y) => x.name < y.name)
-
-    var currentReportEntry: Option[ReportEntry] = None
 
     def makeTree(treeTemplate: NodeSeq): NodeSeq = {
       bind("tree", treeTemplate,
@@ -276,17 +280,31 @@ class AnalysisSession extends DispatchSnippet with Logger {
 
     def makeReportEntry(metadata: Metadata)(reportEntryTemplate: NodeSeq): NodeSeq =
       res(metadata).flatMap { entry =>
-        val isCurrent = currentReportEntry.map(_ == entry) getOrElse false
         val label = entry match {
           case m: Message => Text(m.message)
           case _ => Text(entry.toString)
         }
 
         bind("reportEntry", reportEntryTemplate,
-             "message" -> SHtml.a(() => {currentReportEntry = Some(entry); redraw}, label))
+             "message" -> SHtml.a(() => {currentReportEntry.set(Some(entry)); redrawFunc.is()}, label,
+                                  "class" -> ("report-level-" + entry.level.name)))
       }.toList
+    makeTree(resultsTreeTemplate)
+  }
 
-    def makeView(viewTemplate: NodeSeq): NodeSeq = currentReportEntry match {
+  def resultsView(resultsViewTemplate: NodeSeq): NodeSeq = {
+    val analysisId = S.param("analysisId") openOr ""
+    val analysis = analyses.is.getOrElse(analysisId, {
+        S.error("Can't view any results; no active analysis")
+        S.redirectTo("/")
+      })
+    val image = analysis.inputImage.original.load()
+
+    //Unload analysers
+    if(analysis.analysers.isDefined)
+      analyses.set(analyses.is + (analysisId -> analysis.copy(analysers = None)))
+
+    def makeView(viewTemplate: NodeSeq): NodeSeq = currentReportEntry.is match {
       case None =>
         (<img src={S.hostAndPath + "/imagefile/" + analysis.inputImage.original.id} alt={analysis.inputImage.name}/>)
       case Some(entry) =>
@@ -313,13 +331,9 @@ class AnalysisSession extends DispatchSnippet with Logger {
         <div style={"width: " + image.getWidth + "px; height: " + image.getHeight + "px;"}>{svg}</div>
     }
 
-    def redraw() = SetHtml(elemId, inner())
+    def inner() = makeView(resultsViewTemplate)
 
-    def inner() = {
-      bind("resultsView", resultsViewTemplate,
-           "tree" -> makeTree _,
-           "view" -> makeView _)
-    }
-    <div id={elemId} style="padding: 0.1em;">{inner()}</div>
+    redrawFunc.set(() => SetHtml(resultsElemId.is, inner()))
+    <div id={resultsElemId.is}>{inner()}</div> % S.attrsToMetaData
   }
 }

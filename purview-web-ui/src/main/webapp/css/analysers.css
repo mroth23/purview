@@ -1,0 +1,18 @@
+div.settings-form {
+    display: none;
+}
+
+td.narrow {
+      width: 5em;
+}
+
+#simplemodal-overlay {
+    background-color: black;
+}
+
+#simplemodal-container {
+    min-width: 300px;
+    color: #bbb;
+    background-color: #333;
+    padding: 12px;
+}

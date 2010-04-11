@@ -28,8 +28,8 @@ object SystemSensor extends java.lang.Runnable {
     val time = new Date().getTime
 
     val runtime = Runtime.getRuntime
-    val newMem = (runtime.totalMemory - runtime.freeMemory).toDouble
-    val newAlloc = runtime.totalMemory.toDouble
+    val newMem = (runtime.totalMemory - runtime.freeMemory).toDouble / (1024 * 1024)
+    val newAlloc = runtime.totalMemory.toDouble / (1024 * 1024)
 
     DataAccumulator ! Update(time, List(newMem, newAlloc))
 
@@ -42,11 +42,12 @@ object DataAccumulator extends Actor {
   case class RemoveListener(actor: LiftActor)
   case class InitialData(data: FlotInfo)
   case class NewData(data: FlotNewData)
-  val MaxData = 100
+  val MaxData = 120 //Save 2 min history
 
   val options = new FlotOptions {
     override val xaxis = Full(new FlotAxisOptions {
         override val mode = Full("time")
+        override val ticks = List(2.0) //One per minute
       })
 
     override val yaxis = Full(new FlotAxisOptions {
@@ -60,7 +61,7 @@ object DataAccumulator extends Actor {
   }
 
   private var series: List[FlotSerie] = new FlotSerie {
-    override val label = Full("Memory usage + cache")
+    override val label = Full("Memory usage &amp; cache (MiB)")
     override val data = {
       val time = new Date().getTime
       (for(time <- (time - MaxData * 1000) to time by 1000l) yield (time.toDouble, 0.0)).toList
@@ -70,7 +71,7 @@ object DataAccumulator extends Actor {
         override val show = Full(true)
       })
   } :: new FlotSerie {
-    override val label = Full("Available memory")
+    override val label = Full("Available memory (MiB)")
     override val data = {
       val time = new Date().getTime
       (for(time <- (time - MaxData * 1000) to time by 1000l) yield (time.toDouble, 0.0)).toList

@@ -1,0 +1,20 @@
+li.report-entry {
+    list-style: none outside;
+    margin-left: -3em;
+}
+
+li.report-entry a {
+    padding-left: 18px;
+}
+
+a.report-level-Information {
+    background: url(/images/report-level-information.png) left no-repeat;
+}
+
+a.report-level-Error {
+    background: url(/images/report-level-error.png) left no-repeat;
+}
+
+a.report-level-Warning {
+    background: url(/images/report-level-warning.png) left no-repeat;
+}
