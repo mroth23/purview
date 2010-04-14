@@ -51,11 +51,7 @@ class AnalyserImplementation extends HeatMapImageAnalyser
         val rgb = new BufferedImage(in.getWidth, in.getHeight,
                                     BufferedImage.TYPE_INT_RGB)
         val g = rgb.createGraphics
-        try {
-          g.drawImage(in, 0, 0, null)
-        } finally {
-          g.dispose()
-        }
+        try g.drawImage(in, 0, 0, null) finally g.dispose()
 
         writer.setOutput(ImageIO.createImageOutputStream(out))
 
@@ -71,11 +67,7 @@ class AnalyserImplementation extends HeatMapImageAnalyser
         val argb = new BufferedImage(in.getWidth, in.getHeight,
                                      BufferedImage.TYPE_INT_ARGB)
         val g2 = argb.createGraphics
-        try {
-          g2.drawImage(destroyedImg, 0, 0, null)
-        } finally {
-          g2.dispose()
-        }
+        try g2.drawImage(destroyedImg, 0, 0, null) finally g2.dispose()
 
         result = Some(argb)
       } catch {

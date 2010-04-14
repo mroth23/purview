@@ -27,11 +27,10 @@ object ImageUtils {
     val result = new BufferedImage((image.getWidth * scaleFactor).toInt,
                                    (image.getHeight * scaleFactor).toInt, BufferedImage.TYPE_INT_ARGB)
     val g = result.createGraphics
-    try {
-      g.drawImage(image, 0, 0, (image.getWidth * scaleFactor).toInt, (image.getHeight * scaleFactor).toInt, null)
-    } finally {
-      g.dispose()
-    }
+    try
+    g.drawImage(image, 0, 0, (image.getWidth * scaleFactor).toInt, (image.getHeight * scaleFactor).toInt, null)
+    finally
+    g.dispose()
     result
   }
 }

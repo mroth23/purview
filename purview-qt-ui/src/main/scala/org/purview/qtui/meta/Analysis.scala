@@ -64,9 +64,9 @@ case class Analysis(matrix: ImageMatrix, name: String, analysers: Seq[Analyser[I
   }
 
   def analyse(): Unit = Actor.actor {
-    val report = try {
+    val report = try
       new AnalysisSession(analysers, matrix).run(stats)
-    } catch {
+    catch {
       case err =>
         error.emit(err.getMessage, err.getStackTraceString)
         Predef.error("Error in analysis")

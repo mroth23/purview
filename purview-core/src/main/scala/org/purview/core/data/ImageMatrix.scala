@@ -44,9 +44,7 @@ object ImageMatrix {
       g.dispose()
 
       new ImageMatrix(argbVersion, metadata)
-    } finally {
-      stream.close()
-    }
+    } finally stream.close()
   }
 }
 
