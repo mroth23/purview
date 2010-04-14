@@ -4,6 +4,7 @@ import net.liftweb.common.Full
 import net.liftweb.http.CometActor
 import net.liftweb.http.S
 import net.liftweb.http.js.JsCmds._
+import net.liftweb.util.Helpers
 import net.liftweb.util.Helpers._
 import org.purview.webui.snippet.AnalysisSession
 import org.purview.webui.util.AnalysisActor
@@ -21,10 +22,10 @@ class ProgressMonitor extends CometActor {
   private var lastAnalyser = ""
 
   override def localSetup() =
-    AnalysisSession.analyses.is.get(name openOr "").foreach(_.runtime.foreach(_.stats ! AnalysisActor.AddListener(this)))
+    AnalysisSession.runningAnalyses.get(name flatMap(x => Helpers.tryo(x.toLong)) openOr -1l).foreach(_ ! AnalysisActor.AddListener(this))
 
   override def localShutdown() =
-    AnalysisSession.analyses.is.get(name openOr "").foreach(_.runtime.foreach(_.stats ! AnalysisActor.RemoveListener(this)))
+    AnalysisSession.runningAnalyses.get(name flatMap(x => Helpers.tryo(x.toLong)) openOr -1l).foreach(_ ! AnalysisActor.RemoveListener(this))
 
   def fillPercent(percent: Int) =
     <div style={"width: " + percent + "%"} class={"ui-progressbar-value ui-widget-header " +

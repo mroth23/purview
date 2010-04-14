@@ -8,7 +8,6 @@ import net.liftweb.http.FileParamHolder
 import net.liftweb.http.RequestVar
 import net.liftweb.http.S
 import net.liftweb.http.SHtml
-import net.liftweb.http.SessionVar
 import net.liftweb.http.js.JsCmd
 import net.liftweb.http.js.JsCmds
 import net.liftweb.http.js.JsCmds._
@@ -18,30 +17,33 @@ import org.apache.batik.dom.GenericDOMImplementation
 import org.apache.batik.svggen.SVGGeneratorContext
 import org.apache.batik.svggen.SVGGraphics2D
 import org.purview.core.analysis.Analyser
-import org.purview.core.analysis.Metadata
 import org.purview.core.analysis.Settings
 import org.purview.core.analysis.settings.FloatRangeSetting
 import org.purview.core.analysis.settings.IntRangeSetting
 import org.purview.core.analysis.settings.Setting
 import org.purview.core.data.ImageMatrix
-import org.purview.core.report.Message
 import org.purview.core.report.ReportEntry
 import org.purview.core.session.SessionUtils
-import org.purview.webui.util.Analysers
-import org.purview.webui.util.Analysis
+import org.purview.webui.db.AnalyserReport
+import org.purview.webui.db.AnalyserReportEntryFile
+import org.purview.webui.db.Analysis
+import org.purview.webui.db.Database
 import org.purview.webui.util.AnalysisActor
-import org.purview.webui.util.AnalysisActor
-import org.purview.webui.util.AnalysisRuntime
+import org.purview.webui.util.ImageManager
 import org.purview.webui.util.ImageUtils
+import org.purview.webui.util.ReportEntryManager
 import org.purview.webui.util.ReportEntryRenderer
-import org.purview.webui.util.ReportManager
 import org.purview.webui.util.SVGImageHandler
+import org.squeryl.PrimitiveTypeMode
+import org.squeryl.PrimitiveTypeMode._
+import scala.collection.mutable
 import scala.xml.NodeSeq
 import scala.xml.Text
 import scala.xml.XML
 
 object AnalysisSession {
-  object analyses extends SessionVar[Map[String, Analysis]](Map.empty)
+  val stalledAnalyses: mutable.Map[Long, Map[Analyser[ImageMatrix], Boolean]] = new mutable.WeakHashMap
+  val runningAnalyses: mutable.Map[Long, AnalysisActor] = new mutable.HashMap
 }
 
 class AnalysisSession extends DispatchSnippet with Logger {
@@ -61,52 +63,34 @@ class AnalysisSession extends DispatchSnippet with Logger {
     def doCreate() = uploadedFile.is match {
       case None =>
         S.error("No file was uploaded")
-      case Some(fileParam) =>
-        val inputImage = try {
-          ImageUtils.createInputImage(fileParam.fileName, fileParam.fileStream)
-        } catch {
-          case ex =>
-            S.error("Couldn't open the uploaded file")
-            info(ex.getStackTraceString)
-            S.redirectTo("/image")
-        }
-
-        if(inputImage.original.file.length() > 10 * 1024 * 1024)
-          S.warning("You uploaded a large image (> 10 MiB). This might lead to a slow analysis.")
-
-        val analysers = try {
-          SessionUtils.createAnalyserInstances[ImageMatrix]()
-        } catch {
-          case ex =>
-            S.error("Error when initializing an analyser (check the server logs for more information)")
-            info(ex.getStackTraceString)
-            S.redirectTo("/image")
-        }
-
-        val analysisId = {
-          val baseName = fileParam.fileName.replaceAll("[^a-zA-Z0-9_.]", "_")
-          var res = baseName
-          var i = 0
-          while(analyses.is.contains(res)) {
-            i += 1
-            res = baseName + "_" + i
+      case Some(fileParam) => inTransaction {
+          val (rawId, optimizedId, scaledId) = try ImageUtils.makeImageSet(fileParam.fileStream) catch {
+            case ex =>
+              S.error("Couldn't open the uploaded file")
+              info(ex.getStackTraceString)
+              S.redirectTo("/image")
           }
-          res
+
+          val analysers = try SessionUtils.createAnalyserInstances[ImageMatrix]() catch {
+            case ex =>
+              S.error("Error when initializing an analyser (check the server logs for more information)")
+              info(ex.getStackTraceString)
+              S.redirectTo("/image")
+          }
+
+          val analysis = inTransaction {
+            Database.analyses.insert(Analysis(
+                fileName = fileParam.fileName,
+                originalImageKey = rawId,
+                optimizedImageKey = optimizedId,
+                scaledImageKey = scaledId
+              ))
+          }
+          stalledAnalyses(analysis.id) = analysers.map((_, true)).toMap
+
+          S.notice("The image was successfully uploaded!")
+          S.redirectTo("/image/" + analysis.id + "/analysers")
         }
-
-        val analysis = Analysis(
-          inputImage = inputImage,
-          analysers = Some(Analysers(
-              instances = analysers,
-              enabled = analysers.map((_, false)).toMap
-            )),
-          runtime = None
-        )
-
-        analyses.set(analyses.is + (analysisId -> analysis))
-
-        S.notice("The image was successfully uploaded!")
-        S.redirectTo("/image/" + analysisId + "/analysers")
     }
 
     bind("create", createTemplate,
@@ -114,36 +98,35 @@ class AnalysisSession extends DispatchSnippet with Logger {
          "submit" -> SHtml.submit("Start session", doCreate))
   }
 
+  def currentAnalysisId = S.param("analysisId").flatMap(x => Helpers.tryo(x.toLong)).toOption
+  def currentAnalysis = inTransaction {
+    currentAnalysisId.flatMap(id => Helpers.tryo(from(Database.analyses)(analysis => where(analysis.id === id) select(analysis)).single).toOption)
+  }
+
   def imageName(otherwise: NodeSeq) =
-    analyses.is.get(S.param("analysisId") openOr "") map { x =>
-      Text(x.inputImage.name)
-    } getOrElse otherwise
+    currentAnalysis map (_.fileName) map (Text) getOrElse otherwise
 
   def image(otherwise: NodeSeq) =
-    analyses.is.get(S.param("analysisId") openOr "") map { x =>
-      (<img src={S.hostAndPath + "/imagefile/" + x.inputImage.scaled.id} alt={x.inputImage.name}/>) % S.attrsToMetaData
+    currentAnalysis map { analysis =>
+      (<img src={S.hostAndPath + "/imagefile/" + analysis.scaledImageKey} alt={analysis.fileName}/>) % S.attrsToMetaData
     } getOrElse otherwise
 
   def analyserList(analyserListTemplate: NodeSeq) = {
-    val analysisId = S.param("analysisId") openOr ""
-    def analysis = analyses.is.getOrElse(analysisId, {
-        S.error("Can't view analysers: No active analysis")
-        S.redirectTo("/")
-      })
-    def analysers = analysis.analysers getOrElse {
-      S.error("No loaded analysers")
-      S.redirectTo("/image")
+    val analysis = currentAnalysis getOrElse {
+      S.error("Can't view analysers: No active analysis")
+      S.redirectTo("/")
     }
+    val analysers = stalledAnalyses.getOrElse(analysis.id, {
+        S.error("No loaded analysers")
+        S.redirectTo("/image")
+      })
     def makeEntry(entryTemplate: NodeSeq): NodeSeq =
-      analysis.analysers.get.instances.flatMap { analyser =>
+      analysers.keySet.toSeq.sortBy(_.name).flatMap { analyser =>
 
-        def doSetEnabled(value: Boolean) = {
-          val newAnalysers = analysers.copy(enabled = analysers.enabled + (analyser -> value))
-          val newAnalysis = analysis.copy(analysers = Some(newAnalysers))
-          analyses.set(analyses.is + (analysisId -> newAnalysis))
-        }
+        def doSetEnabled(value: Boolean) =
+          stalledAnalyses(analysis.id) = stalledAnalyses(analysis.id) + (analyser -> value)
 
-        val analyserEnabled = analysers.enabled(analyser)
+        val analyserEnabled = stalledAnalyses(analysis.id)(analyser)
 
         bind("entry", entryTemplate,
              "enabled" -> SHtml.checkbox(analyserEnabled, doSetEnabled),
@@ -212,30 +195,35 @@ class AnalysisSession extends DispatchSnippet with Logger {
     def doSubmit() = {
       import org.purview.core
 
-      val analysisActor = new AnalysisActor
-      analysisActor.start()
-      val runtime = AnalysisRuntime(
-        running = true,
-        resultsKey = ReportManager.makeId,
-        analysisActor
-      )
-
-      val mgImage = analysis.inputImage.original
-      val image = try {
-        ImageMatrix.fromFile(mgImage.file)
-      } catch {
+      val image = try ImageMatrix.fromFile(ImageManager.file(analysis.originalImageKey)) catch {
         case _ =>
           S.error("Cannot analyse image, The uploaded file has ceased to exist!") //Who knows...
           S.redirectTo("/image")
       }
+      
+      val analysisActor = new AnalysisActor
+      analysisActor.start()
+      runningAnalyses(analysis.id) = analysisActor
 
-      analyses.set(analyses.is + (analysisId -> analysis.copy(runtime = Some(runtime))))
-
-      val session = new core.session.AnalysisSession[ImageMatrix](analysis.analysers.get.instances.filter(analysis.analysers.get.enabled), image)
+      val analyserCandidates = stalledAnalyses(analysis.id).keySet.toSeq.sortBy(_.name)
+      val session = new core.session.AnalysisSession[ImageMatrix](analyserCandidates.filter(stalledAnalyses(analysis.id)), image)
       val thread = new Thread(new Runnable {
           def run() = {
             try {
-              ReportManager.saveReport(session.run(analysisActor), runtime.resultsKey)
+              val results = session.run(analysisActor)
+              inTransaction {
+                for(analyser <- results.keySet) {
+                  val report = Database.reports.insert(AnalyserReport(analysis.id,
+                                                                      analyser.name, analyser.description,
+                                                                      analyser.version, analyser.author,
+                                                                      analyser.iconResource))
+                  for(entry <- results(analyser)) {
+                    val entryId = ReportEntryManager.makeId
+                    ReportEntryManager.write(entryId, entry)
+                    Database.reportEntryFiles.insert(new AnalyserReportEntryFile(report.id, entryId))
+                  }
+                }
+              }
             } catch {
               case ex => analysisActor.error(ex.getMessage)
             }
@@ -243,7 +231,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
           }
         })
       thread.start()
-      S.redirectTo("/image/" + analysisId + "/process")
+      S.redirectTo("/image/" + analysis.id + "/process")
     }
 
     bind("analyserList", analyserListTemplate,
@@ -256,14 +244,18 @@ class AnalysisSession extends DispatchSnippet with Logger {
   object redrawFunc extends RequestVar[() => JsCmd](() => JsCmds.Noop)
 
   def resultsTree(resultsTreeTemplate: NodeSeq): NodeSeq = {
-    val analysisId = S.param("analysisId") openOr ""
-    val analysis = analyses.is.getOrElse(analysisId, {
-        S.error("Can't view any results; no active analysis")
-        S.redirectTo("/")
-      })
-    val report = ReportManager.loadReport(analysis.runtime.map(_.resultsKey) getOrElse "")
-    val res = report.map(x => x._1 -> x._2.toSeq.sortWith((x, y) => x.level.name < y.level.name))
-    val metas = res.keySet.toSeq.sortWith((x, y) => x.name < y.name)
+    val analysis = currentAnalysis getOrElse {
+      S.error("Can't view result: No active analysis")
+      S.redirectTo("/")
+    }
+    val result = transaction {
+      val reports = from(Database.reports)(report => where(report.analysisId === analysis.id) select(report))
+      val withEntries = reports map { report =>
+        (report, from(Database.reportEntryFiles)(entry => where(entry.reportId === report.id) select(entry)))
+      }
+      withEntries.toMap
+    }
+    val metas = result.keySet.toSeq.sortBy(_.name)
 
     def makeTree(treeTemplate: NodeSeq): NodeSeq = {
       bind("tree", treeTemplate,
@@ -278,12 +270,9 @@ class AnalysisSession extends DispatchSnippet with Logger {
              "reportEntry" -> makeReportEntry(metadata) _)
       }.toList
 
-    def makeReportEntry(metadata: Metadata)(reportEntryTemplate: NodeSeq): NodeSeq =
-      res(metadata).flatMap { entry =>
-        val label = entry match {
-          case m: Message => Text(m.message)
-          case _ => Text(entry.toString)
-        }
+    def makeReportEntry(report: AnalyserReport)(reportEntryTemplate: NodeSeq): NodeSeq =
+      result(report).flatMap(x => ReportEntryManager.read(x.fileKey)).flatMap { entry =>
+        val label = Text(entry.message)
 
         bind("reportEntry", reportEntryTemplate,
              "message" -> SHtml.a(() => {currentReportEntry.set(Some(entry)); redrawFunc.is()}, label,
@@ -293,20 +282,22 @@ class AnalysisSession extends DispatchSnippet with Logger {
   }
 
   def resultsView(resultsViewTemplate: NodeSeq): NodeSeq = {
-    val analysisId = S.param("analysisId") openOr ""
-    val analysis = analyses.is.getOrElse(analysisId, {
-        S.error("Can't view any results; no active analysis")
-        S.redirectTo("/")
-      })
-    val image = analysis.inputImage.original.load()
+    val analysis = currentAnalysis getOrElse {
+      S.error("Can't view result: No active analysis")
+      S.redirectTo("/")
+    }
+    val image = ImageManager.read(analysis.optimizedImageKey) getOrElse {
+      S.error("Can't view result: source image not found")
+      S.redirectTo("/")
+    }
 
     //Unload analysers
-    if(analysis.analysers.isDefined)
-      analyses.set(analyses.is + (analysisId -> analysis.copy(analysers = None)))
+    if(runningAnalyses.contains(analysis.id))
+      runningAnalyses.remove(analysis.id)
 
     def makeView(viewTemplate: NodeSeq): NodeSeq = currentReportEntry.is match {
       case None =>
-        (<img src={S.hostAndPath + "/imagefile/" + analysis.inputImage.original.id} alt={analysis.inputImage.name}/>)
+        (<img src={S.hostAndPath + "/imagefile/" + analysis.optimizedImageKey} alt={analysis.fileName}/>)
       case Some(entry) =>
         val domImpl = GenericDOMImplementation.getDOMImplementation
         val svgNS = "http://www.w3.org/2000/svg"

@@ -1,26 +1,33 @@
 package org.purview.webui.util
 
 import java.awt.image.BufferedImage
+import java.io.FileOutputStream
 import java.io.InputStream
+import java.nio.channels.Channels
+import javax.imageio.ImageIO
 
 object ImageUtils {
-  def createInputImage(name: String, stream: InputStream): InputImage = {
-    //Save the image:
-    val imageHandle = ImageManager.saveImage(stream)
-    
-    //Load the local image into memory:
-    val inputImage = imageHandle.load()
+  def makeImageSet(stream: InputStream): (String, String, String) = {
+    val rawId = UploadManager.makeId
+    val rawFile = UploadManager.file(rawId)
+    rawFile.createNewFile()
 
-    //Scale the image
-    val scaleFactor = (750f / inputImage.getWidth) min (562.5f / inputImage.getHeight) min 1.0f
-    val scaledImageHandle = ImageManager.saveImage(scaleImage(inputImage, scaleFactor))
+    {
+      val in = Channels.newChannel(stream)
+      val out = new FileOutputStream(rawFile).getChannel
+      try out.transferFrom(in, 0, Long.MaxValue) finally out.close()
+    }
 
-    //Construct our InputImage container
-    InputImage(
-      name = name,
-      original = imageHandle,
-      scaled = scaledImageHandle
-    )
+    val optimizedImage = ImageIO.read(rawFile)
+    val optimizedId = ImageManager.makeId
+    ImageManager.write(optimizedId, optimizedImage)
+
+    val scaleFactor = (750f / optimizedImage.getWidth) min (562.5f / optimizedImage.getHeight) min 1.0f
+    val scaledImage = scaleImage(optimizedImage, scaleFactor)
+    val scaledId = ImageManager.makeId
+    ImageManager.write(scaledId, scaledImage)
+
+    (rawId, optimizedId, scaledId)
   }
 
   def scaleImage(image: BufferedImage, scaleFactor: Float = 1.0f) = {
