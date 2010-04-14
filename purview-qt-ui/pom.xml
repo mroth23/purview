@@ -67,6 +67,12 @@
             <artifactId>noop-analyser</artifactId>
             <version>${project.version}</version>
         </dependency>
+		<dependency>
+            <groupId>org.purview</groupId>
+            <artifactId>principal-component-analyser</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
     </dependencies>
 
     <profiles>
