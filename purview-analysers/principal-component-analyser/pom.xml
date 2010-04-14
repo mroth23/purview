@@ -27,7 +27,6 @@
         <dependency>
             <groupId>jama</groupId>
             <artifactId>jama</artifactId>
-            <version>1.0.1</version>
         </dependency>
     </dependencies>
 
