@@ -165,6 +165,20 @@
                 <version>${lift.version}</version>
             </dependency>
 
+            <!-- Database -->
+            <dependency>
+                <!-- Squeryl -->
+                <groupId>org.squeryl</groupId>
+                <artifactId>squeryl_2.8.0.Beta1-RC8</artifactId>
+                <version>0.9.3</version>
+            </dependency>
+            <dependency>
+                <!-- H2 -->
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>1.2.132</version>
+            </dependency>
+
             <!-- Java EE -->
             <dependency>
                 <!-- Java Servlet API -->

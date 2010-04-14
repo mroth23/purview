@@ -16,6 +16,18 @@
 
     <dependencies>
         <dependency>
+            <groupId>batik</groupId>
+            <artifactId>batik-svggen</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.squeryl</groupId>
+            <artifactId>squeryl_2.8.0.Beta1-RC8</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.purview</groupId>
             <artifactId>core</artifactId>
             <version>${project.version}</version>
@@ -81,10 +93,6 @@
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-compiler</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>batik</groupId>
-            <artifactId>batik-svggen</artifactId>
         </dependency>
     </dependencies>
 
