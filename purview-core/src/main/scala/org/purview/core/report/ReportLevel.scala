@@ -3,7 +3,7 @@ package org.purview.core.report
 import java.io.Serializable
 import org.purview.core.data.Color
 
-trait ReportLevel extends NotNull with Serializable {
+sealed trait ReportLevel extends NotNull with Serializable {
   val name: String
 }
 
