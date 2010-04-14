@@ -116,6 +116,12 @@
                 <artifactId>batik-svggen</artifactId>
                 <version>1.6-1</version>
             </dependency>
+			<dependency>
+				<!-- Java matrix library -->
+				<groupId>jama</groupId>
+				<artifactId>jama</artifactId>
+				<version>1.0.1</version>
+			</dependency> 
 
             <!-- Qt -->
             <dependency>
@@ -400,6 +406,11 @@
             <name>Qt Jambi repository</name>
             <url>http://qtjambi.sourceforge.net/maven2/</url>
         </repository>
+		<repository>
+			<id>jama</id>
+			<name>JAMA repo</name>
+			<url>http://repo.chip.org/maven/</url>
+		</repository>
     </repositories>
 
     <pluginRepositories>

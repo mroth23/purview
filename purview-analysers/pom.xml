@@ -22,5 +22,6 @@
         <module>metadata-analyser</module>
         <module>nearest-neighbor-analyser</module>
         <module>noop-analyser</module>
+		<module>principal-component-analyser</module>
     </modules>
 </project>
