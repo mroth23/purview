@@ -11,7 +11,6 @@ import org.purview.core.report.Critical
 import org.purview.core.report.Debug
 import org.purview.core.report.Error
 import org.purview.core.report.Information
-import org.purview.core.report.Message
 import org.purview.core.report.ReportEntry
 import org.purview.core.report.Warning
 import org.purview.qtui.meta.Analysis
@@ -55,10 +54,7 @@ object ResultsView extends QDockWidget {
           val reportItem = new QTreeWidgetItem(analyserItem) {
             setData(0, Qt.ItemDataRole.ToolTipRole, entry.level.name)
             setData(0, Qt.ItemDataRole.UserRole, entry)
-            entry match {
-              case m: Message =>  setText(0, m.message)
-              case _ =>           setText(0, "?")
-            }
+            setText(0, entry.message)
             entry.level match {
               case Debug =>       setIcon(0, new QIcon("classpath:icons/security-high.png"))
               case Information => setIcon(0, new QIcon("classpath:icons/dialog-information.png"))

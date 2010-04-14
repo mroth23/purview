@@ -4,8 +4,8 @@ import org.purview.core.analysis.Analyser
 import org.purview.core.data.ImageMatrix
 import org.purview.core.process.Computation
 import org.purview.core.report.Error
-import org.purview.core.report.Message
 import org.purview.core.report.ReportEntry
+import org.purview.core.report.ReportMessage
 import org.purview.core.report.Warning
 
 class AnalyserImplementation extends Analyser[ImageMatrix] {
@@ -24,10 +24,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] {
         (dir, tree) <- image.metadata
         (key, value) <- tree
         (critical, msg) <- tupled((dir, key, value))
-      } yield new ReportEntry with Message {
-        val level = if(critical) Error else Warning
-        val message = msg
-      }).toSet
+      } yield new ReportMessage(if(critical) Error else Warning, msg)).toSet
   }
 
   def photoshopDetector: MetaAnalyser = {
