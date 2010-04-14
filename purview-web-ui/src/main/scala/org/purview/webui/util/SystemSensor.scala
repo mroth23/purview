@@ -1,6 +1,6 @@
 package org.purview.webui.util
 
-import java.util.Date
+import java.util.Calendar
 import net.liftweb.actor.LiftActor
 import net.liftweb.common.Full
 import net.liftweb.widgets.flot.FlotAxisOptions
@@ -25,7 +25,7 @@ object SystemSensor extends java.lang.Runnable {
   }
 
   override def run(): Unit = while(true) {
-    val time = new Date().getTime
+    val time = Calendar.getInstance.getTimeInMillis
 
     val runtime = Runtime.getRuntime
     val newMem = (runtime.totalMemory - runtime.freeMemory).toDouble / (1024 * 1024)
@@ -63,7 +63,7 @@ object DataAccumulator extends Actor {
   private var series: List[FlotSerie] = new FlotSerie {
     override val label = Full("Memory usage &amp; cache (MiB)")
     override val data = {
-      val time = new Date().getTime
+      val time = Calendar.getInstance.getTimeInMillis
       (for(time <- (time - MaxData * 1000) to time by 1000l) yield (time.toDouble, 0.0)).toList
     }
 
@@ -73,7 +73,7 @@ object DataAccumulator extends Actor {
   } :: new FlotSerie {
     override val label = Full("Available memory (MiB)")
     override val data = {
-      val time = new Date().getTime
+      val time = Calendar.getInstance.getTimeInMillis
       (for(time <- (time - MaxData * 1000) to time by 1000l) yield (time.toDouble, 0.0)).toList
     }
 
