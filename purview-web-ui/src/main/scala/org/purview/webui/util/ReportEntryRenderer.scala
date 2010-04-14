@@ -19,17 +19,17 @@ import org.purview.core.report.ReportShape
 import org.purview.core.report.ReportShapeMove
 
 object ReportEntryRenderer {
-  val POINT_RADIUS = 2f
-  val STROKE_WIDTH = 2f
-  val ARROW_WIDTH = 12f
-  val ARROW_ANGLE = Math.toRadians(20)
+  val PointRadius = 2f
+  val StrokeWidth = 2f
+  val ArrowWidth = 12f
+  val ArrowAngle = Math.toRadians(20)
   val sourceColor = Color.blue
   val transpSourceColor =
     new Color(sourceColor.getRed, sourceColor.getGreen,
               sourceColor.getBlue, sourceColor.getAlpha / 2)
 
-  val stroke = new BasicStroke(STROKE_WIDTH, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
-  val squareStroke = new BasicStroke(STROKE_WIDTH, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER)
+  val stroke = new BasicStroke(StrokeWidth, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
+  val squareStroke = new BasicStroke(StrokeWidth, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER)
 
   def renderReportEntry(g: Graphics2D, entry: ReportEntry) = {
     val level = entry.level
@@ -72,7 +72,7 @@ object ReportEntryRenderer {
   }
 
   def makePoint(g: Graphics2D, x: Float, y: Float, fill: Color, outline: Color) {
-    val point = new Ellipse2D.Float(x - POINT_RADIUS, y - POINT_RADIUS, POINT_RADIUS * 2, POINT_RADIUS * 2)
+    val point = new Ellipse2D.Float(x - PointRadius, y - PointRadius, PointRadius * 2, PointRadius * 2)
     makeShape(g, point, fill, outline);
   }
 
@@ -93,12 +93,12 @@ object ReportEntryRenderer {
     val dy = y2 - y1
     val theta = Math.atan2(dy, dx) + Math.Pi
 
-    val mx = x2 + ARROW_WIDTH / 2 * Math.cos(theta)
-    val my = y2 + ARROW_WIDTH / 2 * Math.sin(theta)
-    val ax1 = x2 + ARROW_WIDTH * Math.cos(theta + ARROW_ANGLE)
-    val ay1 = y2 + ARROW_WIDTH * Math.sin(theta + ARROW_ANGLE)
-    val ax2 = x2 + ARROW_WIDTH * Math.cos(theta - ARROW_ANGLE)
-    val ay2 = y2 + ARROW_WIDTH * Math.sin(theta - ARROW_ANGLE)
+    val mx = x2 + ArrowWidth / 2 * Math.cos(theta)
+    val my = y2 + ArrowWidth / 2 * Math.sin(theta)
+    val ax1 = x2 + ArrowWidth * Math.cos(theta + ArrowAngle)
+    val ay1 = y2 + ArrowWidth * Math.sin(theta + ArrowAngle)
+    val ax2 = x2 + ArrowWidth * Math.cos(theta - ArrowAngle)
+    val ay2 = y2 + ArrowWidth * Math.sin(theta - ArrowAngle)
 
     path.moveTo(x2, y2)
     path.lineTo(ax1, ay1)
