@@ -231,21 +231,24 @@ object MainWindow extends QMainWindow {
   }
 
   private val mainToolBar = new QToolBar(this) {
+    setWindowTitle("&Main toolbar")
     setFloatable(true)
-    setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
+    setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
     addAction(openImageAction)
   }
 
   private val analysisToolBar = new QToolBar(this) {
+    setWindowTitle("A&nalysis toolbar")
     setFloatable(true)
-    setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
+    setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
     addAction(analyseAction)
     addAction(configureAnalysersAction)
   }
 
   private val interactToolBar = new QToolBar(this) {
+    setWindowTitle("Interact tool&bar")
     setFloatable(true)
-    setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
+    setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
     addAction(zoomInAction)
     addAction(zoomOutAction)
     addSeparator()
@@ -253,6 +256,7 @@ object MainWindow extends QMainWindow {
   }
 
   private val menu = new QMenuBar(this) {
+    setWindowTitle("Menu bar")
     addMenu(menuFile)
     addMenu(menuWindow)
     addMenu(menuHelp)
