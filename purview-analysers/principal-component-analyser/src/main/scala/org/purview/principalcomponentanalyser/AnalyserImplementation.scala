@@ -76,7 +76,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix]{
   @inline private def image(component: Matrix[Float]) = {
     val result = new BufferedImage(component.width, component.height, BufferedImage.TYPE_INT_RGB)
     for((x, y, value) <- component.cells) {
-      val c = abs((component(x, y) * 255).toInt)
+      val c = abs(component(x, y) * 255).toInt
       result.setRGB(x, y, c | c << 8 | c << 16 | 0xff000000)
     }
     result
