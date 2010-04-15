@@ -33,6 +33,7 @@ import org.purview.core.report.ReportShape
 import org.purview.core.report.ReportShapeMove
 import org.purview.qtui.meta.ImageSession
 import scala.collection.mutable.WeakHashMap
+import scala.math._
 
 case class ImageSessionWidget(imageSession: ImageSession) extends QGraphicsView {
   setWindowTitle(imageSession.imageFile.getName)
@@ -190,20 +191,20 @@ object ImageUtils {
   def convertToQPainterPath(shape: Shape) = painterPathCache.getOrElseUpdate(shape, shapeToPainterPath(shape))
 
   val ArrowWidth = 12f
-  val ArrowAngle = Math.toRadians(20)
+  val ArrowAngle = toRadians(20)
 
   def makeArrow(p1: QPointF, p2: QPointF): QPainterPath = {
     val p = new QPainterPath
     val dx = p2.x - p1.x
     val dy = p2.y - p1.y
-    val theta = Math.atan2(dy, dx) + Math.Pi
+    val theta = atan2(dy, dx) + Pi
 
-    val mx = (p2.x + ArrowWidth / 2 * Math.cos(theta)).toFloat
-    val my = (p2.y + ArrowWidth / 2 * Math.sin(theta)).toFloat
-    val ax1 = p2.x + ArrowWidth * Math.cos(theta + ArrowAngle)
-    val ay1 = p2.y + ArrowWidth * Math.sin(theta + ArrowAngle)
-    val ax2 = p2.x + ArrowWidth * Math.cos(theta - ArrowAngle)
-    val ay2 = p2.y + ArrowWidth * Math.sin(theta - ArrowAngle)
+    val mx = (p2.x + ArrowWidth / 2 * cos(theta)).toFloat
+    val my = (p2.y + ArrowWidth / 2 * sin(theta)).toFloat
+    val ax1 = p2.x + ArrowWidth * cos(theta + ArrowAngle)
+    val ay1 = p2.y + ArrowWidth * sin(theta + ArrowAngle)
+    val ax2 = p2.x + ArrowWidth * cos(theta - ArrowAngle)
+    val ay2 = p2.y + ArrowWidth * sin(theta - ArrowAngle)
 
     p.moveTo(p2.x, p2.y)
     p.lineTo(ax1, ay1)

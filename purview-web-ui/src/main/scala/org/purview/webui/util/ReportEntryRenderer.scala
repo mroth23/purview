@@ -17,12 +17,13 @@ import org.purview.core.report.ReportRectangle
 import org.purview.core.report.ReportRectangleMove
 import org.purview.core.report.ReportShape
 import org.purview.core.report.ReportShapeMove
+import scala.math._
 
 object ReportEntryRenderer {
   val PointRadius = 2f
   val StrokeWidth = 2f
   val ArrowWidth = 12f
-  val ArrowAngle = Math.toRadians(20)
+  val ArrowAngle = toRadians(20)
   val sourceColor = Color.blue
   val transpSourceColor =
     new Color(sourceColor.getRed, sourceColor.getGreen,
@@ -91,14 +92,14 @@ object ReportEntryRenderer {
 
     val dx = x2 - x1
     val dy = y2 - y1
-    val theta = Math.atan2(dy, dx) + Math.Pi
+    val theta = atan2(dy, dx) + Pi
 
-    val mx = x2 + ArrowWidth / 2 * Math.cos(theta)
-    val my = y2 + ArrowWidth / 2 * Math.sin(theta)
-    val ax1 = x2 + ArrowWidth * Math.cos(theta + ArrowAngle)
-    val ay1 = y2 + ArrowWidth * Math.sin(theta + ArrowAngle)
-    val ax2 = x2 + ArrowWidth * Math.cos(theta - ArrowAngle)
-    val ay2 = y2 + ArrowWidth * Math.sin(theta - ArrowAngle)
+    val mx = x2 + ArrowWidth / 2 * cos(theta)
+    val my = y2 + ArrowWidth / 2 * sin(theta)
+    val ax1 = x2 + ArrowWidth * cos(theta + ArrowAngle)
+    val ay1 = y2 + ArrowWidth * sin(theta + ArrowAngle)
+    val ax2 = x2 + ArrowWidth * cos(theta - ArrowAngle)
+    val ay2 = y2 + ArrowWidth * sin(theta - ArrowAngle)
 
     path.moveTo(x2, y2)
     path.lineTo(ax1, ay1)

@@ -3,7 +3,7 @@ package org.purview.core.transforms
 import org.purview.core.data.ImmutableMatrix
 import org.purview.core.data.Matrix
 
-case class Fragmentize[@specialized("Int,Float") A : Manifest]
+case class Fragmentize[@specialized(Int, Float) A : Manifest]
     (blockWidth: Int, blockHeight: Int) extends Function1[Matrix[A], Matrix[Matrix[A]]] {
   def apply(in: Matrix[A]) = {
     val result = new Array[Matrix[A]]((in.width - blockWidth) * (in.height - blockHeight))

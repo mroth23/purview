@@ -19,7 +19,7 @@ import scala.collection.mutable.Queue
  * map as its result. The heat map is a Matrix of Floats, where regions with high
  * values indicate things to report.
  */
-trait HeatMapAnalyser[@specialized("Int,Float,Boolean") A, B <: Matrix[A]] extends Analyser[B] {
+trait HeatMapAnalyser[@specialized(Int, Float, Boolean) A, B <: Matrix[A]] extends Analyser[B] {
 
   /** The computation that generates the heat map */
   val heatmap: Computation[Matrix[Float]]

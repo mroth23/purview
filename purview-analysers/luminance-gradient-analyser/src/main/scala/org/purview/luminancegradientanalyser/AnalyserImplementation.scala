@@ -49,8 +49,8 @@ class AnalyserImplementation extends Analyser[ImageMatrix] {
         }
         y += 1
       }
-      val len = Math.sqrt((maxX - FragmentSize / 2) * (maxX - FragmentSize / 2) +
-                          (maxY - FragmentSize / 2) * (maxY - FragmentSize / 2)).toFloat
+      val len = sqrt((maxX - FragmentSize / 2) * (maxX - FragmentSize / 2) +
+                     (maxY - FragmentSize / 2) * (maxY - FragmentSize / 2)).toFloat
       Color(1,
             maxX / FragmentSize,
             maxY / FragmentSize,

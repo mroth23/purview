@@ -19,7 +19,6 @@ import net.liftweb.sitemap.Menu
 import net.liftweb.sitemap.SiteMap
 import net.liftweb.widgets.flot.Flot
 import org.purview.webui.db.Controller
-import org.purview.webui.snippet.AnalysisSession
 import org.purview.webui.util.ImageManager
 import org.purview.webui.util.SystemSensor
 

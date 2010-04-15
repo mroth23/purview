@@ -17,12 +17,12 @@ object Computation {
   private[core] def get[A](s: Computation[A])(implicit session: Session) = s.value
 }
 
-trait Computation[@specialized("Int,Float,Boolean") A] {
+trait Computation[@specialized(Int, Float, Boolean) A] {
   protected def calculateValue(session: Computation.Session): A
 
   private val sessionCache = new WeakHashMap[Computation.Session, A]
 
-  private def value(implicit session: Computation.Session): A = sessionCache.getOrElse(session, {
+  private[core] def value(implicit session: Computation.Session): A = sessionCache.getOrElse(session, {
       val v = calculateValue(session)
       sessionCache(session) = v
       v
