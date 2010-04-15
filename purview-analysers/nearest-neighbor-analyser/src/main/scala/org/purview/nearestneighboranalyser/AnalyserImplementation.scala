@@ -7,8 +7,10 @@ import org.purview.core.report.Warning
 import scala.math._
 
 class AnalyserImplementation extends HeatMapImageAnalyser {
-  val name = "Nearest Neighbor"
+  val name = "Nearest neighbor analyser"
   val description = "Finds nearest neighbor interpolated regions in an image"
+  override val version = Some("2.6")
+  override val author = Some("Moritz Roth & David Flemström")
 
   override val iconResource = Some("icons/analysers/nearest-neighbor.png")
 

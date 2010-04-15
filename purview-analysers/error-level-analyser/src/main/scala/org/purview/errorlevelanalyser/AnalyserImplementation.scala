@@ -17,8 +17,10 @@ import scala.math._
 
 class AnalyserImplementation extends HeatMapImageAnalyser
                                 with Settings {
-  val name = "Error level analyser"
-  val description = "Uses compression errors in JPEG images to find errors"
+  val name = "Error-level analyser"
+  val description = "Uses compression errors in JPEG images to find modification errors"
+  override val version = Some("1.1")
+  override val author = Some("Moritz Roth & David Flemström")
 
   val qualitySetting = new FloatRangeSetting("Quality level", 0, 1, 100)
   qualitySetting.value = 0.2f //default

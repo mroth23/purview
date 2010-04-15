@@ -6,8 +6,10 @@ import org.purview.core.report.Warning
 import scala.math._
 
 class AnalyserImplementation extends HeatMapImageAnalyser {
-  val name = "Bilinear"
+  val name = "Bilinear analyser"
   val description = "Finds bilinearly interpolated regions in an image"
+  override val version = Some("1.3")
+  override val author = Some("Moritz Roth & David Flemström")
 
   override val iconResource = Some("icons/analysers/bilinear.png")
 

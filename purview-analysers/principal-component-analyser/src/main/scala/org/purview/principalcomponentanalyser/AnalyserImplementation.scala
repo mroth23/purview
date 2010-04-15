@@ -12,9 +12,11 @@ import org.purview.core.report.ReportEntry
 import org.purview.core.report.ReportImage
 import scala.math._
 
-class AnalyserImplementation extends Analyser[ImageMatrix]{
-  val name = "PCA"
-  val description = "Performs principal component analysis on the image."
+class AnalyserImplementation extends Analyser[ImageMatrix] {
+  val name = "Principal component analyser"
+  val description = "Separates the image data into its principal component channels"
+  override val version = Some("1.1")
+  override val author = Some("Moritz Roth & David Flemström")
 
   val splitChannels: Computation[(Matrix[Float], Matrix[Float], Matrix[Float])] =
     for(in <- input) yield (in.map(_.r), in.map(_.g), in.map(_.b))

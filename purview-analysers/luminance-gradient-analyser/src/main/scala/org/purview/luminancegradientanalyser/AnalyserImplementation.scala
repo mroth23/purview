@@ -12,8 +12,10 @@ import org.purview.core.transforms.MatrixToImage
 import scala.math._
 
 class AnalyserImplementation extends Analyser[ImageMatrix] {
-  val name = "Luminance Gradient"
+  val name = "Luminance gradient"
   val description = "Plots the general light direction in the image"
+  override val version = Some("1.0")
+  override val author = Some("Moritz Roth & David Flemström")
 
   val FragmentSize = 4
 

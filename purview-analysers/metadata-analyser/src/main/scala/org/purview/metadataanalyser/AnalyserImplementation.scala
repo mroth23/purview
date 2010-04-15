@@ -11,6 +11,8 @@ import org.purview.core.report.Warning
 class AnalyserImplementation extends Analyser[ImageMatrix] {
   val name = "Metadata analyser"
   val description = "Detects suspicious metadata entries in the file of an image"
+  override val version = Some("1.0")
+  override val author = Some("Moritz Roth & David Flemström")
 
   type MetaAnalyser = PartialFunction[(String, String, String), (Boolean, String)]
 

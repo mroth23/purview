@@ -19,8 +19,10 @@ import scala.math._
 import scala.util.Sorting
 
 class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
-  val name = "Copy-Move"
+  val name = "Copy-move analyser"
   val description = "Finds cloned regions in an image"
+  override val version = Some("1.0")
+  override val author = Some("Moritz Roth & David Flemström")
 
   override val iconResource = Some("icons/analysers/copy-move.png")
 
