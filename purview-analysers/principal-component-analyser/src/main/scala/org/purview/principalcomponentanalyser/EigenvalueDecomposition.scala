@@ -2,6 +2,7 @@ package org.purview.principalcomponentanalyser
 
 import org.purview.core.data.Matrix
 import org.purview.core.data.MutableArrayMatrix
+import scala.math._
 
 sealed class EigenvalueDecomposition(inputMatrix: Matrix[Float]) {
   private val _matrixDimension = inputMatrix.width //aka: N
@@ -27,12 +28,12 @@ sealed class EigenvalueDecomposition(inputMatrix: Matrix[Float]) {
     tql2()
   }
 
-  private def hypot(a: Float, b: Float) = if(Math.abs(a) > Math.abs(b)) {
+  private def hypot(a: Float, b: Float) = if(abs(a) > abs(b)) {
     val tmp = b / a
-    Math.abs(a) * Math.sqrt(1 + tmp * tmp).toFloat
+    abs(a) * sqrt(1 + tmp * tmp).toFloat
   } else if(b != 0) {
     val tmp = a / b
-    Math.abs(b) * Math.sqrt(1 + tmp * tmp).toFloat
+    abs(b) * sqrt(1 + tmp * tmp).toFloat
   } else 0f
 
   private def tred2(): Unit = {
@@ -48,7 +49,7 @@ sealed class EigenvalueDecomposition(inputMatrix: Matrix[Float]) {
       var h = 0f
       var k = 0
       while (k < x) {
-        scale = scale + Math.abs(_realEigenValues(k)).toFloat
+        scale = scale + abs(_realEigenValues(k)).toFloat
         k += 1
       }
       if (scale == 0f) {
@@ -70,7 +71,7 @@ sealed class EigenvalueDecomposition(inputMatrix: Matrix[Float]) {
         }
 
         var f = _realEigenValues(x - 1)
-        var g = Math.sqrt(h).toFloat
+        var g = sqrt(h).toFloat
         if (f > 0)
           g = -g
         _imaginaryEigenValues(x) = scale * g
@@ -190,13 +191,13 @@ sealed class EigenvalueDecomposition(inputMatrix: Matrix[Float]) {
     _imaginaryEigenValues(_matrixDimension - 1) = 0f
     var f = 0f
     var tst1 = 0f
-    var eps = Math.pow(2.0, -52.0).toFloat
+    var eps = pow(2.0, -52.0).toFloat
 
     var l = 0
     while (l < _matrixDimension) {
-      tst1 = Math.max(tst1, Math.abs(_realEigenValues(l)) + Math.abs(_imaginaryEigenValues(l)))
+      tst1 = max(tst1, abs(_realEigenValues(l)) + abs(_imaginaryEigenValues(l)))
       var m = l
-      while (m < _matrixDimension && !(Math.abs(_imaginaryEigenValues(m)) <= eps * tst1)) {
+      while (m < _matrixDimension && !(abs(_imaginaryEigenValues(m)) <= eps * tst1)) {
         m += 1
       }
       if (m > l) {
@@ -254,7 +255,7 @@ sealed class EigenvalueDecomposition(inputMatrix: Matrix[Float]) {
           p = -s * s2 * c3 * el1 * _imaginaryEigenValues(l) / dl1
           _imaginaryEigenValues(l) = s * p
           _realEigenValues(l) = c * p
-        } while (Math.abs(_imaginaryEigenValues(l)) > eps * tst1)
+        } while (abs(_imaginaryEigenValues(l)) > eps * tst1)
       }
       _realEigenValues(l) = _realEigenValues(l) + f
       _imaginaryEigenValues(l) = 0f

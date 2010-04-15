@@ -5,20 +5,9 @@ import scala.collection.mutable.ArraySeq
 
 object Matrix {
   /** Adds support for everything that Iterable supports to Matrix */
-  implicit def iterable[A](m: Matrix[A]) = new Iterable[A] {
-    def iterator = new Iterator[A] {
-      private var y = 0
-      private var x = 0
-      def hasNext = x + y * m.width + 1 < m.width * m.height
-      def next = {
-        x += 1
-        if(x == m.width) {
-          x = 0
-          y += 1
-        }
-        m.apply(x, y)
-      }
-    }
+  implicit def sequence[A](m: Matrix[A]) = new IndexedSeq[A] {
+    def length = m.width * m.height
+    def apply(i: Int) = m.apply(i % m.width, i / m.width)
   }
 }
 

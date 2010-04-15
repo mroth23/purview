@@ -8,7 +8,7 @@ import scala.util.Random
 
 class AnalyserSpec extends SpecificationWithJUnit {
   def randomNumbers(max: Int): Stream[Int] = Stream.cons(Random.nextInt(max), randomNumbers(max))
-
+/*
   "An analyser" should {
     "be able to generate reports" in {
       val a = new Analyser[Int] {
@@ -22,7 +22,6 @@ class AnalyserSpec extends SpecificationWithJUnit {
       }
     }
   }
-/* //XXX: Doesn't work with Scala 2.8.0.Beta1
   "A heat map analyser" should {
     val matrix = new MutableArrayMatrix[Float](16, 16)
 
