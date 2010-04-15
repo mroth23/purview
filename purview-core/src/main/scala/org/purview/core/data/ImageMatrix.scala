@@ -1,6 +1,7 @@
 package org.purview.core.data
 
 import com.drew.imaging.jpeg.JpegMetadataReader
+import com.drew.imaging.jpeg.JpegSegmentReader
 import com.drew.metadata.Directory
 import com.drew.metadata.Tag
 import java.awt.image.BufferedImage
@@ -34,7 +35,13 @@ object ImageMatrix {
             } yield (tag.getTagName, tag.getDescription)
             (dir.getName, tags.toSeq.toMap)
           }
-          metaTree.toSeq.toMap
+
+          val segmentReader = new JpegSegmentReader(imageFile)
+          val numberOfSegments = segmentReader.getSegmentCount(JpegSegmentReader.SEGMENT_DQT)
+          val quantMap = (for(i <- 0 until numberOfSegments) yield
+            i.toString -> segmentReader.readSegment(JpegSegmentReader.SEGMENT_DQT, i).mkString(",")).toMap
+
+          metaTree.toSeq.toMap + ("QDT" -> quantMap)
         } else Map.empty
 
       val raw = reader.read(0)
