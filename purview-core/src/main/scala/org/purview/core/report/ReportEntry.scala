@@ -54,4 +54,4 @@ sealed case class ReportPlotPoint(x: Float, y: Float, z: Float, color: Color) ex
 
 sealed case class ReportPlotVector(xDir: Float, yDir: Float, zDir: Float, color: Color) extends ReportPlotEntry
 
-sealed case class ReportPlot(plotEntries: Seq[ReportPlotEntry]) extends ReportEntry
+sealed case class ReportPlot(level: ReportLevel, message: String, plotEntries: Seq[ReportPlotEntry]) extends ReportEntry
