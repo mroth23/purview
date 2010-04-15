@@ -67,16 +67,16 @@ class AnalyserImplementation extends Analyser[ImageMatrix]{
     rgb map (x => dotProduct(vector, x))
 
   val principalComponent1 = for(vectors <- eigenVectors; rgb <- mergedZeroMeans) yield
-    principalComponent((vectors(0, 0), vectors(1, 0), vectors(2, 0)), rgb)
+    principalComponent((vectors(0, 0), vectors(0, 1), vectors(0, 2)), rgb)
   val principalComponent2 = for(vectors <- eigenVectors; rgb <- mergedZeroMeans) yield
-    principalComponent((vectors(0, 1), vectors(1, 1), vectors(2, 1)), rgb)
+    principalComponent((vectors(1, 0), vectors(1, 1), vectors(1, 2)), rgb)
   val principalComponent3 = for(vectors <- eigenVectors; rgb <- mergedZeroMeans) yield
-    principalComponent((vectors(0, 2), vectors(1, 2), vectors(2, 2)), rgb)
+    principalComponent((vectors(2, 0), vectors(2, 1), vectors(2, 2)), rgb)
 
   @inline private def image(component: Matrix[Float]) = {
     val result = new BufferedImage(component.width, component.height, BufferedImage.TYPE_INT_RGB)
     for((x, y, value) <- component.cells) {
-      val c = max(0, min(255, (component(x, y) * 255).toInt))
+      val c = abs((component(x, y) * 255).toInt)
       result.setRGB(x, y, c | c << 8 | c << 16 | 0xff000000)
     }
     result
