@@ -5,6 +5,7 @@ import java.awt.geom.Ellipse2D
 import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
 import java.io.Serializable
+import org.purview.core.data.Color
 
 sealed abstract class ReportEntry extends NotNull with Serializable {
   val level: ReportLevel
@@ -46,3 +47,11 @@ sealed case class ReportCircleMove(level: ReportLevel, message: String, sourceX:
 
 sealed case class ReportShapeMove(level: ReportLevel, message: String, sourceShape: Shape, shape: Shape)
     extends ReportEntry with FreeShape
+
+sealed abstract class ReportPlotEntry
+
+sealed case class ReportPlotPoint(x: Float, y: Float, z: Float, color: Color) extends ReportPlotEntry
+
+sealed case class ReportPlotVector(xDir: Float, yDir: Float, zDir: Float, color: Color) extends ReportPlotEntry
+
+sealed case class ReportPlot(plotEntries: Seq[ReportPlotEntry]) extends ReportEntry
