@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 import scala.collection.JavaConversions._
+import scala.xml.XML
 
 object ImageMatrix {
   def fromFile(imageFile: File): ImageMatrix = {
@@ -37,11 +38,34 @@ object ImageMatrix {
           }
 
           val segmentReader = new JpegSegmentReader(imageFile)
-          val numberOfSegments = segmentReader.getSegmentCount(JpegSegmentReader.SEGMENT_DQT)
-          val quantMap = (for(i <- 0 until numberOfSegments) yield
-            i.toString -> segmentReader.readSegment(JpegSegmentReader.SEGMENT_DQT, i).mkString(",")).toMap
+          val numberOfDQTSegments = segmentReader.getSegmentCount(JpegSegmentReader.SEGMENT_DQT)
+          val quantMap = (for(i <- 0 until numberOfDQTSegments) yield
+            i.toString -> segmentReader.readSegment(JpegSegmentReader.SEGMENT_DQT, i).mkString(",")
+          ).toMap
 
-          metaTree.toSeq.toMap + ("QDT" -> quantMap)
+          val numberOfAppSegments = segmentReader.getSegmentCount(JpegSegmentReader.SEGMENT_APP1)
+          val xmpMap = (for {
+              i <- 0 until numberOfAppSegments
+              segment = new String(segmentReader.readSegment(JpegSegmentReader.SEGMENT_APP1, i), "UTF-8")
+              if segment startsWith "http://ns.adobe.com/xap/1.0/"
+              xmpmeta = XML.loadString(segment.substring(29))
+              elem <- xmpmeta\"RDF"\"Description"\"_"
+            } yield elem.label match {
+              case "History" =>
+                for(event <- elem\"Seq"\"li") yield {
+                  "history:" + (event\"@{http://ns.adobe.com/xap/1.0/sType/ResourceEvent#}action").text ->
+                  (event\"@{http://ns.adobe.com/xap/1.0/sType/ResourceEvent#}softwareAgent").text
+                }
+              case "WhitePoint" => Nil
+              case "PrimaryChromaticities" => Nil
+              case "YCbCrCoefficients" => Nil
+              case "ComponentsConfiguration" => Nil
+              case "ISOSpeedRatings" => Nil
+              case "Flash" => Nil
+              case ign => println("WARN: Ignored RDF entry " + ign); Nil
+            }).flatten.toMap
+
+          metaTree.toSeq.toMap + ("QDT" -> quantMap) + ("Xmp" -> xmpMap)
         } else Map.empty
 
       val raw = reader.read(0)
@@ -59,7 +83,6 @@ object ImageMatrix {
  * A matrix that is specialized for images, and stores values very efficiently
  */
 class ImageMatrix(val image: BufferedImage, val metadata: Map[String, Map[String, String]]) extends Matrix[Color] {
-
   val width = image.getWidth
   val height = image.getHeight
   private val raster = image.getData
