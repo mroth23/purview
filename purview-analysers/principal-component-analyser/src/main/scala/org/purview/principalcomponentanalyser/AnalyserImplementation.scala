@@ -4,10 +4,10 @@ import org.purview.core.report._
 import org.purview.core.transforms._
 import org.purview.core.data.ImmutableMatrix
 import org.purview.core.data.Matrix
-import org.purview.core.data.Color
 import java.awt.image.BufferedImage
 import org.purview.core.analysis.Analyser
 import org.purview.core.data.ImageMatrix
+import org.purview.core.process.Computation
 import org.purview.core.report.ReportEntry
 import org.purview.core.report.ReportImage
 import scala.math._
@@ -16,31 +16,24 @@ class AnalyserImplementation extends Analyser[ImageMatrix]{
   val name = "PCA"
   val description = "Performs principal component analysis on the image."
 
-  type ThreeFloatMatrices = (Matrix[Float], Matrix[Float], Matrix[Float])
-  type ThreeImages = (BufferedImage, BufferedImage, BufferedImage)
-
-  def splitChannels(in: org.purview.core.data.Matrix[Color]): ThreeFloatMatrices =
-    (in.map(_.r), in.map(_.g), in.map(_.b))
+  val splitChannels: Computation[(Matrix[Float], Matrix[Float], Matrix[Float])] =
+    for(in <- input) yield (in.map(_.r), in.map(_.g), in.map(_.b))
 
   def mean(matrix: Matrix[Float]): Float = matrix.sum / (matrix.width * matrix.height)
 
-  def zeroMean(rgb: ThreeFloatMatrices): ThreeFloatMatrices = {
-    val (r, g, b) = rgb
-    val meanr = mean(r)
-    val meang = mean(g)
-    val meanb = mean(b)
+  val meanR = for(channels <- splitChannels) yield mean(channels._1)
+  val meanG = for(channels <- splitChannels) yield mean(channels._2)
+  val meanB = for(channels <- splitChannels) yield mean(channels._3)
+  
+  val zeroMeanR = for(channels <- splitChannels; mean <- meanR) yield channels._1 map (_ - mean)
+  val zeroMeanG = for(channels <- splitChannels; mean <- meanG) yield channels._2 map (_ - mean)
+  val zeroMeanB = for(channels <- splitChannels; mean <- meanB) yield channels._3 map (_ - mean)
 
-    (r map (_ - meanr), g map (_ - meang), b map (_ - meanb))
-  }
-
-  def covariance(a1: Matrix[Float], a2: Matrix[Float]): Float = {
-    val result = a1.zip(a2).foldLeft(0f) ((acc, elem) => acc + elem._1 * elem._2)
-    (result / (a1.width * a1.height - 1)).toFloat
-  }
-
-  def covarianceMatrix(rgb: ThreeFloatMatrices): Matrix[Float] = {
-    val (r, g, b) = rgb
-
+  val covarianceMatrix = for(r <- zeroMeanR; g <- zeroMeanG; b <- zeroMeanB) yield {
+    def covariance(a1: Matrix[Float], a2: Matrix[Float]): Float = {
+      val result = a1.zip(a2).foldLeft(0f) ((acc, elem) => acc + elem._1 * elem._2)
+      (result / (a1.width * a1.height - 1)).toFloat
+    }
     val covRR = covariance(r, r)
     val covRG = covariance(r, g)
     val covRB = covariance(r, b)
@@ -54,59 +47,48 @@ class AnalyserImplementation extends Analyser[ImageMatrix]{
         covRR, covRG, covRB,
         covRG, covGG, covGB,
         covRB, covGB, covBB
-     ))
+      ))
   }
 
-  def getEigenvectors(in: Matrix[Float]): Matrix[Float] = new EigenvalueDecomposition(in).vectors
+  val mergedZeroMeans = for(r <- zeroMeanR; g <- zeroMeanG; b <- zeroMeanB) yield
+    for {
+      (x, y, value1) <- r.cells
+      value2 = g(x, y)
+      value3 = b(x, y)
+    } yield (value1, value2, value3)
 
-  def dotProduct(vector1: (Float, Float, Float), vector2: (Float, Float, Float)) =
+  val eigenVectors = for(matrix <- covarianceMatrix) yield
+    new EigenvalueDecomposition(matrix).vectors
+
+  @inline private def dotProduct(vector1: (Float, Float, Float), vector2: (Float, Float, Float)) =
     vector1._1 * vector2._1 + vector1._2 * vector2._2 + vector1._3 * vector2._3
 
-  def getNewData(eigenVector: Int => Float, cells: ThreeFloatMatrices): Matrix[Float] = {
-    val vector = (eigenVector(0), eigenVector(1), eigenVector(2))
-    for {
-      (x, y, value1) <- cells._1.cells
-      value2 = cells._2(x, y)
-      value3 = cells._3(x, y)
-      cell = (value1, value2, value3)
-    } yield (dotProduct(vector, cell))
-  }
+  @inline private def principalComponent(vector: (Float, Float, Float), rgb: Matrix[(Float, Float, Float)]) =
+    rgb map (x => dotProduct(vector, x))
 
-  def generatePictures(in: Matrix[Color]): ThreeImages = {
-    val rgb = zeroMean(splitChannels(in))
+  val principalComponent1 = for(vectors <- eigenVectors; rgb <- mergedZeroMeans) yield
+    principalComponent((vectors(0, 0), vectors(1, 0), vectors(2, 0)), rgb)
+  val principalComponent2 = for(vectors <- eigenVectors; rgb <- mergedZeroMeans) yield
+    principalComponent((vectors(0, 1), vectors(1, 1), vectors(2, 1)), rgb)
+  val principalComponent3 = for(vectors <- eigenVectors; rgb <- mergedZeroMeans) yield
+    principalComponent((vectors(0, 2), vectors(1, 2), vectors(2, 2)), rgb)
 
-    val eigVcs = getEigenvectors(covarianceMatrix(rgb))
-
-    val pc1 = getNewData(eigVcs(0, _), rgb)
-    val pc2 = getNewData(eigVcs(1, _), rgb)
-    val pc3 = getNewData(eigVcs(2, _), rgb)
-
-    val result1 = new BufferedImage(in.width, in.height, BufferedImage.TYPE_INT_RGB)
-    val result2 = new BufferedImage(in.width, in.height, BufferedImage.TYPE_INT_RGB)
-    val result3 = new BufferedImage(in.width, in.height, BufferedImage.TYPE_INT_RGB)
-
-    var y = 0
-    while(y < in.height) {
-      var x = 0
-      while(x < in.width) {
-        result1.setRGB(x, y, new java.awt.Color(pc1(x, y).toInt, pc1(x, y).toInt, pc1(x, y).toInt).getRGB)
-        result2.setRGB(x, y, new java.awt.Color(pc1(x, y).toInt, pc1(x, y).toInt, pc1(x, y).toInt).getRGB)
-        result3.setRGB(x, y, new java.awt.Color(pc1(x, y).toInt, pc1(x, y).toInt, pc1(x, y).toInt).getRGB)
-
-        x += 1
-      }
-      y += 1
+  @inline private def image(component: Matrix[Float]) = {
+    val result = new BufferedImage(component.width, component.height, BufferedImage.TYPE_INT_RGB)
+    for((x, y, value) <- component.cells) {
+      val c = max(0, min(255, (component(x, y) * 255).toInt))
+      result.setRGB(x, y, c | c << 8 | c << 16 | 0xff000000)
     }
-
-    (result1, result2, result3)
+    result
   }
 
-  def imageReport(img: ThreeImages): Set[ReportEntry] = {
-    Set(new ReportImage(Information, "Principal component #1", 0, 0, img._1),
-        new ReportImage(Information, "Principal component #2", 0, 0, img._2),
-        new ReportImage(Information, "Principal component #3", 0, 0, img._3))
-  }
+  val image1 = for(component <- principalComponent1) yield image(component)
+  val image2 = for(component <- principalComponent2) yield image(component)
+  val image3 = for(component <- principalComponent3) yield image(component)
 
-  val result = input >- generatePictures >- imageReport
-
+  val result: Computation[Set[ReportEntry]] =
+    for(img1 <- image1; img2 <- image2; img3 <- image3) yield
+      Set(new ReportImage(Information, "Principal component #1", 0, 0, img1),
+          new ReportImage(Information, "Principal component #2", 0, 0, img2),
+          new ReportImage(Information, "Principal component #3", 0, 0, img3))
 }
