@@ -53,7 +53,7 @@ object SVGImageHandler extends DefaultImageHandler {
     val hash = image.hashCode
     val handle = imageHandles.get(hash) getOrElse {
       val id = ImageManager.makeId
-        ImageManager.write(id, image)
+      ImageManager.write(id, image)
       imageHandles(hash) = id
       id
     }

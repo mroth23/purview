@@ -1,6 +1,7 @@
 package org.purview.webui.db
 
 import java.sql.DriverManager
+import net.liftweb.common.Logger
 import net.liftweb.util.Props
 import org.squeryl.Session
 import org.squeryl.SessionFactory
@@ -13,17 +14,19 @@ import org.squeryl.internals.DatabaseAdapter
 /**
  * A Controller that is responsible for managing database connections
  */
-object Controller {
+object Controller extends Logger {
   /** Initializes a default controller by reading the webapp's props file */
   def init() = {
     //Load database settings
     val dbDriverName = Props.get("db.driver", "org.h2.Driver") //Use H2 by default
-    val dbConnectionURL = Props.get("db.url", "jdbc:h2:mem:purview") //Use memory-based database by default
+    val dbConnectionURL = Props.get("db.url", "jdbc:h2:purview") //Use temporary DB by default
     val dbUser = Props.get("db.user").toOption
     val dbPassword = Props.get("db.password").toOption
 
     createSessionFactory(dbDriverName, dbConnectionURL, dbUser, dbPassword)
-    inTransaction {Database.create; println("Creating database")}
+    using(SessionFactory.newSession) {
+      try Database.create catch {case _ => warn("Database does already exist")}
+    }
   }
 
   /**

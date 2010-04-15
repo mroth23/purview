@@ -42,7 +42,7 @@ import scala.xml.Text
 import scala.xml.XML
 
 object AnalysisSession {
-  val stalledAnalyses: mutable.Map[Long, Map[Analyser[ImageMatrix], Boolean]] = new mutable.WeakHashMap
+  val stalledAnalyses: mutable.Map[Long, Map[Analyser[ImageMatrix], Boolean]] = new mutable.HashMap
   val runningAnalyses: mutable.Map[Long, AnalysisActor] = new mutable.HashMap
 }
 
@@ -63,7 +63,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
     def doCreate() = uploadedFile.is match {
       case None =>
         S.error("No file was uploaded")
-      case Some(fileParam) => inTransaction {
+      case Some(fileParam) => transaction {
           val (rawId, optimizedId, scaledId) = try ImageUtils.makeImageSet(fileParam.fileStream) catch {
             case ex =>
               S.error("Couldn't open the uploaded file")
@@ -78,14 +78,12 @@ class AnalysisSession extends DispatchSnippet with Logger {
               S.redirectTo("/image")
           }
 
-          val analysis = inTransaction {
-            Database.analyses.insert(Analysis(
-                fileName = fileParam.fileName,
-                originalImageKey = rawId,
-                optimizedImageKey = optimizedId,
-                scaledImageKey = scaledId
-              ))
-          }
+          val analysis = Database.analyses.insert(Analysis(
+              fileName = fileParam.fileName,
+              originalImageKey = rawId,
+              optimizedImageKey = optimizedId,
+              scaledImageKey = scaledId
+            ))
           stalledAnalyses(analysis.id) = analysers.map((_, true)).toMap
 
           S.notice("The image was successfully uploaded!")
@@ -99,8 +97,9 @@ class AnalysisSession extends DispatchSnippet with Logger {
   }
 
   def currentAnalysisId = S.param("analysisId").flatMap(x => Helpers.tryo(x.toLong)).toOption
-  def currentAnalysis = inTransaction {
-    currentAnalysisId.flatMap(id => Helpers.tryo(from(Database.analyses)(analysis => where(analysis.id === id) select(analysis)).single).toOption)
+  
+  def currentAnalysis = transaction {
+    currentAnalysisId.flatMap(id => {info("Analysis id: " + id); from(Database.analyses)(analysis => where(analysis.id === id) select(analysis)).headOption})
   }
 
   def imageName(otherwise: NodeSeq) =
@@ -211,7 +210,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
           def run() = {
             try {
               val results = session.run(analysisActor)
-              inTransaction {
+              transaction {
                 for(analyser <- results.keySet) {
                   val report = Database.reports.insert(AnalyserReport(analysis.id,
                                                                       analyser.name, analyser.description,

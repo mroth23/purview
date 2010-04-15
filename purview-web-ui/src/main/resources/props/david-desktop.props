@@ -4,14 +4,14 @@
 ## ========
 
 ## Defines the database driver to use. The default value is "org.h2.Driver".
-#db.driver=org.postgresql.Driver
+db.driver=com.mysql.jdbc.Driver
 
 ## Defines the database URL to use. The default is "jdbc:h2:purview".
-#db.url=jdbc:postgresql://host:port/database
+db.url=jdbc:mysql://localhost/purview_test
 
 ## Defines database connection credentials. Uncomment only if necessary.
-#db.user=purview_user
-#db.password=*******************
+db.user=purview_user
+db.password=abc123
 
 ## Filesystem
 ## ==========
