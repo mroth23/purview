@@ -24,10 +24,6 @@
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
         </dependency>
-        <dependency>
-            <groupId>jama</groupId>
-            <artifactId>jama</artifactId>
-        </dependency>
     </dependencies>
 
     <build>

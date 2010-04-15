@@ -104,12 +104,6 @@
                 <artifactId>batik-svggen</artifactId>
                 <version>1.6-1</version>
             </dependency>
-            <dependency>
-                <!-- Java matrix library -->
-                <groupId>jama</groupId>
-                <artifactId>jama</artifactId>
-                <version>1.0.1</version>
-            </dependency> 
 
             <!-- Qt -->
             <dependency>
