@@ -17,6 +17,11 @@ object Computation {
   private[core] def get[A](s: Computation[A])(implicit session: Session) = s.value
 }
 
+/**
+ * A monad that accumulates computations in a tree-like fashion.
+ * By using Computation.get(), it is possible to calculate a session-dependent
+ * value of a node in the computation tree.
+ */
 trait Computation[@specialized(Int, Float, Boolean) A] {
   protected def calculateValue(session: Computation.Session): A
 
