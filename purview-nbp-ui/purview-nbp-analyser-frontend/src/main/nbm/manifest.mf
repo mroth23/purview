@@ -1,3 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module-Localizing-Bundle: org/purview/analysers/frontend/Bundle.properties
-OpenIDE-Module-Layer: org/purview/analysers/frontend/layer.xml

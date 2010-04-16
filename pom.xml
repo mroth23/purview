@@ -47,7 +47,6 @@
     <modules>
         <module>purview-core</module>
         <module>purview-analysers</module>
-        <!--module>purview-nbp-ui</module--><!--TODO: re-enable when it's been fixed -->
         <module>purview-analyser-archetype</module>
         <!--module>purview-web-ui</module--><!--TODO: re-enable when Lift becomes binary-compatible with RC1 -->
         <module>purview-qt-ui</module>
