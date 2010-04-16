@@ -1,5 +1,7 @@
 package org.purview.core.analysis
 
+import java.awt.geom.Area
+import java.awt.geom.Rectangle2D
 import org.purview.core.data.Color
 import org.purview.core.data.ImageMatrix
 import org.purview.core.data.Matrix
@@ -9,9 +11,10 @@ import org.purview.core.report.ReportImage
 import org.purview.core.report.ReportLevel
 import org.purview.core.data.Computation
 import org.purview.core.data.MutableArrayMatrix
-import org.purview.core.transforms.MatrixToImage
 import org.purview.core.report.ReportRectangle
+import org.purview.core.report.ReportShape
 import org.purview.core.transforms.LinearConvolve
+import org.purview.core.transforms.ShapeToReportShape
 import scala.collection.mutable.Queue
 
 /**
@@ -54,16 +57,17 @@ trait HeatMapAnalyser[@specialized(Int, Float, Boolean) A, B <: Matrix[A]] exten
    */
   val threshold: Float = 0
 
-  /**
-   * Should nearby peaks be treated as the same peak region?
-   */
+  /** Should nearby peaks be treated as the same peak region? */
   val accumulate = true
 
   /** Heatmap with the optional convolution row matrix applied */
   private lazy val convolvedHeatmap = for {
     raw <- heatmap
     conv <- convolve
-  } yield if(conv.isDefined) LinearConvolve(conv.get)(raw) else raw
+    _ = status("Convolving the result matrix")
+  } yield if(conv.isDefined) LinearConvolve(conv.get)(raw) else raw //Only convolve if conv == Some(...)
+
+  private lazy val convolvedMaxValue = for(in <- convolvedHeatmap) yield Matrix.sequence(in).max
 
   /**
    * A matrix that has 'true' cells for "heated" areas and 'false'
@@ -72,76 +76,81 @@ trait HeatMapAnalyser[@specialized(Int, Float, Boolean) A, B <: Matrix[A]] exten
   private lazy val maximi =
     for {
       in <- convolvedHeatmap
+      max <- convolvedMaxValue
       _ = status("Finding peaks in the generated data")
-      max = in.max
       tolerance = max * maxDeviationTolerance
-    } yield in map(value => value - max < tolerance &&
+    } yield in map(value => value - max < tolerance && //true if we accept the value, false otherwise
                    max - value < tolerance &&
                    value > threshold)
 
-  /** Simple helper class */
-  protected case class HeatRegion(var left: Int, var top: Int,
-                                  var right: Int, var bottom: Int)
-
   /** A sequence of actual found heat areas */
-  protected lazy val heatRegions = for(candidateMatrix <- maximi) yield {
+  protected lazy val heatAreas = for(candidateMatrix <- maximi) yield {
     status("Calculating " + (if(accumulate) "and merging " else "") +
            "peak regions")
+
+    //A mask that marks already filled cells
     val mask = new MutableArrayMatrix[Boolean](candidateMatrix.width,
                                                candidateMatrix.height)
     val width = candidateMatrix.width
     val height = candidateMatrix.height
 
+    /** Checks whether the specified cell is available to be filled */
     @inline def free(x: Int, y: Int) = candidateMatrix(x, y) && !mask(x, y)
 
-    @inline def include(x: Int, y: Int, heatRegion: HeatRegion) = {
+    /** Includes the specified cell in the active heat region */
+    @inline def include(x: Int, y: Int, heatArea: Area) = {
       mask(x, y) = true
-      if(x < heatRegion.left)
-        heatRegion.left = x
-      if(x > heatRegion.right)
-        heatRegion.right = x
-      if(y < heatRegion.top)
-        heatRegion.top = y
-      if(y > heatRegion.bottom)
-        heatRegion.bottom = y
+      heatArea.add(new Area(new Rectangle2D.Float(x - 0.05f, y - 0.05f, 1.1f, 1.1f)))
     }
 
     /** A standard flood-fill algorithm */
-    @inline def floodFrom(x: Int, y: Int, heatRegion: HeatRegion): Unit = {
+    @inline def floodFrom(x: Int, y: Int, heatArea: Area): Unit = {
+      //Cells to be filled
       val queue = new Queue[(Int, Int)]
+
+      //"Drop" the flooder at the current point
       queue.enqueue((x, y))
 
       while(!queue.isEmpty) {
+        //Take the next position to fill
         val pos = queue.dequeue()
-        include(pos._1, pos._2, heatRegion)
+        
+        if(free(pos._1, pos._2)) {
+          //Fill the cell
+          include(pos._1, pos._2, heatArea)
 
-        var minus, plus = pos._1
-        while(minus > 1 && free(minus - 1, pos._2)) minus -= 1
-        while(plus < width - 1 && free(plus + 1, pos._2)) plus += 1
+          //Go to the left and right and find all empty cells
+          var minus, plus = pos._1
+          while(minus > 1 && free(minus - 1, pos._2)) minus -= 1
+          while(plus < width - 1 && free(plus + 1, pos._2)) plus += 1
 
-        while(minus <= plus) {
-          include(minus, pos._2, heatRegion)
+          //Fill all cells in the same row
+          while(minus <= plus) {
+            include(minus, pos._2, heatArea)
 
-          if(pos._2 > 1 && free(minus, pos._2 - 1))
-            queue.enqueue((minus, pos._2 - 1))
-          if(pos._2 < height - 1 && free(minus, pos._2 + 1))
-            queue.enqueue((minus, pos._2 + 1))
+            //Is the cell above or below available too? Check it later
+            if(pos._2 > 1 && free(minus, pos._2 - 1))
+              queue.enqueue((minus, pos._2 - 1))
+            if(pos._2 < height - 1 && free(minus, pos._2 + 1))
+              queue.enqueue((minus, pos._2 + 1))
 
-          minus += 1
+            minus += 1
+          }
         }
       }
     }
 
-    var result: List[HeatRegion] = Nil
+    //Find all interesting regions by flood-filling them
+    var result: List[Area] = Nil
     var y = 0
     while( y < candidateMatrix.height) {
       var x = 0
       while(x < candidateMatrix.width) {
         if(free(x, y)) {
-          val r = new HeatRegion(x, y, x, y)
+          val a = new Area
           if(accumulate)
-            floodFrom(x, y, r)
-          result ::= r
+            floodFrom(x, y, a)
+          result ::= a
         }
         x += 1
       }
@@ -153,17 +162,14 @@ trait HeatMapAnalyser[@specialized(Int, Float, Boolean) A, B <: Matrix[A]] exten
 
   /** A report of all the found heat areas */
   private lazy val regionReport: Computation[Set[ReportEntry]] = for {
-    regions <- heatRegions
+    regions <- heatAreas
   } yield {
     val entries = for {
       region <- regions
-      if region.bottom - region.top  >= minRegionSize
-      if region.right  - region.left >= minRegionSize
+      if region.getBounds.width  >= minRegionSize
+      if region.getBounds.height >= minRegionSize
     } yield
-      new ReportRectangle(reportLevel, HeatMapAnalyser.this.message,
-                          region.left, region.top,
-                          (region.right - region.left),
-                          (region.bottom - region.top))
+      new ReportShape(reportLevel, HeatMapAnalyser.this.message, ShapeToReportShape()(region))
     entries.toSet
   }
 
@@ -173,11 +179,11 @@ trait HeatMapAnalyser[@specialized(Int, Float, Boolean) A, B <: Matrix[A]] exten
     conv <- convolvedHeatmap
     report <- regionReport
   } yield report + { //The unconvoluted input image
-    val max = raw.max //TODO: this has already been calculated before, OPTIMIZE!
+    val max = Matrix.sequence(raw).max //TODO: this has already been calculated before, OPTIMIZE!
     new ReportImage(Information, "Raw output", 0, 0,
                     raw.map { x => Color(0.9f, x / max, x / max, x / max)})
   } + { //The convoluted input image
-    val max = conv.max
+    val max = Matrix.sequence(conv).max
     new ReportImage(Information, "Raw output", 0, 0,
                     conv.map { x => Color(0.9f, x / max, x / max, x / max)})
   }
