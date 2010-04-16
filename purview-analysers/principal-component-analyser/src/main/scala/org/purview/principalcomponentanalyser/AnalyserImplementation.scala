@@ -4,7 +4,6 @@ import org.purview.core.report._
 import org.purview.core.transforms._
 import org.purview.core.data.ImmutableMatrix
 import org.purview.core.data.Matrix
-import java.awt.image.BufferedImage
 import org.purview.core.analysis.Analyser
 import org.purview.core.data.Color
 import org.purview.core.data.Computation
