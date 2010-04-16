@@ -12,7 +12,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] {
   override val version = Some("1.0")
   override val author = Some("Moritz Roth & David Flemström")
 
-  val result: Computation[Set[ReportEntry]] = input >- MatrixToImage() >-{ img =>
+  val result: Computation[Set[ReportEntry]] = input >-{ img =>
     Set(new ReportImage(Information, "Input image", 0, 0, img))
   }
 }

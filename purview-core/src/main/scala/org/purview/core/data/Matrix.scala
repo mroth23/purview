@@ -80,6 +80,24 @@ trait Matrix[@specialized(Int, Float, Boolean) +A] extends NotNull {
 
   def filter(f: A => Boolean): Matrix[A] =
     if(this.forall(f)) this else error("A matrix cannot become filtered!")
+
+  override def equals(other: Any) = other match {
+    case that: Matrix[_] if this.width == that.width && this.height == that.height =>
+      var result = true
+      var x = 0
+      while(x < this.width && result) {
+        var y = 0
+        while(y < this.height && result) {
+          result = (this(x, y) == that(x, y))
+          y += 1
+        }
+        x += 1
+      }
+      result
+    case _ => false
+  }
+
+  override def hashCode = Matrix.sequence(this).hashCode
 }
 
 sealed case class ImmutableMatrix[@specialized(Int, Float, Boolean) +A](width: Int, height: Int, private val data: Seq[A]) extends Matrix[A] {

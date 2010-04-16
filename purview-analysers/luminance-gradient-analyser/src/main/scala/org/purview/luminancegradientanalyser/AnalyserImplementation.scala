@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage
 import org.purview.core.analysis.Analyser
 import org.purview.core.data.Color
 import org.purview.core.data.ImageMatrix
+import org.purview.core.data.Matrix
 import org.purview.core.report.Information
 import org.purview.core.report.ReportEntry
 import org.purview.core.report.ReportImage
@@ -73,8 +74,8 @@ class AnalyserImplementation extends Analyser[ImageMatrix] {
     }
   }
 
-  def imageReport(img: BufferedImage): Set[ReportEntry] =
+  def imageReport(img: Matrix[Color]): Set[ReportEntry] =
     Set(new ReportImage(Information, "Output image", 0, 0, img))
 
-  val result = luminanceGradient >- MatrixToImage() >- imageReport
+  val result = luminanceGradient >- imageReport
 }

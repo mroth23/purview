@@ -19,9 +19,8 @@ import com.trolltech.qt.gui.QPalette
 import com.trolltech.qt.gui.QPen
 import com.trolltech.qt.gui.QPixmap
 import com.trolltech.qt.opengl.QGLWidget
-import java.awt.Shape
-import java.awt.geom.PathIterator
-import java.awt.image.BufferedImage
+import org.purview.core.data.Color
+import org.purview.core.data.Matrix
 import org.purview.core.report.LevelColor
 import org.purview.core.report.ReportCircle
 import org.purview.core.report.ReportCircleMove
@@ -31,6 +30,7 @@ import org.purview.core.report.ReportRectangle
 import org.purview.core.report.ReportRectangleMove
 import org.purview.core.report.ReportShape
 import org.purview.core.report.ReportShapeMove
+import org.purview.core.report.shape._
 import org.purview.qtui.meta.ImageSession
 import scala.collection.mutable.WeakHashMap
 import scala.math._
@@ -52,7 +52,7 @@ case class ImageSessionWidget(imageSession: ImageSession) extends QGraphicsView 
   private val pixmap = { //Convert the image to a QPixmap for performance's sake
     val tmp = new QPixmap(imageSession.imageFile.getAbsolutePath)
     if(tmp.isNull)
-      ImageUtils.convertToQPixmap(imageSession.matrix.image)
+      ImageUtils.convertToQPixmap(imageSession.matrix)
     else
       tmp
   }
@@ -183,12 +183,12 @@ case class ImageSessionWidget(imageSession: ImageSession) extends QGraphicsView 
 }
 
 object ImageUtils {
-  private val pixmapCache = new WeakHashMap[BufferedImage, QPixmap]
-  private val painterPathCache = new WeakHashMap[Shape, QPainterPath]
+  private val pixmapCache = new WeakHashMap[Matrix[Color], QPixmap]
+  private val painterPathCache = new WeakHashMap[Seq[ReportShapeCommand], QPainterPath]
 
-  def convertToQPixmap(image: BufferedImage) = pixmapCache.getOrElseUpdate(image, bufferedImageToPixmap(image))
+  def convertToQPixmap(image: Matrix[Color]) = pixmapCache.getOrElseUpdate(image, matrixToPixmap(image))
 
-  def convertToQPainterPath(shape: Shape) = painterPathCache.getOrElseUpdate(shape, shapeToPainterPath(shape))
+  def convertToQPainterPath(shape: Seq[ReportShapeCommand]) = painterPathCache.getOrElseUpdate(shape, shapeEntriesToPainterPath(shape))
 
   val ArrowWidth = 12f
   val ArrowAngle = toRadians(20)
@@ -216,49 +216,38 @@ object ImageUtils {
     p
   }
 
-  /** Convert a Java Shape to a Qt PainterPath */
-  private def shapeToPainterPath(shape: Shape) = {
+  /** Convert a seq of shape commands to a Qt PainterPath */
+  private def shapeEntriesToPainterPath(shape: Seq[ReportShapeCommand]) = {
     val path = new QPainterPath
-    val iter = shape.getPathIterator(null)
-    val buffer = new Array[Float](6)
-    var prevWind = -1
-    while(!iter.isDone) {
-      iter.getWindingRule match {
-        case PathIterator.WIND_EVEN_ODD if prevWind != PathIterator.WIND_EVEN_ODD =>
+    shape.foreach({
+        case ShapeUseOddEvenFill =>
           path.setFillRule(Qt.FillRule.OddEvenFill)
-          prevWind = PathIterator.WIND_EVEN_ODD
-        case PathIterator.WIND_NON_ZERO if prevWind != PathIterator.WIND_NON_ZERO =>
+        case ShapeUseWindingFill =>
           path.setFillRule(Qt.FillRule.WindingFill)
-          prevWind = PathIterator.WIND_NON_ZERO
-        case _ => //nothing
-      }
-      iter.currentSegment(buffer) match {
-        case PathIterator.SEG_MOVETO =>
-          path.moveTo(buffer(0), buffer(1))
-        case PathIterator.SEG_LINETO =>
-          path.lineTo(buffer(0), buffer(1))
-        case PathIterator.SEG_QUADTO =>
-          path.quadTo(buffer(0), buffer(1), buffer(2), buffer(3))
-        case PathIterator.SEG_CUBICTO =>
-          path.cubicTo(buffer(0), buffer(1), buffer(2), buffer(3), buffer(4), buffer(5))
-        case PathIterator.SEG_CLOSE =>
+        case ShapeMoveTo(x, y) =>
+          path.moveTo(x, y)
+        case ShapeLineTo(x, y) =>
+          path.lineTo(x, y)
+        case ShapeQuadTo(x0, y0, x1, y1) =>
+          path.quadTo(x0, y0, x1, y1)
+        case ShapeCubicTo(x0, y0, x1, y1, x2, y2) =>
+          path.cubicTo(x0, y0, x1, y1, x2, y2)
+        case ShapeClose =>
           path.closeSubpath()
-      }
-      iter.next()
-    }
+      })
     path
   }
 
-  /** Convert a java BufferedImage to a Qt Image */
-  private def bufferedImageToPixmap(bufferedImage: BufferedImage) = {
-    val result = new QImage(bufferedImage.getWidth, bufferedImage.getHeight, QImage.Format.Format_ARGB32)
-    val w = bufferedImage.getWidth
-    val h = bufferedImage.getHeight
+  /** Convert a color matrix to a Qt Image */
+  private def matrixToPixmap(matrix: Matrix[Color]) = {
+    val result = new QImage(matrix.width, matrix.height, QImage.Format.Format_ARGB32)
+    val w = matrix.width
+    val h = matrix.height
     var x = 0
     while(x < w) {
       var y = 0
       while(y < h) {
-        result.setPixel(x, y, bufferedImage.getRGB(x, y))
+        result.setPixel(x, y, matrix(x, y).toRGB)
         y += 1
       }
       x += 1

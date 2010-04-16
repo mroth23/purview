@@ -6,6 +6,7 @@ import org.purview.core.data.ImmutableMatrix
 import org.purview.core.data.Matrix
 import java.awt.image.BufferedImage
 import org.purview.core.analysis.Analyser
+import org.purview.core.data.Color
 import org.purview.core.data.Computation
 import org.purview.core.data.ImageMatrix
 import org.purview.core.report.ReportEntry
@@ -75,14 +76,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] {
   val principalComponent3 = for(vectors <- eigenVectors; rgb <- mergedZeroMeans) yield
     principalComponent((vectors(2, 0), vectors(2, 1), vectors(2, 2)), rgb)
 
-  @inline private def image(component: Matrix[Float]) = {
-    val result = new BufferedImage(component.width, component.height, BufferedImage.TYPE_INT_RGB)
-    for((x, y, value) <- component.cells) {
-      val c = abs(component(x, y) * 255).toInt
-      result.setRGB(x, y, c | c << 8 | c << 16 | 0xff000000)
-    }
-    result
-  }
+  @inline private def image(component: Matrix[Float]) = component map abs map (x => Color(1, x, x, x))
 
   val image1 = for(component <- principalComponent1) yield image(component)
   val image2 = for(component <- principalComponent2) yield image(component)

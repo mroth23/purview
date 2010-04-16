@@ -14,6 +14,7 @@ import org.purview.core.report.Error
 import org.purview.core.report.ReportEntry
 import org.purview.core.report.ReportShapeMove
 import org.purview.core.transforms.Fragmentize
+import org.purview.core.transforms.ShapeToReportShape
 import scala.collection.mutable.ArrayBuffer
 import scala.math._
 import scala.util.Sorting
@@ -269,7 +270,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
         val areaTo = new Area
         rectsTo.foreach(areaTo.add)
 
-        new ReportShapeMove(Error, "This region was moved", areaFrom, areaTo)
+        new ReportShapeMove(Error, "This region was moved", ShapeToReportShape()(areaFrom), ShapeToReportShape()(areaTo))
       }
     ).toSet
   }
