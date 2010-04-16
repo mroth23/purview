@@ -54,7 +54,7 @@ object AnalysisView extends QDockWidget {
       a.subProgressChanged.connect(this, "setSubProgress(float)")
       a.statusChanged.connect(this, "setStatus(String)")
       a.analyserChanged.connect(this, "setAnalyser(String)")
-      a.error.connect(this, "reportError(String, String)")
+      a.error.connect(this, "reportError(String)")
     }
 
     private def setProgress(progress: Float) =
@@ -69,9 +69,7 @@ object AnalysisView extends QDockWidget {
     private def setAnalyser(analyser: String) =
       analyserLabel.setText(analyser)
 
-    private def reportError(message: String, stackTrace: String) =
-      QMessageBox.critical(this, "Error during analysis", {
-          <div><p><em>Message:</em></p><p>{message}</p><p><em>Stack trace:</em></p><p>{stackTrace}</p></div>
-        }.toString)
+    private def reportError(message: String) =
+      QMessageBox.critical(this, "Error during analysis", message)
   }
 }
