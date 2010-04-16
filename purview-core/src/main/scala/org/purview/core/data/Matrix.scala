@@ -115,7 +115,16 @@ sealed case class MutableArrayMatrix[@specialized(Int, Float, Boolean) A : Manif
 }
 
 sealed case class MutableColorMatrix(width: Int, height: Int) extends MutableMatrix[Color] {
-  private val buffer = new Array[Int](width * height)
-  def apply(x: Int, y: Int) = Color fromRGB buffer(x + y * width)
-  def update(x: Int, y: Int, value: Color) = (buffer(x + y * width) = value.toRGB)
+  private val buffer = new Array[Float](width * height * 4)
+  def apply(x: Int, y: Int) = {
+    val i = x + y * width
+    Color(buffer(i), buffer(i + 1), buffer(i + 2), buffer(i + 3))
+  }
+  def update(x: Int, y: Int, value: Color) = {
+    val i = x + y * width
+    buffer(i) = value.a
+    buffer(i + 1) = value.r
+    buffer(i + 2) = value.g
+    buffer(i + 3) = value.b
+  }
 }
