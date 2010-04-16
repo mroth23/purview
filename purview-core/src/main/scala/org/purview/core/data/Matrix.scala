@@ -4,7 +4,7 @@ import org.purview.core.analysis.Analyser
 import scala.collection.mutable.ArraySeq
 
 object Matrix {
-  /** Adds support for everything that Iterable supports to Matrix */
+  /** Adds support for everything that IndexedSeq supports to Matrix */
   implicit def sequence[A](m: Matrix[A]) = new IndexedSeq[A] {
     def length = m.width * m.height
     def apply(i: Int) = m.apply(i % m.width, i / m.width)
@@ -68,21 +68,15 @@ trait Matrix[@specialized(Int, Float, Boolean) +A] extends NotNull {
     }
   }
 
-  def cells: Matrix[(Int, Int, A)] = {
-    val data = new Array[(Int, Int, A)](width * height)
-
-    var y = 0
-    while(y < height) {
-      var x = 0
-      while(x < width) {
-        data(x + y * width) = ((x, y, apply(x, y)))
-        x += 1
-      }
-      y += 1
-    }
-
-    new ImmutableMatrix(width, height, data)
+  private sealed class LazyTransformedMatrix[@specialized(Int, Float, Boolean) +A,
+                                             @specialized(Int, Float, Boolean) +B]
+  (peer: Matrix[B], func: (Int, Int, B) => A) extends Matrix[A] {
+    val width = peer.width
+    val height = peer.height
+    def apply(x: Int, y: Int) = func(x, y, peer(x, y))
   }
+
+  def cells: Matrix[(Int, Int, A)] = new LazyTransformedMatrix(this, (_: Int, _: Int, _: A))
 
   def filter(f: A => Boolean): Matrix[A] =
     if(this.forall(f)) this else error("A matrix cannot become filtered!")
