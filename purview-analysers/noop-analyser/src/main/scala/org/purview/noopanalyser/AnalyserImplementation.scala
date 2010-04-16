@@ -2,7 +2,7 @@ package org.purview.noopanalyser
 
 import org.purview.core.analysis._
 import org.purview.core.data._
-import org.purview.core.process.Computation
+import org.purview.core.data.Computation
 import org.purview.core.report._
 import org.purview.core.transforms._
 

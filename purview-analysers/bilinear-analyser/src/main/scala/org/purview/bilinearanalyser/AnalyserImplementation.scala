@@ -1,7 +1,7 @@
 package org.purview.bilinearanalyser
 
 import org.purview.core.analysis.HeatMapImageAnalyser
-import org.purview.core.process.Computation
+import org.purview.core.data.Computation
 import org.purview.core.report.Warning
 import scala.math._
 

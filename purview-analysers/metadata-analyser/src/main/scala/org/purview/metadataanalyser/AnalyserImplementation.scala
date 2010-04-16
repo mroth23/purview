@@ -1,8 +1,8 @@
 package org.purview.metadataanalyser
 
 import org.purview.core.analysis.Analyser
+import org.purview.core.data.Computation
 import org.purview.core.data.ImageMatrix
-import org.purview.core.process.Computation
 import org.purview.core.report.Error
 import org.purview.core.report.ReportEntry
 import org.purview.core.report.ReportMessage

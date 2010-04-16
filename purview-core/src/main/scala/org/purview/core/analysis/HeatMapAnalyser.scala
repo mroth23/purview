@@ -7,8 +7,8 @@ import org.purview.core.report.Information
 import org.purview.core.report.ReportEntry
 import org.purview.core.report.ReportImage
 import org.purview.core.report.ReportLevel
+import org.purview.core.data.Computation
 import org.purview.core.data.MutableArrayMatrix
-import org.purview.core.process.Computation
 import org.purview.core.transforms.MatrixToImage
 import org.purview.core.report.ReportRectangle
 import org.purview.core.transforms.LinearConvolve

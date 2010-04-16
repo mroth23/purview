@@ -9,7 +9,7 @@ import javax.imageio.ImageWriteParam
 import org.purview.core.analysis.HeatMapImageAnalyser
 import org.purview.core.analysis.Settings
 import org.purview.core.analysis.settings.FloatRangeSetting
-import org.purview.core.process.Computation
+import org.purview.core.data.Computation
 import org.purview.core.report._
 import org.purview.core.transforms.ImageToMatrix
 import org.purview.core.transforms.MatrixToImage

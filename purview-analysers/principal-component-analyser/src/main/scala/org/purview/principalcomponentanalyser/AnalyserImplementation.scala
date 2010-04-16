@@ -6,8 +6,8 @@ import org.purview.core.data.ImmutableMatrix
 import org.purview.core.data.Matrix
 import java.awt.image.BufferedImage
 import org.purview.core.analysis.Analyser
+import org.purview.core.data.Computation
 import org.purview.core.data.ImageMatrix
-import org.purview.core.process.Computation
 import org.purview.core.report.ReportEntry
 import org.purview.core.report.ReportImage
 import scala.math._

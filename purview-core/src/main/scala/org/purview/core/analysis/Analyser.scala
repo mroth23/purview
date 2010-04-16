@@ -1,7 +1,7 @@
 package org.purview.core.analysis
 
 import org.purview.core.analysis.settings.Setting
-import org.purview.core.process.Computation
+import org.purview.core.data.Computation
 import org.purview.core.report.ReportEntry
 import org.purview.core.session.AnalysisStats
 import scala.util.DynamicVariable
