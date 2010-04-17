@@ -1,76 +1,66 @@
 package org.purview.core.transforms
 
 import org.purview.core.data._
+import scala.math.Numeric.FloatIsFractional
 import scala.math._
 
-class FastFourierTransform() {
-
-  def FFT1D(data: Array[Complex]) : Array[Complex] = {
-    var result = data
-
+case class FastFourierTransform1D() extends Function1[Seq[Complex[Float]], Seq[Complex[Float]]] {
+  def apply(data: Seq[Complex[Float]]): Seq[Complex[Float]] = {
     val n = data.length
+    val nhalf = n / 2
+    if(n == 1)
+      data
+    else if(n % 2 == 0) {
+      val even = (0 until n) filter (_ % 2 == 0) map data
+      val odd = (0 until n) filter (_ % 2 == 1) map data
 
-    if (n == 1){
-      result = Array(data(0))
+      val evenFFT = apply(even)
+      val oddFFT = apply(odd)
+      val pi = 3.14159265359f
+
+      (for {
+        i <- 0 until nhalf
+      } yield {
+        val a = -2 * i * pi / n
+        val c = Complex(cos(a).toFloat, sin(a).toFloat)
+        evenFFT(i) + c * oddFFT(i)
+      }) ++ (for {
+        i <- nhalf until n
+      } yield {
+        val a = -2 * (i - nhalf) * pi / n
+        val c = Complex(cos(a).toFloat, sin(a).toFloat)
+        evenFFT(i) - c * oddFFT(i)
+      })
+    } else throw new IllegalArgumentException("Length of the FFT input must be a multiple of 2")
+  }
+}
+
+case class FastFourierTransform2D() extends Function1[Matrix[Complex[Float]], Matrix[Complex[Float]]] {
+  def apply(data: Matrix[Complex[Float]]): Matrix[Complex[Float]] = {
+    val fft1d = FastFourierTransform1D()
+    val result = new MutableArrayMatrix[Complex[Float]](data.width, data.height)
+    var temp: Array[Complex[Float]] = new Array[Complex[Float]](data.height)
+
+    for(a <- 0 until data.width) {
+      for(b <- 0 until data.height)
+        temp(b) = data(a, b)
+
+      temp = fft1d(temp).toArray
+
+      for(b <- 0 until data.height)
+        result(a, b) = temp(b)
     }
-    else{
-      if (n % 2 == 0){
-        var even = new Array[Complex](n / 2)
-        var odd = new Array[Complex](n / 2)
+    
+    temp = new Array[Complex[Float]](data.width)
+    for(a <- 0 until data.width) {
+      for(b <- 0 until data.height)
+        temp(b) = result(b, a)
 
-        for{
-          i : Int <- 0 until n / 2
-        }{
-          even(i) = data(2 * i)
-          odd(i) = data(2 * i + 1)
-        }
+      temp = fft1d(temp).toArray
 
-        val evenFFT = FFT1D(even)
-        val oddFFT = FFT1D(odd)
-        val pi = 3.14159265359f
-
-        for{
-          i: Int <- 0 until n / 2
-        }{
-          val a = -2 * i * pi / n
-          val c = new Complex(cos(a).toFloat, sin(a).toFloat)
-          result(i) = evenFFT(i) + c * oddFFT(i)
-          result(i + n / 2) = evenFFT(i) - c * oddFFT(i)
-        }
-      }
-      else{
-        throw new IllegalArgumentException("Length of the FFT must be a power of 2")
-      }
+      for(b <- 0 until data.height)
+        result(b, a) = temp(b)
     }
-
     result
   }
-
-  def FFT2D(data: Array[Array[Complex]]) = {
-    var result = data
-    var temp = new Array[Complex](data(0).length)
-
-    for{ a : Int <- 0 until data.length }{
-      for{ b : Int <- 0 until data(0).length }{
-        temp(b) = result(a)(b)
-      }
-      temp = FFT1D(temp)
-      for{ b : Int <- 0 until data(0).length }{
-        result(a)(b) = temp(b)
-      }
-    }
-    temp = new Array[Complex](data.length)
-    for{ a : Int <- 0 until data.length }{
-      for{ b : Int <- 0 until data(0).length }{
-        temp(b) = result(b)(a)
-      }
-      temp = FFT1D(temp)
-      for{ b : Int <- 0 until data(0).length }{
-        result(b)(a) = temp(b)
-      }
-    }
-
-    result
-  }
-  
 }
