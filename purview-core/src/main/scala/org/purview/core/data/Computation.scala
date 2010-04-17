@@ -22,7 +22,7 @@ object Computation {
  * By using Computation.get(), it is possible to calculate a session-dependent
  * value of a node in the computation tree.
  */
-trait Computation[@specialized(Int, Float, Boolean) A] {
+trait Computation[@specialized("Int, Float, Boolean") A] {
   protected def calculateValue(session: Computation.Session): A
 
   private var maxRefCount = 1

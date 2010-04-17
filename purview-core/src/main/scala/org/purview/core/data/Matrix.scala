@@ -1,7 +1,8 @@
 package org.purview.core.data
 
+import java.io.Serializable
 import org.purview.core.analysis.Analyser
-import scala.collection.mutable.ArraySeq
+import scala.collection.mutable.GenericArray
 
 object Matrix {
   /** Adds support for everything that IndexedSeq supports to Matrix */
@@ -11,7 +12,7 @@ object Matrix {
   }
 }
 
-trait Matrix[@specialized(Int, Float, Boolean) +A] extends NotNull {
+trait Matrix[@specialized("Int, Float, Boolean") +A] extends Serializable with NotNull {
   val width: Int
   val height: Int
   def apply(x: Int, y: Int): A
@@ -36,8 +37,8 @@ trait Matrix[@specialized(Int, Float, Boolean) +A] extends NotNull {
     result
   }
 
-  def zip[@specialized(Int, Float, Boolean) B](that: Matrix[B]): Matrix[(A, B)] = {
-    val data = new ArraySeq[(A, B)](width * height)
+  def zip[@specialized("Int, Float, Boolean") B](that: Matrix[B]): Matrix[(A, B)] = {
+    val data = new GenericArray[(A, B)](width * height)
     require(this.width == that.width, "Matrices must have the same width")
     require(this.height == that.height, "Matrices must have the same height")
 
@@ -68,8 +69,8 @@ trait Matrix[@specialized(Int, Float, Boolean) +A] extends NotNull {
     }
   }
 
-  private sealed class LazyTransformedMatrix[@specialized(Int, Float, Boolean) +A,
-                                             @specialized(Int, Float, Boolean) +B]
+  private sealed class LazyTransformedMatrix[@specialized("Int, Float, Boolean") +A,
+                                             @specialized("Int, Float, Boolean") +B]
   (peer: Matrix[B], func: (Int, Int, B) => A) extends Matrix[A] {
     val width = peer.width
     val height = peer.height
@@ -100,15 +101,15 @@ trait Matrix[@specialized(Int, Float, Boolean) +A] extends NotNull {
   override def hashCode = Matrix.sequence(this).hashCode
 }
 
-sealed case class ImmutableMatrix[@specialized(Int, Float, Boolean) +A](width: Int, height: Int, private val data: Seq[A]) extends Matrix[A] {
+sealed case class ImmutableMatrix[@specialized("Int, Float, Boolean") +A](width: Int, height: Int, private val data: Seq[A]) extends Matrix[A] {
   def apply(x: Int, y: Int) = data(x + y * width)
 }
 
-trait MutableMatrix[@specialized(Int, Float, Boolean) A] extends Matrix[A] {
+trait MutableMatrix[@specialized("Int, Float, Boolean") A] extends Matrix[A] {
   def update(x: Int, y: Int, value: A)
 }
 
-sealed case class MutableArrayMatrix[@specialized(Int, Float, Boolean) A : Manifest](width: Int, height: Int) extends MutableMatrix[A] {
+sealed case class MutableArrayMatrix[@specialized("Int, Float, Boolean") A : Manifest](width: Int, height: Int) extends MutableMatrix[A] {
   private val data = new Array[A](width * height)
   def apply(x: Int, y: Int) = data(x + y * width)
   def update(x: Int, y: Int, value: A) = data(x + y * width) = value

@@ -46,7 +46,7 @@ class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDia
     mappedQObject.connect(SettingsDialog.this, "changeSetting(QObject)")
   }
 
-  val analyserPages: Map[Analyser[ImageMatrix], QWidget] = orderedAnalysers collect {
+  val analyserPages: Map[Analyser[ImageMatrix], QWidget] = orderedAnalysers partialMap {
     case analyserWithSettings: Settings =>
       val page = new QWidget {
         val p = palette

@@ -1,6 +1,7 @@
 package org.purview.core.data
 
 import java.awt.{Color => AWTColor}
+import java.io.Serializable
 import scala.math._
 
 /**
@@ -125,7 +126,7 @@ object Color {
  * @param g The green color component
  * @param b The blue color component
  */
-class Color(val a: Float, val r: Float, val g: Float, val b: Float) extends Product with NotNull {
+class Color(val a: Float, val r: Float, val g: Float, val b: Float) extends Product with Serializable with NotNull {
   /** @see a */
   @inline final def alpha = a
   /** @see r */
