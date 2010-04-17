@@ -2,7 +2,6 @@
     <lift:bind-at name="content">
         <head>
             <link rel="stylesheet" href="/css/analysers.css" type="text/css"/>
-            <script type="text/javascript" src="/js/jquery.simplemodal.js"></script>
             <script type="text/javascript" src="/js/analysers.js"></script>
         </head>
         <p>
@@ -17,31 +16,24 @@
                 <legend>Analysers</legend>
                 <analyserList:entry>
                     <p>
-                        <div class="fl_left clear analyser-checkbox">
+                        <div class="fl_left clear">
                             <entry:enabled/>
                         </div>
                         <div class="analyser-entry">
-                            <span class="bold"><entry:name/></span>
+                            <span class="bold"><entry:name/></span><br/>
+                            <entry:description/>
                             <entry:settings>
                                 <a href="#" class="settings-button fl_right">Settings...</a>
                                 <div class="settings-form">
-                                    <h2>Analyser settings</h2>
                                     <table>
-                                        <thead>
-                                            <tr>
-                                                <th>Setting</th>
-                                                <th style="width: 3em;">Value</th>
-                                            </tr>
-                                        </thead>
                                         <tbody>
                                             <settings:setting>
-                                                <tr><td><setting:name/></td><td><setting:form/></td></tr>
+                                                <tr><td class="setting-label"><span class="bold"><setting:name/></span></td><td><setting:form/></td></tr>
                                             </settings:setting>
                                         </tbody>
                                     </table>
                                 </div>
-                            </entry:settings><br/>
-                            <entry:description/>
+                            </entry:settings>
                         </div>
                     </p>
                 </analyserList:entry>

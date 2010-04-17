@@ -13,23 +13,23 @@ sealed abstract class ReportEntry extends NotNull with Serializable {
 sealed case class ReportMessage(level: ReportLevel, message: String) extends ReportEntry
 
 sealed case class ReportImage(level: ReportLevel, message: String,
-                              x: Int, y: Int, image: Matrix[Color]) extends ReportEntry
+                              x: Float, y: Float, image: Matrix[Color]) extends ReportEntry
 
 sealed case class ReportRectangle(level: ReportLevel, message: String,
-                                  x: Int, y: Int,
-                                  width: Int, height: Int) extends ReportEntry
+                                  x: Float, y: Float,
+                                  width: Float, height: Float) extends ReportEntry
 
 sealed case class ReportCircle(level: ReportLevel, message: String,
-                               x: Int, y: Int, radius: Int) extends ReportEntry
+                               x: Float, y: Float, radius: Float) extends ReportEntry
 
 sealed case class ReportRectangleMove(level: ReportLevel, message: String,
-                                      sourceX: Int, sourceY: Int,
-                                      x: Int, y: Int,
-                                      width: Int, height: Int) extends ReportEntry
+                                      sourceX: Float, sourceY: Float,
+                                      x: Float, y: Float,
+                                      width: Float, height: Float) extends ReportEntry
 
 sealed case class ReportCircleMove(level: ReportLevel, message: String,
-                                   sourceX: Int, sourceY: Int,
-                                   x: Int, y: Int, radius: Int) extends ReportEntry
+                                   sourceX: Float, sourceY: Float,
+                                   x: Float, y: Float, radius: Float) extends ReportEntry
 
 package shape {
   sealed abstract class ReportShapeCommand
