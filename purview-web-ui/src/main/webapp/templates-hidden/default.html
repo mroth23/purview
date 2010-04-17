@@ -32,7 +32,7 @@
                     <div class="topbox">
                         <h3>Memory</h3>
                         <p>
-                            <lift:System.gc/>
+                        <lift:System.gc/>
                         </p>
                     </div>
                     <div class="topbox last">
@@ -102,28 +102,26 @@
         </div>
         <div class="wrapper col4">
             <div id="footer">
-                <div class="footbox">
-                    <h2>Running analyses</h2>
-                    <ul>
-                        <li><a href="#">Lorem ipsum dolor</a></li>
-                        <li><a href="#">Suspendisse in neque</a></li>
-                        <li><a href="#">Praesent et eros</a></li>
-                        <li><a href="#">Lorem ipsum dolor</a></li>
-                        <li><a href="#">Suspendisse in neque</a></li>
-                        <li class="last"><a href="#">Praesent et eros</a></li>
-                    </ul>
-                </div>
+                <lift:AnalysisSession.runningAnalyses>
+                    <div class="footbox">
+                        <h2>Running analyses</h2>
+                        <ul>
+                            <runningAnalyses:entry>
+                                <li><entry:link/></li>
+                            </runningAnalyses:entry>
+                        </ul>
+                    </div>
+                </lift:AnalysisSession.runningAnalyses>
+                <lift:AnalysisSession.completedAnalyses>
                 <div class="footbox">
                     <h2>Completed analyses</h2>
                     <ul>
-                        <li><a href="#">Lorem ipsum dolor</a></li>
-                        <li><a href="#">Suspendisse in neque</a></li>
-                        <li><a href="#">Praesent et eros</a></li>
-                        <li><a href="#">Lorem ipsum dolor</a></li>
-                        <li><a href="#">Suspendisse in neque</a></li>
-                        <li class="last"><a href="#">Praesent et eros</a></li>
+                        <completedAnalyses:entry>
+                            <li><entry:link/></li>
+                        </completedAnalyses:entry>
                     </ul>
                 </div>
+                </lift:AnalysisSession.completedAnalyses>
                 <div class="footbox">
                     <h2>User statistics</h2>
                     <ul>
@@ -165,8 +163,8 @@
                 <p class="fl_left">
                     Copyright &copy; 2010 <em>David Flemström</em> &amp; <em>Moritz Roth</em> -
                     All Rights Reserved -
-                    <lift:Menu.item name="PurviewAbout" donthide="donthide">More information</lift:Menu.item> -
-                    <a href="http://github.com/dflemstr/purview">Project home page</a>
+                <lift:Menu.item name="PurviewAbout" donthide="donthide">More information</lift:Menu.item> -
+                <a href="http://github.com/dflemstr/purview">Project home page</a>
                 </p>
                 <p class="fl_right">
                     <a href="http://validator.w3.org/check/referer">

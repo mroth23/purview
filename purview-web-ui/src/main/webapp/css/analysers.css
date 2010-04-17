@@ -2,21 +2,20 @@ div.settings-form {
     display: none;
 }
 
-.analyser-entry {
+div.analyser-entry {
     margin-left: 2em;
 }
 
-.analyser-checkbox {
-    height: 2em;
+.settings-form table {
+    border: none;
 }
 
-#simplemodal-overlay {
-    background-color: black;
+.settings-form td {
+    border: none;
+    vertical-align: middle;
 }
 
-#simplemodal-container {
-    min-width: 300px;
-    color: #bbb;
-    background-color: #333;
-    padding: 12px;
+.setting-label {
+    width: 10em;
+    line-height: 2em;
 }

@@ -8,12 +8,14 @@ import java.io.FileOutputStream
 import javax.imageio.ImageIO
 import net.liftweb.util.Helpers
 import net.liftweb.util.Props
+import org.purview.core.analysis.Metadata
 import org.purview.core.report.ReportEntry
 import org.purview.core.report.ReportPersistance
+import scala.xml.XML
 
 object FileManager {
   private val baseDirectory = Props.get("filesystem.dir") map (new File(_)) openOr
-    new File(new File(System.getProperty("java.io.tmpdir")), "purview")
+  new File(new File(System.getProperty("java.io.tmpdir")), "purview")
 
   if(!baseDirectory.exists)
     baseDirectory.mkdirs()
@@ -63,20 +65,13 @@ object UploadManager extends FileManager with PersistanceProvider[Nothing] {
   def write(id: String, data: Nothing) = ()
 }
 
-object ReportEntryManager extends FileManager with PersistanceProvider[ReportEntry] {
-  val kind = "report-entry"
-  val suffix = "re"
-  def read(id: String) = {
-    val in = new FileInputStream(file(id))
-    try
-      Some(ReportPersistance.deserializeEntry(in))
-    catch {
+object ReportManager extends FileManager with PersistanceProvider[Map[Metadata, Set[ReportEntry]]] {
+  val kind = "report"
+  val suffix = "xml"
+  def read(id: String) =
+    try Some(ReportPersistance.deserializeReport(XML.loadFile(file(id)))) catch {
       case _ => None
-    } finally
-      in.close()
-  }
-  def write(id: String, entry: ReportEntry) = {
-    val out = new FileOutputStream(file(id))
-    try ReportPersistance.serializeEntry(entry, out) finally out.close()
-  }
+    }
+  def write(id: String, report: Map[Metadata, Set[ReportEntry]]) =
+    XML.save(file(id).getAbsolutePath, ReportPersistance.serializeReport(report), "UTF-8", true)
 }
