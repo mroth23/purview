@@ -58,7 +58,7 @@ object SVGImageHandler extends DefaultImageHandler {
       id
     }
 
-    imageElement.setAttributeNS(XLINK_NAMESPACE_URI, ATTR_XLINK_HREF, S.hostAndPath + "/imagefile/" + handle)
+    imageElement.setAttributeNS(XLINK_NAMESPACE_URI, ATTR_XLINK_HREF, S.hostAndPath + "/image/" + handle + ".png")
   }
 
   private def handleEmptyImage(imageElement: Element) = {

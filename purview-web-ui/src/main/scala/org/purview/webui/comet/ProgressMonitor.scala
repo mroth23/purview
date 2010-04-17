@@ -8,6 +8,8 @@ import net.liftweb.util.Helpers
 import net.liftweb.util.Helpers._
 import org.purview.webui.snippet.AnalysisSession
 import org.purview.webui.util.AnalysisActor
+import org.purview.webui.db.Database
+import org.squeryl.PrimitiveTypeMode._
 import scala.xml.Text
 
 class ProgressMonitor extends CometActor {
@@ -22,10 +24,14 @@ class ProgressMonitor extends CometActor {
   private var lastAnalyser = ""
 
   override def localSetup() =
-    AnalysisSession.runningAnalyses.get(name flatMap(x => Helpers.tryo(x.toLong)) openOr -1l).foreach(_ ! AnalysisActor.AddListener(this))
+    AnalysisSession.runningAnalyses.get(name flatMap(x => Helpers.tryo(transaction {
+            from(Database.analyses)(analysis => where(analysis.handle === x) select(analysis.id)).single
+          })) openOr -1l).foreach(_ ! AnalysisActor.AddListener(this))
 
   override def localShutdown() =
-    AnalysisSession.runningAnalyses.get(name flatMap(x => Helpers.tryo(x.toLong)) openOr -1l).foreach(_ ! AnalysisActor.RemoveListener(this))
+    AnalysisSession.runningAnalyses.get(name flatMap(x => Helpers.tryo(transaction {
+            from(Database.analyses)(analysis => where(analysis.handle === x) select(analysis.id)).single
+          })) openOr -1l).foreach(_ ! AnalysisActor.RemoveListener(this))
 
   def fillPercent(percent: Int) =
     <div style={"width: " + percent + "%"} class={"ui-progressbar-value ui-widget-header " +
@@ -63,7 +69,7 @@ class ProgressMonitor extends CometActor {
       partialUpdate(SetHtml(id + "-status", Text("Done")))
       lastAnalyser = "None"
       partialUpdate(SetHtml(id + "-analyser", Text("None")))
-      partialUpdate(RedirectTo(contextPath + "/image/" + (name openOr "") + "/results"))
+      partialUpdate(RedirectTo(contextPath + "/analysis/" + (name openOr "unknown") + "/results"))
     case AnalysisActor.Error(error) =>
       this.error(error)
   }

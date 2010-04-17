@@ -7,9 +7,8 @@ import java.nio.channels.Channels
 import javax.imageio.ImageIO
 
 object ImageUtils {
-  def makeImageSet(stream: InputStream): (String, String, String) = {
-    val rawId = UploadManager.makeId
-    val rawFile = UploadManager.file(rawId)
+  def makeImageSet(stream: InputStream, handle: String) = {
+    val rawFile = UploadManager.file(handle)
     rawFile.createNewFile()
 
     {
@@ -19,15 +18,13 @@ object ImageUtils {
     }
 
     val optimizedImage = ImageIO.read(rawFile)
-    val optimizedId = ImageManager.makeId
+    val optimizedId = handle + "-optimized"
     ImageManager.write(optimizedId, optimizedImage)
 
     val scaleFactor = (750f / optimizedImage.getWidth) min (562.5f / optimizedImage.getHeight) min 1.0f
     val scaledImage = scaleImage(optimizedImage, scaleFactor)
-    val scaledId = ImageManager.makeId
+    val scaledId = handle + "-scaled"
     ImageManager.write(scaledId, scaledImage)
-
-    (rawId, optimizedId, scaledId)
   }
 
   def scaleImage(image: BufferedImage, scaleFactor: Float = 1.0f) = {

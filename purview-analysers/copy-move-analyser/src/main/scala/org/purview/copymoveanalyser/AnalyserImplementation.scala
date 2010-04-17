@@ -60,84 +60,11 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
    */
   private def partialDCTBlockSize = partialDCTBlockSizeSetting.value
 
-  /**
-   * Our quantization matrix (unstretched)
-   * This matrix was expanded by replicating edge values of the "standard" JPEG matrix
-   */
-  private val quant16 =
-    ImmutableMatrix[Float](16, 16, Array(
-        032.0f,  30.0f,  35.0f,  35.0f,  45.0f,  60.0f, 122.5f, 180.0f, 180.0f, 180.0f, 180.0f, 180.0f, 180.0f, 180.0f, 180.0f, 180.0f,
-        027.5f,  30.0f,  32.5f,  42.5f,  55.0f,  87.5f, 160.0f, 230.0f, 230.0f, 230.0f, 230.0f, 230.0f, 230.0f, 230.0f, 230.0f, 230.0f,
-        025.0f,  35.0f,  40.0f,  55.0f,  92.5f, 137.5f, 195.0f, 237.5f, 237.5f, 237.5f, 237.5f, 237.5f, 237.5f, 237.5f, 237.5f, 237.5f,
-        040.0f,  47.5f,  60.0f,  72.5f, 140.0f, 160.0f, 217.5f, 245.0f, 245.0f, 245.0f, 245.0f, 245.0f, 245.0f, 245.0f, 245.0f, 245.0f,
-        060.0f,  65.0f, 100.0f, 127.5f, 170.0f, 202.5f, 257.5f, 280.0f, 280.0f, 280.0f, 280.0f, 280.0f, 280.0f, 280.0f, 280.0f, 280.0f,
-        100.0f, 145.0f, 142.5f, 217.5f, 272.5f, 260.0f, 302.5f, 250.0f, 250.0f, 250.0f, 250.0f, 250.0f, 250.0f, 250.0f, 250.0f, 250.0f,
-        127.5f, 150.0f, 172.5f, 200.0f, 257.5f, 282.5f, 300.0f, 257.5f, 257.5f, 257.5f, 257.5f, 257.5f, 257.5f, 257.5f, 257.5f, 257.5f,
-        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
-        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
-        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
-        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
-        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
-        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
-        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
-        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
-        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f))
-
-  /** Coefficients matrix used for DCT transforms */
-  private val coefficients = new Matrix[Float] {
-    val width = 16
-    val height = 16
-
-    private val Double = 1 / 16f //sqrt(1 / 16) * sqrt(1 / 16)
-    private val Single = 0.08838834764831845f //sqrt(1 / 16f) * sqrt(2 / 16f)
-    private val Sans = 1 / 8f //sqrt(2 / 16f) * sqrt(2 / 16f)
-
-    //Don't actually store the matrix; select values on the fly
-    def apply(x: Int, y: Int) = if(x == 0 && y == 0)
-      Double
-    else if(x == 1 || y == 1)
-      Single
-    else
-      Sans
-  }
-
-  /**
-   * Pre-calculated discrete cosine matrix.
-   * discreteCosine(u, v) selects parameters u and v, and
-   * discreteCosine(u, v)(x, y) selects a cell x, y in the matrix with parameters u, v
-   */
-  private val discreteCosine: Matrix[Matrix[Float]] = {
-    val result = new MutableArrayMatrix[Matrix[Float]](16, 16)
-    val pi = 3.141592653589793f //Pi.toFloat
-
-    var v = 0
-    while(v < 16) {
-      var u = 0
-      while(u < 16) {
-        val tmp = new MutableArrayMatrix[Float](16, 16)
-        var y = 0
-        while(y < 16) {
-          var x = 0
-          while(x < 16) {
-            tmp(x, y) = (cos(pi * u * (2.0 * x + 1.0) / 32.0) *
-                         cos(pi * v * (2.0 * y + 1.0) / 32.0)).toFloat
-            x += 1
-          }
-          y += 1
-        }
-        result(u, v) = tmp
-        u += 1
-      }
-      v += 1
-    }
-    result
-  }
-
   /** Stretches the quantization matrix according to a quality value */
   @inline private def quant16Biased(quality: Int): Matrix[Float] = {
     //These magic numbers come from the standard JPEG algorithm
     val s = if(quality < 50) 5000 / quality else 200 - 2 * quality
-    quant16 map (x => (s * x + 50) / 100)
+    Precomputed.quant16 map (x => (s * x + 50) / 100)
   }
 
   /** Converts the given color matrix into a float matrix of grayscale values */
@@ -174,7 +101,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
       var u = 0
       while(u < size) {
         //Select parameters
-        val localCosine = discreteCosine(u, v)
+        val localCosine = Precomputed.discreteCosine(u, v)
         var sum = 0f
         //Actually calculate the local sum
         var y = 0
@@ -186,7 +113,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
           }
           y += 1
         }
-        sum *= coefficients(u, v)
+        sum *= Precomputed.coefficients(u, v)
         result(u, v) = sum
         u += 1
       }
@@ -348,5 +275,80 @@ sealed case class Shift(from: Block, to: Block) {
     val x1 = from.x - to.x
     val y1 = from.y - to.y
     if(y1 < 0) (-x1, -y1) else (x1, y1)
+  }
+}
+
+object Precomputed {
+  /**
+   * Pre-calculated discrete cosine matrix.
+   * discreteCosine(u, v) selects parameters u and v, and
+   * discreteCosine(u, v)(x, y) selects a cell x, y in the matrix with parameters u, v
+   */
+  val discreteCosine: Matrix[Matrix[Float]] = {
+    val result = new MutableArrayMatrix[Matrix[Float]](16, 16)
+    val pi = 3.141592653589793f //Pi.toFloat
+
+    var v = 0
+    while(v < 16) {
+      var u = 0
+      while(u < 16) {
+        val tmp = new MutableArrayMatrix[Float](16, 16)
+        var y = 0
+        while(y < 16) {
+          var x = 0
+          while(x < 16) {
+            tmp(x, y) = (cos(pi * u * (2.0 * x + 1.0) / 32.0) *
+                         cos(pi * v * (2.0 * y + 1.0) / 32.0)).toFloat
+            x += 1
+          }
+          y += 1
+        }
+        result(u, v) = tmp
+        u += 1
+      }
+      v += 1
+    }
+    result
+  }
+
+  /**
+   * Our quantization matrix (unstretched)
+   * This matrix was expanded by replicating edge values of the "standard" JPEG matrix
+   */
+  val quant16 =
+    ImmutableMatrix[Float](16, 16, Array(
+        032.0f,  30.0f,  35.0f,  35.0f,  45.0f,  60.0f, 122.5f, 180.0f, 180.0f, 180.0f, 180.0f, 180.0f, 180.0f, 180.0f, 180.0f, 180.0f,
+        027.5f,  30.0f,  32.5f,  42.5f,  55.0f,  87.5f, 160.0f, 230.0f, 230.0f, 230.0f, 230.0f, 230.0f, 230.0f, 230.0f, 230.0f, 230.0f,
+        025.0f,  35.0f,  40.0f,  55.0f,  92.5f, 137.5f, 195.0f, 237.5f, 237.5f, 237.5f, 237.5f, 237.5f, 237.5f, 237.5f, 237.5f, 237.5f,
+        040.0f,  47.5f,  60.0f,  72.5f, 140.0f, 160.0f, 217.5f, 245.0f, 245.0f, 245.0f, 245.0f, 245.0f, 245.0f, 245.0f, 245.0f, 245.0f,
+        060.0f,  65.0f, 100.0f, 127.5f, 170.0f, 202.5f, 257.5f, 280.0f, 280.0f, 280.0f, 280.0f, 280.0f, 280.0f, 280.0f, 280.0f, 280.0f,
+        100.0f, 145.0f, 142.5f, 217.5f, 272.5f, 260.0f, 302.5f, 250.0f, 250.0f, 250.0f, 250.0f, 250.0f, 250.0f, 250.0f, 250.0f, 250.0f,
+        127.5f, 150.0f, 172.5f, 200.0f, 257.5f, 282.5f, 300.0f, 257.5f, 257.5f, 257.5f, 257.5f, 257.5f, 257.5f, 257.5f, 257.5f, 257.5f,
+        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
+        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
+        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
+        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
+        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
+        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
+        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
+        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
+        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f))
+
+  /** Coefficients matrix used for DCT transforms */
+  val coefficients = new Matrix[Float] {
+    val width = 16
+    val height = 16
+
+    private val Double = 1 / 16f //sqrt(1 / 16) * sqrt(1 / 16)
+    private val Single = 0.08838834764831845f //sqrt(1 / 16f) * sqrt(2 / 16f)
+    private val Sans = 1 / 8f //sqrt(2 / 16f) * sqrt(2 / 16f)
+
+    //Don't actually store the matrix; select values on the fly
+    def apply(x: Int, y: Int) = if(x == 0 && y == 0)
+      Double
+    else if(x == 1 || y == 1)
+      Single
+    else
+      Sans
   }
 }

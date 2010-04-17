@@ -35,11 +35,11 @@ class Boot {
     //Build site map
     val entries =
       Menu(Loc("PurviewHome", List("index"), "Purview Home")) ::
-      Menu(Loc("PurviewImage", List("image"), "Analyse image")) ::
-      Menu(Loc("PurviewSession", List("analysers"), "Configure analysers",
+      Menu(Loc("PurviewImage", List("new_analysis"), "Analyse image")) ::
+      Menu(Loc("PurviewSession", List("configure_analysers"), "Configure analysers",
                If(() => true, "There's no active image"),
                Hidden)) ::
-      Menu(Loc("PurviewProcess", List("process"), "Process",
+      Menu(Loc("PurviewProcess", List("progress"), "Process",
                If(() => true, "No running image session"),
                Hidden)) ::
       Menu(Loc("PurviewResults", List("results"), "Results",
@@ -51,16 +51,16 @@ class Boot {
     LiftRules.setSiteMap(SiteMap(entries: _*))
 
     LiftRules.statelessRewrite.append {
-      case RewriteRequest(ParsePath(List("image", id, "analysers"), _, _, _), _, _) =>
-        RewriteResponse("analysers" :: Nil, Map("analysisId" -> id))
-      case RewriteRequest(ParsePath(List("image", id, "process"), _, _, _), _, _) =>
-        RewriteResponse("process" :: Nil, Map("analysisId" -> id))
-      case RewriteRequest(ParsePath(List("image", id, "results"), _, _, _), _, _) =>
+      case RewriteRequest(ParsePath(List("analysis", id, "configure_analysers"), _, _, _), _, _) =>
+        RewriteResponse("configure_analysers" :: Nil, Map("analysisId" -> id))
+      case RewriteRequest(ParsePath(List("analysis", id, "progress"), _, _, _), _, _) =>
+        RewriteResponse("progress" :: Nil, Map("analysisId" -> id))
+      case RewriteRequest(ParsePath(List("analysis", id, "results"), _, _, _), _, _) =>
         RewriteResponse("results" :: Nil, Map("analysisId" -> id))
     }
 
     LiftRules.dispatch.append {
-      case Req("imagefile" :: id :: Nil, _, _) if ImageManager.exists(id) =>
+      case Req("image" :: id :: Nil, "png", _) if ImageManager.exists(id) =>
         () => {
           val file = ImageManager.file(id)
           val stream = new BufferedInputStream(new FileInputStream(file))

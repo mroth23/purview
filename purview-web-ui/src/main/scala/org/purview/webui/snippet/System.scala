@@ -11,5 +11,5 @@ class System extends DispatchSnippet {
     case "garbageCollect" => gc
   }
 
-  def gc(in: NodeSeq) = SHtml.ajaxButton("Garbage collect", () => {System.gc; JsCmds.Noop})
+  def gc(in: NodeSeq) = SHtml.ajaxButton("Garbage collect", () => {System.gc(); JsCmds.Noop})
 }
