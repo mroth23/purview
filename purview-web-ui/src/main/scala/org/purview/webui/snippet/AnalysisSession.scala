@@ -123,7 +123,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
           analysis <- from(Database.analyses)(analysis => where(analysis.id === analysisId) select(analysis)).headOption
         } yield bind("entry", entryTemplate,
                      "link" -> <a href={S.hostAndPath + "/analysis/" + analysis.handle + "/progress"}>{analysis.fileName}</a>)).flatten
-      if(result.isEmpty) Text("No currently running analyses") else result
+      if(result.isEmpty) bind("entry", entryTemplate, "link" -> Text("No currently running analyses")) else result
     }
     bind("runningAnalyses", runningAnalysesTemplate,
          "entry" -> makeEntry _)
@@ -136,7 +136,7 @@ class AnalysisSession extends DispatchSnippet with Logger {
           analysis <- from(Database.analyses)(analysis => where(analysis.id === analysisId) select(analysis)).headOption
         } yield bind("entry", entryTemplate,
                      "link" -> <a href={S.hostAndPath + "/analysis/" + analysis.handle + "/results"}>{analysis.fileName}</a>)).flatten
-      if(result.isEmpty) Text("No completed analyses yet") else result
+      if(result.isEmpty) bind("entry", entryTemplate, "link" -> Text("No completed analyses yet")) else result
     }
     bind("completedAnalyses", completedAnalysesTemplate,
          "entry" -> makeEntry _)
