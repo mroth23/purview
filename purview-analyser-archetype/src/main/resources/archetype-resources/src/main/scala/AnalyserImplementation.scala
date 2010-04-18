@@ -16,8 +16,5 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
 
   val settings = List(setting)
 
-  def result = for(in <- input) yield Set(new ReportEntry with Message {
-    val level = Information
-    val message = "Ran the analyser with the setting " + setting.value
-  })
+  def result = for(in <- input) yield Set(new ReportMessage(Information, "Ran the analyser with the setting " + setting.value))
 }
