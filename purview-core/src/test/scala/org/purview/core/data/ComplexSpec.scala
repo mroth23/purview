@@ -12,8 +12,9 @@ class ComplexSpec extends SpecificationWithJUnit {
       println(cDouble)
       val cFloat = Complex(0.1f, 0.3f)
       println(cFloat)
-      val cChar = Complex('a', 'b')
-      println(cChar)
+//Works in RC1 only
+//      val cChar = Complex('a', 'b')
+//      println(cChar)
     }
 
     "support basic addition" in {
