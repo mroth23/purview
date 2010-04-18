@@ -18,7 +18,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] {
   override val version = Some("1.0")
   override val author = Some("Moritz Roth & David Flemström")
 
-  val FragmentSize = 4
+  val FragmentSize = 3
 
   val grayscale = {
     status("Converting image to grayscale")
