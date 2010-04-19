@@ -55,9 +55,7 @@
     <properties>
         <java.version>1.5</java.version>
         <scala.version>2.8.0.Beta1</scala.version>
-        <netbeans.version>RELEASE68</netbeans.version>
         <lift.version>2.0-scala280-SNAPSHOT</lift.version>
-        <ui.brandingToken>purview</ui.brandingToken>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -111,45 +109,6 @@
                 <version>4.5.2_01</version>
             </dependency>
 
-            <!-- Netbeans -->
-            <dependency>
-                <!-- Platform -->
-                <groupId>org.netbeans.cluster</groupId>
-                <artifactId>platform11</artifactId>
-                <version>${netbeans.version}</version>
-                <type>pom</type>
-            </dependency>
-            <dependency>
-                <!-- Utilities -->
-                <groupId>org.netbeans.api</groupId>
-                <artifactId>org-openide-util</artifactId>
-                <version>${netbeans.version}</version>
-            </dependency>
-            <dependency>
-                <!-- Window management -->
-                <groupId>org.netbeans.api</groupId>
-                <artifactId>org-openide-windows</artifactId>
-                <version>${netbeans.version}</version>
-            </dependency>
-            <dependency>
-                <!-- AWT utilities -->
-                <groupId>org.netbeans.api</groupId>
-                <artifactId>org-openide-awt</artifactId>
-                <version>${netbeans.version}</version>
-            </dependency>
-            <dependency>
-                <!-- Module API -->
-                <groupId>org.netbeans.api</groupId>
-                <artifactId>org-openide-modules</artifactId>
-                <version>${netbeans.version}</version>
-            </dependency>
-            <dependency>
-                <!-- Desktop layout API -->
-                <groupId>org.netbeans.api</groupId>
-                <artifactId>org-jdesktop-layout</artifactId>
-                <version>${netbeans.version}</version>
-            </dependency>
-
             <!-- Lift -->
             <dependency>
                 <!-- Common -->
@@ -198,6 +157,12 @@
                 <artifactId>jetty</artifactId>
                 <version>[6.1.6,7.0)</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <!-- Java mail API -->
+                <groupId>javax.mail</groupId>
+                <artifactId>mail</artifactId>
+                <version>1.4.3-rc1</version>
             </dependency>
 
             <!-- Testing -->
@@ -310,22 +275,6 @@
                     </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>nbm-maven-plugin</artifactId>
-                    <version>3.1</version>
-                    <extensions>true</extensions>
-                    <configuration>
-                        <descriptor>src/main/nbm/module.xml</descriptor>
-                        <brandingToken>${ui.brandingToken}</brandingToken>
-                        <cluster>purview</cluster>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>com.google.code.maven-replacer-plugin</groupId>
-                    <artifactId>maven-replacer-plugin</artifactId>
-                    <version>1.3</version>
-                </plugin>
-                <plugin>
                     <groupId>org.mortbay.jetty</groupId>
                     <artifactId>maven-jetty-plugin</artifactId>
                     <version>6.1.22</version>
@@ -377,11 +326,6 @@
             <url>http://scala-tools.org/repo-snapshots</url>
         </repository>
         <repository>
-            <id>netbeans</id>
-            <name>Repository hosting netbeans.org API artifacts</name>
-            <url>http://bits.netbeans.org/maven2</url>
-        </repository>
-        <repository>
             <id>OSS Staging</id>
             <name>Sonatype Staging Repository</name>
             <url>http://oss.sonatype.org/content/groups/staging/</url>
@@ -401,11 +345,6 @@
             <name>Qt Jambi repository</name>
             <url>http://qtjambi.sourceforge.net/maven2/</url>
         </repository>
-        <repository>
-            <id>jama</id>
-            <name>JAMA repo</name>
-            <url>http://repo.chip.org/maven/</url>
-        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -413,11 +352,6 @@
             <id>scala-tools.org/releases</id>
             <name>Scala-Tools Maven2 Releases Repository</name>
             <url>http://scala-tools.org/repo-releases</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>googlecode.com/maven-replacer-plugin</id>
-            <name>Maven Replacer Plugin repository</name>
-            <url>http://maven-replacer-plugin.googlecode.com/svn/release-repo</url>
         </pluginRepository>
     </pluginRepositories>
 </project>
