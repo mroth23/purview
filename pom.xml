@@ -158,6 +158,12 @@
                 <version>[6.1.6,7.0)</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <!-- Java mail API -->
+                <groupId>javax.mail</groupId>
+                <artifactId>mail</artifactId>
+                <version>1.4.1</version>
+            </dependency>
 
             <!-- Testing -->
             <dependency>
