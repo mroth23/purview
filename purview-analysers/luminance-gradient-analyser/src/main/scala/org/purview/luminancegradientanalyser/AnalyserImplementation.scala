@@ -1,6 +1,5 @@
 package org.purview.luminancegradientanalyser
 
-import java.awt.image.BufferedImage
 import org.purview.core.analysis.Analyser
 import org.purview.core.data.Color
 import org.purview.core.data.ImageMatrix
@@ -9,7 +8,6 @@ import org.purview.core.report.Information
 import org.purview.core.report.ReportEntry
 import org.purview.core.report.ReportImage
 import org.purview.core.transforms.Fragmentize
-import org.purview.core.transforms.MatrixToImage
 import scala.math._
 
 class AnalyserImplementation extends Analyser[ImageMatrix] {
@@ -30,34 +28,20 @@ class AnalyserImplementation extends Analyser[ImageMatrix] {
 
   val vectors = for(frag <- fragments) yield {
     status("Calculating light direction vectors")
+    val pi = Pi.toFloat
     for(cell <- frag) yield {
-      val mid = cell(FragmentSize / 2, FragmentSize / 2)
+      val off = -(FragmentSize - 1) / 2f
+      val vecX = Matrix.sequence(cell.cells).foldLeft(0f)((acc, next) => acc + next._3 * (next._1 + off))
+      val vecY = Matrix.sequence(cell.cells).foldLeft(0f)((acc, next) => acc + next._3 * (next._2 + off))
+      val len = sqrt(vecX * vecX + vecY * vecY)
+      val asimuth = if(vecY == 0f && vecX == 0f)
+        0f
+      else if(vecX >= 0f)
+        asin(vecY / len)
+      else
+        -asin(vecY / len) + pi
 
-      var maxX, maxY = 0
-      var maxVal = 0f
-      var minVal = 1f
-      var y = 0
-      while(y < FragmentSize) {
-        var x = 0
-        while(x < FragmentSize) {
-          val value = cell(x, y)
-          if(value < minVal)
-            minVal = value
-          if(value > maxVal) {
-            maxX = x
-            maxY = y
-            maxVal = value
-          }
-          x += 1
-        }
-        y += 1
-      }
-      val len = sqrt((maxX - FragmentSize / 2) * (maxX - FragmentSize / 2) +
-                     (maxY - FragmentSize / 2) * (maxY - FragmentSize / 2)).toFloat
-      Color(1,
-            maxX / FragmentSize,
-            maxY / FragmentSize,
-            (maxVal - minVal) * len)
+      Color(1, -sin(asimuth).toFloat / 2 + 0.5f, -cos(asimuth).toFloat / 2 + 0.5f, 0)
     }
   }
 
