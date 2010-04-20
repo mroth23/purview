@@ -45,16 +45,63 @@ class AnalyserImplementation extends Analyser[ImageMatrix] {
     }
   }
 
-  val luminanceGradient = for(in <- input; vecs <- vectors) yield {
+  val edge = for(frags <- fragments) yield {
+    for(in <- frags) yield {
+      val a11 = in(0, 0)
+      val a12 = in(0, 1)
+      val a13 = in(0, 2)
+      val a21 = in(1, 0)
+      val a22 = in(1, 1)
+      val a23 = in(1, 2)
+      val a31 = in(2, 0)
+      val a32 = in(2, 1)
+      val a33 = in(2, 2)
+      sqrt {
+        2 * {
+          a11 * a11 +
+          2 * a11 * {
+            a12 + a21 -
+            a23 - a32 - a33
+          } +
+          2 * a12 * a12 +
+          2 * a12 * {
+            a13 - a31 -
+            a32 - a32 - a33
+          } +
+          a13 * a13 -
+          2 * a13 * {
+            a21 - a23 +
+            a31 + a32
+          } +
+          2 * a21 * a21 -
+          2 * a21 * {
+            a23 + a23 -
+            a31 + a33
+          } +
+          2 * a23 * a23 -
+          2 * a23 * {
+            a31 - a33
+          } +
+          a31 * a31 +
+          2 * a31 * a32 +
+          2 * a32 * a32 +
+          2 * a32 * a33 +
+          a33 * a33
+        }
+      }.toFloat
+    }
+  }
+
+  val luminanceGradient = for(in <- input; vecs <- vectors; edg <- edge) yield {
     status("Merging the luminance gradient for the image")
     
     for((x, y, color) <- in.cells) yield {
       val xoff = x - FragmentSize / 2
       val yoff = y - FragmentSize / 2
-      if(xoff > 0 && yoff > 0 && xoff < vecs.width && yoff < vecs.height)
-        vecs(xoff, yoff)
-      else
-        Color.Black
+      if(xoff > 0 && yoff > 0 && xoff < vecs.width && yoff < vecs.height) {
+        val c = vecs(xoff, yoff)
+        Color(1, c.r, c.g, edg(xoff, yoff))
+      } else Color.Black
     }
   }
 
