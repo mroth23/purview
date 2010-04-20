@@ -29,8 +29,8 @@ class AnalyserImplementation extends Analyser[ImageMatrix] {
   val vectors = for(frag <- fragments) yield {
     status("Calculating light direction vectors")
     val pi = Pi.toFloat
+    val off = -(FragmentSize - 1) / 2f
     for(cell <- frag) yield {
-      val off = -(FragmentSize - 1) / 2f
       val vecX = Matrix.sequence(cell.cells).foldLeft(0f)((acc, next) => acc + next._3 * (next._1 + off))
       val vecY = Matrix.sequence(cell.cells).foldLeft(0f)((acc, next) => acc + next._3 * (next._2 + off))
       val len = sqrt(vecX * vecX + vecY * vecY)
