@@ -16,8 +16,8 @@ trait Matrix[@specialized(Int, Float, Boolean) +A] extends NotNull {
   val height: Int
   def apply(x: Int, y: Int): A
 
-  def map[B : Manifest](f: A => B): Matrix[B] = {
-    val result: MutableMatrix[B] = if(implicitly[Manifest[B]] <:< implicitly[Manifest[Color]])
+  def map[B: Manifest](f: A => B): Matrix[B] = {
+    val result: MutableMatrix[B] = if(manifest[B] <:< manifest[Color])
       (new MutableColorMatrix(width, height)).asInstanceOf[MutableMatrix[B]]
     else
       new MutableArrayMatrix[B](width, height)
@@ -36,7 +36,7 @@ trait Matrix[@specialized(Int, Float, Boolean) +A] extends NotNull {
     result
   }
 
-  def zip[@specialized(Int, Float, Boolean) B](that: Matrix[B]): Matrix[(A, B)] = {
+  def zip[B](that: Matrix[B]): Matrix[(A, B)] = {
     val data = new ArraySeq[(A, B)](width * height)
     require(this.width == that.width, "Matrices must have the same width")
     require(this.height == that.height, "Matrices must have the same height")
@@ -68,15 +68,9 @@ trait Matrix[@specialized(Int, Float, Boolean) +A] extends NotNull {
     }
   }
 
-  private sealed class LazyTransformedMatrix[@specialized(Int, Float, Boolean) +A,
-                                             @specialized(Int, Float, Boolean) +B]
-  (peer: Matrix[B], func: (Int, Int, B) => A) extends Matrix[A] {
-    val width = peer.width
-    val height = peer.height
-    def apply(x: Int, y: Int) = func(x, y, peer(x, y))
-  }
-
   def cells: Matrix[(Int, Int, A)] = new LazyTransformedMatrix(this, (_: Int, _: Int, _: A))
+
+  def view = new MatrixView(this)
 
   def filter(f: A => Boolean): Matrix[A] =
     if(Matrix.sequence(this).forall(f)) this else error("A matrix cannot become filtered!")
@@ -127,4 +121,23 @@ sealed case class MutableColorMatrix(width: Int, height: Int) extends MutableMat
     buffer(i + 2) = value.g
     buffer(i + 3) = value.b
   }
+}
+
+sealed case class LazyTransformedMatrix[@specialized(Int, Float, Boolean) +A,
+                                        @specialized(Int, Float, Boolean) B]
+(peer: Matrix[B], func: (Int, Int, B) => A) extends Matrix[A] {
+  val width = peer.width
+  val height = peer.height
+  def apply(x: Int, y: Int) = func(x, y, peer(x, y))
+}
+
+sealed case class MatrixView[@specialized(Int, Float, Boolean) +A](peer: Matrix[A]) extends Matrix[A] {
+  val width = peer.width
+  val height = peer.height
+  def apply(x: Int, y: Int) = peer(x, y)
+  override def map[B: Manifest](f: A => B): Matrix[B] =
+    new LazyTransformedMatrix[B, A](this, (_: Int, _: Int, x: A) => f(x))
+
+  override def zip[B](that: Matrix[B]): Matrix[(A, B)] =
+    new LazyTransformedMatrix[(A, B), A](this, (x: Int, y: Int, v: A) => (v, that(x, y)))
 }
