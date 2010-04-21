@@ -31,7 +31,7 @@ case class FastFourierTransform1D() extends Function1[Seq[Complex[Float]], Seq[C
         val c = Complex(cos(a).toFloat, sin(a).toFloat)
         evenFFT(i) - c * oddFFT(i)
       })
-    } else throw new IllegalArgumentException("Length of the FFT input must be a multiple of 2")
+    } else throw new IllegalArgumentException("Length of the FFT input must be a power of 2")
   }
 }
 
