@@ -17,7 +17,7 @@ object Computation {
     def calculateValue(session: Computation.Session) = v()
   }
 
-  private[core] def get[A](s: Computation[A])(implicit session: Session) = s.value
+  private[core] def get[A](s: Computation[A])(implicit session: Session) = s.value(session)
 }
 
 /**
@@ -42,7 +42,7 @@ trait Computation[@specialized(Int, Float, Boolean) A] {
         sessionCache.clear()
         System.gc()
       }
-      assert(refCounts(session) < 0, error("Reference leak"))
+      assert(refCounts(session) >= 0, error("Reference leak"))
       
       v
     })

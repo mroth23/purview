@@ -68,7 +68,9 @@ case class Analysis(matrix: ImageMatrix, name: String, analysers: Seq[Analyser[I
       new AnalysisSession(analysers, matrix).run(stats)
     catch {
       case err =>
-        error.emit(err.getMessage + "\n" + err.getStackTraceString)
+        val str = err.getMessage + "\n" + err.getStackTraceString
+        error.emit(str)
+        println(str)
         throw new Throwable("Error in analyser", err)
     }
     val sortedReport = for {
