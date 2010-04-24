@@ -20,7 +20,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>net.sf.qtjambi</groupId>
+            <groupId>com.trolltech</groupId>
             <artifactId>qtjambi</artifactId>
         </dependency>
         <dependency>
@@ -76,13 +76,13 @@
 
     <profiles>
         <profile>
-            <id>internal-qt</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-        </profile>
-        <profile>
             <id>external-qt-linux64</id>
+            <activation>
+                <os>
+                    <name>Linux</name>
+                    <arch>amd64</arch>
+                </os>
+            </activation>
             <build>
                 <resources>
                     <resource>
@@ -101,6 +101,12 @@
         </profile>
         <profile>
             <id>external-qt-linux32</id>
+            <activation>
+                <os>
+                    <name>Linux</name>
+                    <arch>i386</arch>
+                </os>
+            </activation>
             <build>
                 <resources>
                     <resource>
@@ -152,7 +158,7 @@
                             <shadedClassifierName>distribution</shadedClassifierName>
                             <filters>
                                 <filter>
-                                    <artifact>net.sf.qtjambi:qtjambi-platform-linux*</artifact>
+                                    <artifact>com.trolltech:qtjambi-platform</artifact>
                                     <excludes>
                                         <exclude>${exclude.qt}</exclude>
                                         <exclude>${exclude.phonon}</exclude>
