@@ -3,7 +3,7 @@ package org.purview.core.analysis.settings
 /**
  * A setting that can be changed
  */
-abstract class Setting[A] {
+abstract class Setting[@specialized A] {
   /** The name of this setting */
   val name: String
 
@@ -23,7 +23,7 @@ case class IntRangeSetting(name: String, min: Int, max: Int) extends Setting[Int
   def value = v
   def value_=(f: Int): Unit = {
     if(value > max || value < min)
-      error("Setting out of range: " + f)
+      throw new IllegalArgumentException("Setting out of range: " + f)
     else
       v = f
   }
@@ -43,8 +43,12 @@ case class FloatRangeSetting(name: String, min: Float, max: Float, granularity: 
   def value = v
   def value_=(f: Float): Unit = {
     if(value > max || value < min)
-      error("Setting out of range: " + f)
+      throw new IllegalArgumentException("Setting out of range: " + f)
     else
       v = f
   }
+}
+
+case class BooleanSetting(name: String) extends Setting[Boolean] {
+  var value = false
 }
