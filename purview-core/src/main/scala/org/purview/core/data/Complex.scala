@@ -12,18 +12,18 @@ object Complex {
     def negate(x: Complex[A]) = -x
     def fromInt(x: Int) = Complex(arithmetic.fromInt(x), arithmetic.fromInt(0))
     def toInt(x: Complex[A]) = {
-      val imag = arithmetic.toInt(x.real)
-      val real = arithmetic.toInt(x.imag)
+      val imag = arithmetic.toDouble(x.real)
+      val real = arithmetic.toDouble(x.imag)
       sqrt(imag * imag + real * real).toInt
     }
     def toLong(x: Complex[A]) = {
-      val imag = arithmetic.toLong(x.real)
-      val real = arithmetic.toLong(x.imag)
+      val imag = arithmetic.toDouble(x.real)
+      val real = arithmetic.toDouble(x.imag)
       sqrt(imag * imag + real * real).toLong
     }
     def toFloat(x: Complex[A]) = {
-      val imag = arithmetic.toFloat(x.real)
-      val real = arithmetic.toFloat(x.imag)
+      val imag = arithmetic.toDouble(x.real)
+      val real = arithmetic.toDouble(x.imag)
       sqrt(imag * imag + real * real).toFloat
     }
     def toDouble(x: Complex[A]) = {

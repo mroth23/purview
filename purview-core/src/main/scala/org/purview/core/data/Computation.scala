@@ -12,9 +12,12 @@ object Computation {
   def apply[A](v: => A): Computation[A] = new Computation[A] {
     def calculateValue(session: Computation.Session) = v
   }
-  @inline def unit[A](v: => A)(implicit session: Session = new Session) = apply(v)
 
-  private[core] def get[A](s: Computation[A])(implicit session: Session) = s.value
+  def unit[A](v: () => A): Computation[A] = new Computation[A] {
+    def calculateValue(session: Computation.Session) = v()
+  }
+
+  private[core] def get[A](s: Computation[A])(implicit session: Session) = s.value(session)
 }
 
 /**
@@ -29,7 +32,7 @@ trait Computation[@specialized(Int, Float, Boolean) A] {
   private var refCounts: Map[Computation.Session, Int] = Map.empty.withDefault(_ => maxRefCount)
   private val sessionCache = new WeakHashMap[Computation.Session, A]
 
-  private[core] def value(implicit session: Computation.Session): A = {
+  private[core] final def value(implicit session: Computation.Session): A = {
     val result = sessionCache.getOrElse(session, {
       val v = calculateValue(session)
       sessionCache(session) = v
@@ -38,7 +41,8 @@ trait Computation[@specialized(Int, Float, Boolean) A] {
       if(refCounts(session) == 0) {
         sessionCache.clear()
         System.gc()
-      } else if(refCounts(session) < 0) error("Reference leak")
+      }
+      assert(refCounts(session) >= 0, error("Reference leak"))
       
       v
     })

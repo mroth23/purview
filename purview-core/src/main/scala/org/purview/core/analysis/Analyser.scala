@@ -54,7 +54,7 @@ abstract class Analyser[A] extends Metadata with NotNull {
   /**
    * The input that this analyser uses for computing the result
    */
-  protected val input = Computation.unit(inputStore.value.get)(new Computation.Session)
+  protected val input = Computation.unit[A](() => inputStore.value.get)
 
   /**
    * Reports this analysers current status

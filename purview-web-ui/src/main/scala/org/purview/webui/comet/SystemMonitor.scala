@@ -23,6 +23,7 @@ class SystemMonitor extends CometActor {
     case (Left(x), _) if x == "name" => false
     case (Left(x), _) if x == "type" => false
     case (Left(x), _) if x == "with" => false
+    case (Left(x), _) if x == "at" => false
     case _ => true
   }
 

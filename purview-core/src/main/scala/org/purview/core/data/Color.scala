@@ -15,7 +15,7 @@ object Color {
   def unapply(c: Color) = Some((c.a, c.r, c.g, c.b))
 
   /** Produces a new color from the specified color array. Colors should have the order "RGBA" */
-  def fromArray(colors: Array[Float]) = new Color(colors(1), colors(2), colors(3), colors(0))
+  def fromArray(colors: Array[Float]) = new Color(colors(3), colors(0), colors(1), colors(2))
 
   /** Produces a new color from the given java.awt.Color */
   def fromAWT(color: AWTColor) = fromArray(color.getRGBComponents(null))
