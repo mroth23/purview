@@ -32,7 +32,7 @@ trait Computation[@specialized(Int, Float, Boolean) A] {
   private var refCounts: Map[Computation.Session, Int] = Map.empty.withDefault(_ => maxRefCount)
   private val sessionCache = new WeakHashMap[Computation.Session, A]
 
-  private[core] def value(implicit session: Computation.Session): A = {
+  private[core] final def value(implicit session: Computation.Session): A = {
     val result = sessionCache.getOrElse(session, {
       val v = calculateValue(session)
       sessionCache(session) = v
@@ -41,7 +41,8 @@ trait Computation[@specialized(Int, Float, Boolean) A] {
       if(refCounts(session) == 0) {
         sessionCache.clear()
         System.gc()
-      } else if(refCounts(session) < 0) error("Reference leak")
+      }
+      assert(refCounts(session) < 0, error("Reference leak"))
       
       v
     })
