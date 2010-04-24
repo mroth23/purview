@@ -12,7 +12,10 @@ object Computation {
   def apply[A](v: => A): Computation[A] = new Computation[A] {
     def calculateValue(session: Computation.Session) = v
   }
-  @inline def unit[A](v: => A)(implicit session: Session = new Session) = apply(v)
+
+  def unit[A](v: () => A): Computation[A] = new Computation[A] {
+    def calculateValue(session: Computation.Session) = v()
+  }
 
   private[core] def get[A](s: Computation[A])(implicit session: Session) = s.value
 }
