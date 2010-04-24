@@ -34,14 +34,20 @@ class AnalyserImplementation extends Analyser[ImageMatrix] {
       val vecX = Matrix.sequence(cell.cells).foldLeft(0f)((acc, next) => acc + next._3 * (next._1 + off))
       val vecY = Matrix.sequence(cell.cells).foldLeft(0f)((acc, next) => acc + next._3 * (next._2 + off))
       val len = sqrt(vecX * vecX + vecY * vecY)
-      val asimuth = if(vecY == 0f && vecX == 0f)
+      val asimuth = if(vecX > 0f && vecY >= 0f)
+        atan(vecY/vecX)
+      else if(vecX > 0f && vecY < 0f)
+        atan(vecY/vecX) + 2f * pi
+      else if (vecX < 0f)
+        atan(vecY/vecX) + pi
+      else if (vecX == 0f && vecY > 0f)
+        pi / 2f
+      else if (vecX == 0f && vecY < 0f)
+        (3f * pi) / 2f
+      else //x == 0 && y == 0
         0f
-      else if(vecX >= 0f)
-        asin(vecY / len)
-      else
-        -asin(vecY / len) + pi
-
-      Color(1, -sin(asimuth).toFloat / 2 + 0.5f, -cos(asimuth).toFloat / 2 + 0.5f, 0)
+      
+      Color(1f, -sin(asimuth).toFloat / 2f + 0.5f, -cos(asimuth).toFloat / 2f + 0.5f, 0f)
     }
   }
 
@@ -100,7 +106,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] {
       val yoff = y - FragmentSize / 2
       if(xoff > 0 && yoff > 0 && xoff < vecs.width && yoff < vecs.height) {
         val c = vecs(xoff, yoff)
-        Color(1, c.r, c.g, edg(xoff, yoff))
+        Color(1f, c.r, c.g, edg(xoff, yoff))
       } else Color.Black
     }
   }

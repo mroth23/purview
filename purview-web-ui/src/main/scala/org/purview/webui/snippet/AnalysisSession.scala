@@ -19,6 +19,7 @@ import org.apache.batik.svggen.SVGGraphics2D
 import org.purview.core.analysis.Analyser
 import org.purview.core.analysis.Settings
 import org.purview.core.analysis.Metadata
+import org.purview.core.analysis.settings.BooleanSetting
 import org.purview.core.analysis.settings.FloatRangeSetting
 import org.purview.core.analysis.settings.IntRangeSetting
 import org.purview.core.analysis.settings.Setting
@@ -225,6 +226,9 @@ class AnalysisSession extends DispatchSnippet with Logger {
                           SHtml.ajaxSelect((floatRange.min to floatRange.max by 1f/floatRange.granularity)
                                            .map(x => (x.toString, x.toString)),
                                            Full(floatRange.value.toString), x => {doChangeValue(x); redraw()}))
+        case boolean: BooleanSetting =>
+          SHtml.swappable(if(boolean.value) <span class="enabled"/> else <span class="disabled"/>,
+                          SHtml.ajaxCheckbox(boolean.value, x => {boolean.value = x; redraw() }))
       }
 
       def redraw(): JsCmd = SetHtml(elemId, makeSetting())

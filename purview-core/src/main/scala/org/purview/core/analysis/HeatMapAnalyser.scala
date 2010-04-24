@@ -11,7 +11,6 @@ import org.purview.core.report.ReportImage
 import org.purview.core.report.ReportLevel
 import org.purview.core.data.Computation
 import org.purview.core.data.MutableArrayMatrix
-import org.purview.core.report.ReportRectangle
 import org.purview.core.report.ReportShape
 import org.purview.core.transforms.LinearConvolve
 import org.purview.core.transforms.ShapeToReportShape
