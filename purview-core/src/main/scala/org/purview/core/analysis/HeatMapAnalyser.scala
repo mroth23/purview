@@ -180,10 +180,10 @@ trait HeatMapAnalyser[@specialized(Int, Float, Boolean) A, B <: Matrix[A]] exten
   } yield report + { //The unconvoluted input image
     val max = Matrix.sequence(raw).max //TODO: this has already been calculated before, OPTIMIZE!
     new ReportImage(Information, "Raw output", 0, 0,
-                    raw.map { x => Color(0.9f, x / max, x / max, x / max)})
+                    raw.map { x => Color(1, x / max, x / max, x / max)})
   } + { //The convoluted input image
     val max = Matrix.sequence(conv).max
-    new ReportImage(Information, "Raw output", 0, 0,
+    new ReportImage(Information, "Convoluted output", 0, 0,
                     conv.map { x => Color(0.9f, x / max, x / max, x / max)})
   }
 }
