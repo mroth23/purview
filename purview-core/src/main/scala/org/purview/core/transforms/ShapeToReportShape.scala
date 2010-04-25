@@ -2,12 +2,12 @@ package org.purview.core.transforms
 
 import java.awt.Shape
 import java.awt.geom.PathIterator
-import org.purview.core.report.shape._
+import org.purview.core.data.shape._
 import scala.collection.mutable.ListBuffer
 
-case class ShapeToReportShape() extends Function1[Shape, Seq[ReportShapeCommand]] {
+case class ShapeToReportShape() extends Function1[Shape, Seq[ShapeCommand]] {
   def apply(input: Shape) = {
-    val result = new ListBuffer[ReportShapeCommand]
+    val result = new ListBuffer[ShapeCommand]
     val iter = input.getPathIterator(null)
     val buffer = new Array[Float](6)
     var prevWind = -1
