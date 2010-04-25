@@ -1,5 +1,6 @@
 package org.purview.qtui
 
+import com.trolltech.qt.QSignalEmitter
 import com.trolltech.qt.core.QObject
 import com.trolltech.qt.core.QSignalMapper
 import com.trolltech.qt.core.Qt
@@ -20,9 +21,9 @@ import com.trolltech.qt.gui.QVBoxLayout
 import com.trolltech.qt.gui.QWidget
 import org.purview.core.analysis.Analyser
 import org.purview.core.analysis.Settings
+import org.purview.core.analysis.settings.BooleanSetting
 import org.purview.core.analysis.settings.FloatRangeSetting
 import org.purview.core.analysis.settings.IntRangeSetting
-import org.purview.core.analysis.settings.Setting
 import org.purview.core.data.ImageMatrix
 import org.purview.qtui.meta.ImageSession
 import org.purview.qtui.widgets.QDoubleSlider
@@ -33,18 +34,6 @@ class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDia
   setFixedSize(500, 300)
 
   private val orderedAnalysers = session.analysers.keySet.toSeq.sortWith(_.name < _.name)
-
-  private var toggleAnalyserCallbacks: Map[QObject, Analyser[ImageMatrix]] = Map.empty
-
-  private val toggleAnalyserMapper = new QSignalMapper(this) {
-    mappedQObject.connect(SettingsDialog.this, "toggleAnalyser(QObject)")
-  }
-
-  private var settingsCallbacks: Map[QObject, Setting[_]] = Map.empty
-
-  private val settingsMapper = new QSignalMapper(this) {
-    mappedQObject.connect(SettingsDialog.this, "changeSetting(QObject)")
-  }
 
   val analyserPages: Map[Analyser[ImageMatrix], QWidget] = orderedAnalysers collect {
     case analyserWithSettings: Settings =>
@@ -64,6 +53,8 @@ class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDia
                 setSingleStep(1 / f.granularity)
                 setRange(f.min, f.max)
                 setValue(f.value)
+                valueChanged.connect(this, "changeSetting()")
+                def changeSetting() = f.value = this.value.toFloat
               }
               val slider = new QDoubleSlider(this) {
                 setOrientation(Qt.Orientation.Horizontal)
@@ -73,9 +64,6 @@ class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDia
               }
               spinner.valueChanged.connect(slider, "setDoubleValue(double)")
               slider.doubleValueChanged.connect(spinner, "setValue(double)")
-              settingsMapper.setMapping(spinner, spinner)
-              settingsCallbacks += spinner -> f
-              spinner.valueChanged.connect(settingsMapper, "map()")
               layout.addWidget(spinner)
               layout.addWidget(slider)
               Left(layout)
@@ -84,6 +72,8 @@ class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDia
               val spinner = new QSpinBox(this) {
                 setRange(i.min, i.max)
                 setValue(i.value)
+                valueChanged.connect(this, "changeSetting()")
+                def changeSetting() = (i.value = this.value)
               }
               val slider = new QSlider(this) {
                 setOrientation(Qt.Orientation.Horizontal)
@@ -92,12 +82,15 @@ class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDia
               }
               spinner.valueChanged.connect(slider, "setValue(int)")
               slider.valueChanged.connect(spinner, "setValue(int)")
-              settingsMapper.setMapping(spinner, spinner)
-              settingsCallbacks += spinner -> i
-              spinner.valueChanged.connect(settingsMapper, "map()")
               layout.addWidget(spinner)
               layout.addWidget(slider)
               Left(layout)
+            case b: BooleanSetting =>
+              Right(new QCheckBox(this) {
+                  setChecked(b.value)
+                  this.toggled.connect(this, "changeSetting()")
+                  def changeSetting() = (b.value = this.isChecked)
+                })
             case _ =>
               Right(new QLabel("<em>Unsupported setting</em>"))
           }
@@ -113,17 +106,19 @@ class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDia
       analyserWithSettings -> page
   } toMap
 
-  val analyserCheckboxes = for(analyser <- orderedAnalysers) yield {
-    val enabled = session.analysers(analyser)
-    val checkBox = new QCheckBox(this)
-    checkBox.setChecked(enabled)
-    toggleAnalyserMapper.setMapping(checkBox, checkBox)
-    toggleAnalyserCallbacks += checkBox -> analyser
-    checkBox.toggled.connect(toggleAnalyserMapper, "map()")
-    checkBox
-  }
+  val analyserCheckboxes = for(analyser <- orderedAnalysers) yield 
+    new QCheckBox(this) {
+      setChecked(session.analysers(analyser))
+      toggled.connect(this, "toggleAnalyser()")
+      def toggleAnalyser() = {
+        session.analysers = session.analysers.updated(analyser, isChecked)
+        analyserPages.get(analyser) foreach { page =>
+          toolBox.setItemEnabled(toolBox.indexOf(page), isChecked)
+        }
+      }
+    }
 
-  private val toolBox = new QToolBox(this) {
+  private val toolBox: QToolBox = new QToolBox(this) {
     val selectAnalysersPage = new QWidget {
       val p = palette
       val c = p.color(QPalette.ColorRole.Window)
@@ -153,27 +148,4 @@ class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDia
   }
 
   setLayout(vBoxLayout)
-
-  private def toggleAnalyser(sender: QObject) = {
-    val analyser = toggleAnalyserCallbacks(sender)
-    val checkBox = sender.asInstanceOf[QCheckBox]
-    val enabled = checkBox.isChecked
-    session.analysers += analyser -> enabled
-    analyserPages.get(analyser) foreach { page =>
-      toolBox.setItemEnabled(toolBox.indexOf(page), enabled)
-    }
-  }
-
-  private def changeSetting(sender: QObject) = {
-    val setting: Setting[_] = settingsCallbacks(sender)
-    setting match {
-      case f: FloatRangeSetting =>
-        val spinner = sender.asInstanceOf[QDoubleSpinBox]
-        f.value = spinner.value.toFloat
-      case i: IntRangeSetting =>
-        val spinner = sender.asInstanceOf[QSpinBox]
-        i.value = spinner.value
-      case _ => error("FATAL: Unsupported setting field")
-    }
-  }
 }

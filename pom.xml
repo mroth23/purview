@@ -104,9 +104,9 @@
 
             <!-- Qt -->
             <dependency>
-                <groupId>net.sf.qtjambi</groupId>
+                <groupId>com.trolltech</groupId>
                 <artifactId>qtjambi</artifactId>
-                <version>4.5.2_01</version>
+                <version>4.6.0</version>
             </dependency>
 
             <!-- Lift -->
@@ -328,22 +328,22 @@
         <repository>
             <id>OSS Staging</id>
             <name>Sonatype Staging Repository</name>
-            <url>http://oss.sonatype.org/content/groups/staging/</url>
+            <url>http://oss.sonatype.org/content/groups/staging</url>
         </repository>
         <repository>
             <id>JBoss</id>
             <name>JBoss Repository</name>
-            <url>http://repository.jboss.org/maven2/</url>
+            <url>http://repository.jboss.org/maven2</url>
         </repository>
         <repository>
             <id>JavaNet</id>
             <name>JavaNet Repository</name>
-            <url>http://download.java.net/maven/2/</url>
+            <url>http://download.java.net/maven/2</url>
         </repository>
         <repository>
-            <id>qtjambi</id>
-            <name>Qt Jambi repository</name>
-            <url>http://qtjambi.sourceforge.net/maven2/</url>
+            <id>purview-m2repo</id>
+            <name>Purview Maven2 Repository</name>
+            <url>http://github.com/dflemstr/purview-m2repo/raw/master</url>
         </repository>
     </repositories>
 
