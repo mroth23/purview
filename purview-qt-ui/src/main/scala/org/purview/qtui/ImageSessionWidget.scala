@@ -30,7 +30,7 @@ import org.purview.core.report.ReportRectangle
 import org.purview.core.report.ReportRectangleMove
 import org.purview.core.report.ReportShape
 import org.purview.core.report.ReportShapeMove
-import org.purview.core.report.shape._
+import org.purview.core.data.shape._
 import org.purview.qtui.meta.ImageSession
 import scala.collection.mutable.WeakHashMap
 import scala.math._
@@ -184,11 +184,11 @@ case class ImageSessionWidget(imageSession: ImageSession) extends QGraphicsView 
 
 object ImageUtils {
   private val pixmapCache = new WeakHashMap[Matrix[Color], QPixmap]
-  private val painterPathCache = new WeakHashMap[Seq[ReportShapeCommand], QPainterPath]
+  private val painterPathCache = new WeakHashMap[Seq[ShapeCommand], QPainterPath]
 
   def convertToQPixmap(image: Matrix[Color]) = pixmapCache.getOrElseUpdate(image, matrixToPixmap(image))
 
-  def convertToQPainterPath(shape: Seq[ReportShapeCommand]) = painterPathCache.getOrElseUpdate(shape, shapeEntriesToPainterPath(shape))
+  def convertToQPainterPath(shape: Seq[ShapeCommand]) = painterPathCache.getOrElseUpdate(shape, shapeEntriesToPainterPath(shape))
 
   val ArrowWidth = 12f
   val ArrowAngle = toRadians(20)
@@ -217,7 +217,7 @@ object ImageUtils {
   }
 
   /** Convert a seq of shape commands to a Qt PainterPath */
-  private def shapeEntriesToPainterPath(shape: Seq[ReportShapeCommand]) = {
+  private def shapeEntriesToPainterPath(shape: Seq[ShapeCommand]) = {
     val path = new QPainterPath
     shape.foreach({
         case ShapeUseOddEvenFill =>

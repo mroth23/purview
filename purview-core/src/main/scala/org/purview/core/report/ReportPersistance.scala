@@ -3,14 +3,12 @@ package org.purview.core.report
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
 import javax.imageio.ImageIO
 import org.apache.commons.codec.binary.Base64
 import org.purview.core.analysis.Metadata
 import org.purview.core.data._
-import org.purview.core.report.shape._
-import org.purview.core.report.plot._
+import org.purview.core.data.shape._
+import org.purview.core.data.plot._
 import scala.xml._
 
 object ReportPersistance {
@@ -71,7 +69,7 @@ object ReportPersistance {
     (<matrix type="color:image/png" width={image.width.toString} height={image.height.toString}>{new String(Base64.encodeBase64(storage.toByteArray), "UTF-8")}</matrix>)
   }
 
-  def serializeShapeEntries(entries: Seq[shape.ReportShapeCommand]): NodeSeq = entries map {
+  def serializeShapeEntries(entries: Seq[ShapeCommand]): NodeSeq = entries map {
     case ShapeMoveTo(x, y) =>
       (<command type="move" x0={x.toString} y0={y.toString}/>)
     case ShapeLineTo(x, y) =>
@@ -88,10 +86,10 @@ object ReportPersistance {
       (<command type="fill-winding"/>)
   }
 
-  def serializePlotEntries(entries: Seq[plot.ReportPlotEntry]): NodeSeq = entries map {
-    case ReportPlotPoint(x, y, z, color) =>
+  def serializePlotEntries(entries: Seq[PlotEntry]): NodeSeq = entries map {
+    case PlotPoint(x, y, z, color) =>
       (<entry type="point" x={x.toString} y={y.toString} z={z.toString} a={color.a.toString} r={color.r.toString} g={color.g.toString} b={color.b.toString}/>)
-    case ReportPlotVector(xDir, yDir, zDir, color) =>
+    case PlotVector(xDir, yDir, zDir, color) =>
       (<entry type="vector" xd={xDir.toString} yd={yDir.toString} zd={zDir.toString} a={color.a.toString} r={color.r.toString} g={color.g.toString} b={color.b.toString}/>)
   }
 
@@ -174,7 +172,7 @@ object ReportPersistance {
     result
   }
 
-  def deserializeShapeEntries(data: NodeSeq): Seq[ReportShapeCommand] = (data\"command") map { command =>
+  def deserializeShapeEntries(data: NodeSeq): Seq[ShapeCommand] = (data\"command") map { command =>
     @inline def fattr(label: String) = (command\("@" + label)).text.toFloat
     (command\"@type").text match {
       case "move" => ShapeMoveTo(fattr("x0"), fattr("y0"))
@@ -187,11 +185,11 @@ object ReportPersistance {
     }
   }
 
-  def deserializePlotEntries(data: NodeSeq): Seq[ReportPlotEntry] = (data\"entry") map { entry =>
+  def deserializePlotEntries(data: NodeSeq): Seq[PlotEntry] = (data\"entry") map { entry =>
     @inline def fattr(label: String) = (entry\("@" + label)).text.toFloat
     (entry\"@type").text match {
-      case "point" => new ReportPlotPoint(fattr("x"), fattr("y"), fattr("z"), Color(fattr("a"), fattr("r"), fattr("g"), fattr("b")))
-      case "vector" => new ReportPlotVector(fattr("xd"), fattr("yd"), fattr("zd"), Color(fattr("a"), fattr("r"), fattr("g"), fattr("b")))
+      case "point" => new PlotPoint(fattr("x"), fattr("y"), fattr("z"), Color(fattr("a"), fattr("r"), fattr("g"), fattr("b")))
+      case "vector" => new PlotVector(fattr("xd"), fattr("yd"), fattr("zd"), Color(fattr("a"), fattr("r"), fattr("g"), fattr("b")))
     }
   }
 }
