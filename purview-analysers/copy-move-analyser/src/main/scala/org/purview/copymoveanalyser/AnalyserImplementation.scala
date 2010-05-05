@@ -15,6 +15,7 @@ import org.purview.core.report.ReportEntry
 import org.purview.core.report.ReportShapeMove
 import org.purview.core.transforms.Fragmentize
 import org.purview.core.transforms.ShapeToReportShape
+import org.purview.core.transforms.Interpolate
 import scala.collection.mutable.ArrayBuffer
 import scala.math._
 import scala.util.Sorting
@@ -35,8 +36,10 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
   minDistanceSetting.value = 25
   val partialDCTBlockSizeSetting = IntRangeSetting("Partial DCT block size", 2, 16)
   partialDCTBlockSizeSetting.value = 3
-
-  val settings = List(qualitySetting, thresholdSetting,
+  val blockSizeSetting = IntRangeSetting("Block size", 2, 16)
+  blockSizeSetting.value = 16
+  
+  val settings = List(qualitySetting, blockSizeSetting, thresholdSetting,
                       minDistanceSetting, partialDCTBlockSizeSetting)
 
   /**
@@ -60,11 +63,28 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
    */
   private def partialDCTBlockSize = partialDCTBlockSizeSetting.value
 
+  /**
+   * The block size
+   */
+  private def blockSize = blockSizeSetting.value
+
   /** Stretches the quantization matrix according to a quality value */
-  @inline private def quant16Biased(quality: Int): Matrix[Float] = {
+  @inline private def createQTable(quality: Int, size: Int): Matrix[Float] = {
     //These magic numbers come from the standard JPEG algorithm
-    val s = if(quality < 50) 5000 / quality else 200 - 2 * quality
-    Precomputed.quant16 map (x => (s * x + 50) / 100)
+    val s = if(quality < 50) 5000f / quality else 200f - 2f * quality
+    var coefficients = Array(
+      16f,  11f,  10f,  16f,  24f,  40f,  51f,  61f,
+      12f,  12f,  14f,  19f,  26f,  58f,  60f,  55f,
+      14f,  13f,  16f,  24f,  40f,  57f,  69f,  56f,
+      14f,  17f,  22f,  29f,  51f,  87f,  80f,  62f,
+      18f,  22f,  37f,  56f,  68f, 109f, 103f,  77f,
+      24f,  35f,  55f,  64f,  81f, 104f, 113f,  92f,
+      49f,  64f,  78f,  87f, 103f, 121f, 120f, 101f,
+      72f,  92f,  95f,  98f, 112f, 100f, 103f,  99f) map (x => (s * x + 50f) / 100f)
+    coefficients(0) *= (size / 8)
+    val quant8 = ImmutableMatrix[Float](8, 8, coefficients)
+    val interpolator = Interpolate(size, size)
+    interpolator(quant8)
   }
 
   /** Converts the given color matrix into a float matrix of grayscale values */
@@ -91,7 +111,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
   }
 
   /** Partially calculates "the DCT matrix" for an input matrix */
-  def partialDCT(input: Matrix[Float], size: Int): Matrix[Float] = {
+  def partialDCT(input: Matrix[Float], size: Int, discreteCosine: Matrix[Matrix[Float]], coefficients: Matrix[Float]): Matrix[Float] = {
     val w = input.width
     val h = input.height
     val result = new MutableArrayMatrix[Float](size, size)
@@ -101,7 +121,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
       var u = 0
       while(u < size) {
         //Select parameters
-        val localCosine = Precomputed.discreteCosine(u, v)
+        val localCosine = discreteCosine(u, v)
         var sum = 0f
         //Actually calculate the local sum
         var y = 0
@@ -113,7 +133,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
           }
           y += 1
         }
-        sum *= Precomputed.coefficients(u, v)
+        sum *= coefficients(u, v)
         result(u, v) = sum
         u += 1
       }
@@ -125,9 +145,54 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
   /** Create quantized blocks for each cell in the input matrix */
   def makeBlocks(in: Matrix[Matrix[Float]]): Array[Block] = {
     status("Splitting up the image into DCT blocks with size " + partialDCTBlockSize)
-    val quant = quant16Biased(quality)
+    val quant = createQTable(quality, blockSize)
+
+    val discreteCosine: Matrix[Matrix[Float]] = {
+      val result = new MutableArrayMatrix[Matrix[Float]](blockSize, blockSize)
+      val pi = 3.141592653589793f //Pi.toFloat
+
+      var v = 0
+      while(v < blockSize) {
+        var u = 0
+        while(u < blockSize) {
+          val tmp = new MutableArrayMatrix[Float](blockSize, blockSize)
+          var y = 0
+          while(y < blockSize) {
+            var x = 0
+            while(x < blockSize) {
+              tmp(x, y) = (cos(pi * u * (2.0 * x + 1.0) / (blockSize * 2)) *
+                           cos(pi * v * (2.0 * y + 1.0) / (blockSize * 2))).toFloat
+              x += 1
+            }
+            y += 1
+          }
+          result(u, v) = tmp
+          u += 1
+        }
+        v += 1
+      }
+      result
+    }
+
+    val coefficients = new Matrix[Float] {
+      val width = blockSize
+      val height = blockSize
+
+      private val Double = 1f / blockSize.toFloat //sqrt(1 / 16) * sqrt(1 / 16)
+      private val Sans = 2f / blockSize.toFloat //sqrt(2 / 16f) * sqrt(2 / 16f)
+      private val Single = sqrt(Double).toFloat * sqrt(Sans).toFloat  //sqrt(1 / 16f) * sqrt(2 / 16f)
+    
+      //Don't actually store the matrix; select values on the fly
+      def apply(x: Int, y: Int) = if(x == 0 && y == 0)
+        Double
+      else if(x == 1 || y == 1)
+        Single
+      else
+        Sans
+    }
+
     val res: Iterable[Block] = for((x, y, value) <- in.cells) yield {
-      new Block(quantize(partialDCT(value, partialDCTBlockSize), quant), x, y, partialDCTBlockSize)
+      new Block(quantize(partialDCT(value, partialDCTBlockSize, discreteCosine, coefficients), quant), x, y, partialDCTBlockSize)
     }
     res.toArray
   }
@@ -140,7 +205,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
 
   def makeShifts(blocks: Array[Block]): Seq[Shift] = {
     status("Calculating block shifts")
-    val result = new ArrayBuffer[Shift](blocks.length / 16)
+    val result = new ArrayBuffer[Shift](blocks.length / blockSize)
     val minimumDistanceSquared = minDistance * minDistance
     //Go through each pair of blocks
     var i = 0
@@ -185,10 +250,10 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
 
         //Convert blocks into two sets of areas: "from" areas and "to" areas
         val rectsFrom: Seq[Area] =
-          for(s <- shifts) yield new Area(new Rectangle2D.Double(s.from.x, s.from.y, 16, 16))
+          for(s <- shifts) yield new Area(new Rectangle2D.Double(s.from.x, s.from.y, blockSize, blockSize))
 
         val rectsTo: Seq[Area] =
-          for(s <- shifts) yield new Area(new Rectangle2D.Double(s.to.x, s.to.y, 16, 16))
+          for(s <- shifts) yield new Area(new Rectangle2D.Double(s.to.x, s.to.y, blockSize, blockSize))
 
         //Merge the areas
         val areaFrom = new Area
@@ -213,7 +278,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
    * - Report the remaining shifts
    */
 
-  val result = input >- grayscale >- Fragmentize(16, 16) >- makeBlocks >- sortBlocks >-
+  val result = input >- grayscale >- Fragmentize(blockSize, blockSize) >- makeBlocks >- sortBlocks >-
   makeShifts >- groupShifts >- makeReport
 }
 
@@ -275,80 +340,5 @@ sealed case class Shift(from: Block, to: Block) {
     val x1 = from.x - to.x
     val y1 = from.y - to.y
     if(y1 < 0) (-x1, -y1) else (x1, y1)
-  }
-}
-
-object Precomputed {
-  /**
-   * Pre-calculated discrete cosine matrix.
-   * discreteCosine(u, v) selects parameters u and v, and
-   * discreteCosine(u, v)(x, y) selects a cell x, y in the matrix with parameters u, v
-   */
-  val discreteCosine: Matrix[Matrix[Float]] = {
-    val result = new MutableArrayMatrix[Matrix[Float]](16, 16)
-    val pi = 3.141592653589793f //Pi.toFloat
-
-    var v = 0
-    while(v < 16) {
-      var u = 0
-      while(u < 16) {
-        val tmp = new MutableArrayMatrix[Float](16, 16)
-        var y = 0
-        while(y < 16) {
-          var x = 0
-          while(x < 16) {
-            tmp(x, y) = (cos(pi * u * (2.0 * x + 1.0) / 32.0) *
-                         cos(pi * v * (2.0 * y + 1.0) / 32.0)).toFloat
-            x += 1
-          }
-          y += 1
-        }
-        result(u, v) = tmp
-        u += 1
-      }
-      v += 1
-    }
-    result
-  }
-
-  /**
-   * Our quantization matrix (unstretched)
-   * This matrix was expanded by replicating edge values of the "standard" JPEG matrix
-   */
-  val quant16 =
-    ImmutableMatrix[Float](16, 16, Array(
-        032.0f,  30.0f,  35.0f,  35.0f,  45.0f,  60.0f, 122.5f, 180.0f, 180.0f, 180.0f, 180.0f, 180.0f, 180.0f, 180.0f, 180.0f, 180.0f,
-        027.5f,  30.0f,  32.5f,  42.5f,  55.0f,  87.5f, 160.0f, 230.0f, 230.0f, 230.0f, 230.0f, 230.0f, 230.0f, 230.0f, 230.0f, 230.0f,
-        025.0f,  35.0f,  40.0f,  55.0f,  92.5f, 137.5f, 195.0f, 237.5f, 237.5f, 237.5f, 237.5f, 237.5f, 237.5f, 237.5f, 237.5f, 237.5f,
-        040.0f,  47.5f,  60.0f,  72.5f, 140.0f, 160.0f, 217.5f, 245.0f, 245.0f, 245.0f, 245.0f, 245.0f, 245.0f, 245.0f, 245.0f, 245.0f,
-        060.0f,  65.0f, 100.0f, 127.5f, 170.0f, 202.5f, 257.5f, 280.0f, 280.0f, 280.0f, 280.0f, 280.0f, 280.0f, 280.0f, 280.0f, 280.0f,
-        100.0f, 145.0f, 142.5f, 217.5f, 272.5f, 260.0f, 302.5f, 250.0f, 250.0f, 250.0f, 250.0f, 250.0f, 250.0f, 250.0f, 250.0f, 250.0f,
-        127.5f, 150.0f, 172.5f, 200.0f, 257.5f, 282.5f, 300.0f, 257.5f, 257.5f, 257.5f, 257.5f, 257.5f, 257.5f, 257.5f, 257.5f, 257.5f,
-        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
-        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
-        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
-        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
-        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
-        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
-        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
-        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f,
-        152.5f, 137.5f, 140.0f, 155.0f, 192.5f, 230.0f, 252.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f, 247.5f))
-
-  /** Coefficients matrix used for DCT transforms */
-  val coefficients = new Matrix[Float] {
-    val width = 16
-    val height = 16
-
-    private val Double = 1 / 16f //sqrt(1 / 16) * sqrt(1 / 16)
-    private val Single = 0.08838834764831845f //sqrt(1 / 16f) * sqrt(2 / 16f)
-    private val Sans = 1 / 8f //sqrt(2 / 16f) * sqrt(2 / 16f)
-
-    //Don't actually store the matrix; select values on the fly
-    def apply(x: Int, y: Int) = if(x == 0 && y == 0)
-      Double
-    else if(x == 1 || y == 1)
-      Single
-    else
-      Sans
   }
 }
