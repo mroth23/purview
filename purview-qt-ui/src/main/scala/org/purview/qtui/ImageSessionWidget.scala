@@ -39,7 +39,7 @@ case class ImageSessionWidget(imageSession: ImageSession) extends QGraphicsView 
   setWindowTitle(imageSession.imageFile.getName)
   setBackgroundRole(QPalette.ColorRole.Dark)
   setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
-  setViewport(new QGLWidget) //Use OpenGL for drawing
+  //setViewport(new QGLWidget) //Use OpenGL for drawing
   setRenderHint(QPainter.RenderHint.Antialiasing)
   setRenderHint(QPainter.RenderHint.HighQualityAntialiasing)
   setInteractive(true)
