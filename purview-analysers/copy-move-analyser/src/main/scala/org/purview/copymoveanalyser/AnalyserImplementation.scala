@@ -111,24 +111,24 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
   }
 
   /** Partially calculates "the DCT matrix" for an input matrix */
-  def partialDCT(input: Matrix[Float], size: Int, discreteCosine: Matrix[Matrix[Float]], coefficients: Matrix[Float]): Matrix[Float] = {
+  def partialDCT(input: Matrix[Float], size: Int, bs: Int, coefficients: Matrix[Float]): Matrix[Float] = {
     val w = input.width
     val h = input.height
     val result = new MutableArrayMatrix[Float](size, size)
+    val pi = 3.141592653589793f
 
     var v = 0
     while(v < size) {
       var u = 0
       while(u < size) {
-        //Select parameters
-        val localCosine = discreteCosine(u, v)
+
         var sum = 0f
         //Actually calculate the local sum
         var y = 0
         while(y < h) {
           var x = 0
           while(x < w) {
-            sum += input(x, y) * localCosine(x, y)
+            sum += input(x, y) * (cos(pi * u * (2.0 * x + 1.0) / (bs * 2)) * cos(pi * v * (2.0 * y + 1.0) / (bs * 2))).toFloat
             x += 1
           }
           y += 1
@@ -146,33 +146,6 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
   def makeBlocks(in: Matrix[Matrix[Float]]): Array[Block] = {
     status("Splitting up the image into DCT blocks with size " + partialDCTBlockSize)
     val quant = createQTable(quality, blockSize)
-
-    val discreteCosine: Matrix[Matrix[Float]] = {
-      val result = new MutableArrayMatrix[Matrix[Float]](blockSize, blockSize)
-      val pi = 3.141592653589793f //Pi.toFloat
-
-      var v = 0
-      while(v < blockSize) {
-        var u = 0
-        while(u < blockSize) {
-          val tmp = new MutableArrayMatrix[Float](blockSize, blockSize)
-          var y = 0
-          while(y < blockSize) {
-            var x = 0
-            while(x < blockSize) {
-              tmp(x, y) = (cos(pi * u * (2.0 * x + 1.0) / (blockSize * 2)) *
-                           cos(pi * v * (2.0 * y + 1.0) / (blockSize * 2))).toFloat
-              x += 1
-            }
-            y += 1
-          }
-          result(u, v) = tmp
-          u += 1
-        }
-        v += 1
-      }
-      result
-    }
 
     val coefficients = new Matrix[Float] {
       val width = blockSize
@@ -192,7 +165,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
     }
 
     val res: Iterable[Block] = for((x, y, value) <- in.cells) yield {
-      new Block(quantize(partialDCT(value, partialDCTBlockSize, discreteCosine, coefficients), quant), x, y, partialDCTBlockSize)
+      new Block(quantize(partialDCT(value, partialDCTBlockSize, blockSize, coefficients), quant), x, y, partialDCTBlockSize)
     }
     res.toArray
   }
