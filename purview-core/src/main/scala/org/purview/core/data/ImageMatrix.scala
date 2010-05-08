@@ -103,9 +103,12 @@ package meta {
       case (file, "JPEG") =>
         val segmentReader = new JpegSegmentReader(file)
         val numberOfDQTSegments = segmentReader.getSegmentCount(JpegSegmentReader.SEGMENT_DQT)
-        (for(i <- 0 until numberOfDQTSegments) yield
-          (i.toString -> segmentReader.readSegment(JpegSegmentReader.SEGMENT_DQT, i).map(_ & 0xff).toSeq.mkString(","))
-        ).toMap
+        val indexedQTables = for {
+          i <- 0 until numberOfDQTSegments
+          segment = segmentReader.readSegment(JpegSegmentReader.SEGMENT_DQT, i).map(_ & 0xff)
+          qtable <- segment.grouped(65).map(_.toSeq).toSeq.filter(_.length == 65)
+        } yield qtable(0).toString -> qtable.drop(1).mkString(",")
+        indexedQTables.toMap
     }
   }
 
