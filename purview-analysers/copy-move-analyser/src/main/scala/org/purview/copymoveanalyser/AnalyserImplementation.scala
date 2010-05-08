@@ -76,12 +76,16 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings with Me
    * Detect JPEG quality automatically?
    */
   private def autoDetectQuality = autoQualitySetting.value
-  
+
+  val quantTables = input.map(_.metadata.get("DQT").map { dqt =>
+      dqt.keySet.toSeq.sortBy(identity).map(key => dqt(key).split(',').map(_.toInt).toSeq)
+    }.getOrElse(Nil))
+
   /** Stretches the quantization matrix according to a quality value */
-  @inline private def createQTable(quality: Int, size: Int): Matrix[Float] = {
-    status("Creating quantization tables with quality " + quality.toString())
+  @inline private def createQTable(q: Int, size: Int): Matrix[Float] = {
+    status("Creating quantization tables with quality " + q.toString())
     //These magic numbers come from the standard JPEG algorithm
-    val s = if(quality < 50) 5000f / quality else 200f - 2f * quality
+    val s = if(q < 50) 5000f / q else 200f - 2f * q
     //The "standard" luminance quantization table taken from the JPEG specification (Annex K1)
     //We change the values according to the quality factor
     var coefficients = Array(
@@ -103,7 +107,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings with Me
     interpolator(quant8)
   }
 
-  private def estimateQuality(qt: Seq[Seq[Int]]) : Int = {
+  def estimateQuality(qt: Seq[Seq[Int]]) : Int = {
     val avY = (qt(0).sum - qt(0)(0)) / (qt(0).length - 1)
     val avC = (qt(1).sum - qt(1)(0)) / (qt(1).length - 1)
 
@@ -169,14 +173,14 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings with Me
   }
 
   /** Create quantized blocks for each cell in the input matrix */
-  def makeBlocks = for(qt <- quantTables; in <- fragments) yield {
+  val makeBlocks = for(qt <- quantTables; in <- fragments) yield {
     status("Splitting up the image into DCT blocks with size " + partialDCTBlockSize)
     var quant = (if (autoDetectQuality == true && qt.length != 0){
-      createQTable(estimateQuality(qt), blockSize)
-    }
-    else {
-      createQTable(quality, blockSize)
-    })
+        createQTable(estimateQuality(qt), blockSize)
+      }
+                 else {
+        createQTable(quality, blockSize)
+      })
     val coefficients = new Matrix[Float] {
       val width = blockSize
       val height = blockSize
@@ -269,10 +273,6 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings with Me
       }
     ).toSet
   }
-
-  val quantTables = input.map(_.metadata.get("DQT").map { dqt =>
-      dqt.keySet.toSeq.sortBy(identity).map(key => dqt(key).split(',').map(_.toInt).toSeq)
-    }.getOrElse(Nil))
 
   /*
    * Process:
