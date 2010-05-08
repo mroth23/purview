@@ -19,7 +19,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] {
   val FragmentSize = 3
 
   val grayscale = {
-    status("Converting image to grayscale")
+    status("Converting image to luminance values")
     for(in <- input) yield
       in map (color => 0.2126f * color.r + 0.7152f * color.g + 0.0722f * color.b)
   }
@@ -31,9 +31,10 @@ class AnalyserImplementation extends Analyser[ImageMatrix] {
     val pi = Pi.toFloat
     val off = -(FragmentSize - 1) / 2f
     for(cell <- frag) yield {
+      //Compute gradients in x and y direction
       val vecX = Matrix.sequence(cell.cells).foldLeft(0f)((acc, next) => acc + next._3 * (next._1 + off))
       val vecY = Matrix.sequence(cell.cells).foldLeft(0f)((acc, next) => acc + next._3 * (next._2 + off))
-      val len = sqrt(vecX * vecX + vecY * vecY)
+      //Get gradient angle (angle from polar coordinates)
       val asimuth = if(vecX > 0f && vecY >= 0f)
         atan(vecY/vecX)
       else if(vecX > 0f && vecY < 0f)
@@ -46,12 +47,13 @@ class AnalyserImplementation extends Analyser[ImageMatrix] {
         (3f * pi) / 2f
       else //x == 0 && y == 0
         0f
-      
+      //Get the color corresponding to the angle
       Color(1f, -sin(asimuth).toFloat / 2f + 0.5f, -cos(asimuth).toFloat / 2f + 0.5f, 0f)
     }
   }
 
   val edge = for(frags <- fragments) yield {
+    //Compute the gradient vector length, this is basically a sobel edge detector
     for(in <- frags) yield {
       val a11 = in(0, 0)
       val a12 = in(0, 1)

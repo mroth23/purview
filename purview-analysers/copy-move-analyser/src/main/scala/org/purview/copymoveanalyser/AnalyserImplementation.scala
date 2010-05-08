@@ -4,7 +4,9 @@ import java.awt.geom.Area
 import java.awt.geom.Rectangle2D
 import org.purview.core.analysis.Analyser
 import org.purview.core.analysis.Settings
+import org.purview.core.analysis.Metadata
 import org.purview.core.analysis.settings.IntRangeSetting
+import org.purview.core.analysis.settings.BooleanSetting
 import org.purview.core.data.Color
 import org.purview.core.data.ImageMatrix
 import org.purview.core.data.ImmutableMatrix
@@ -20,30 +22,32 @@ import scala.collection.mutable.ArrayBuffer
 import scala.math._
 import scala.util.Sorting
 
-class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
+class AnalyserImplementation extends Analyser[ImageMatrix] with Settings with Metadata {
   val name = "Copy-move analyser"
   val description = "Finds cloned regions in an image"
-  override val version = Some("1.0")
+  override val version = Some("1.1")
   override val author = Some("Moritz Roth & David Flemström")
 
   override val iconResource = Some("icons/analysers/copy-move.png")
 
   val qualitySetting = IntRangeSetting("Quality", 0, 100)
-  qualitySetting.value = 80 //default
+  qualitySetting.value = 85 //default
   val thresholdSetting = IntRangeSetting("Threshold", 1, 1000)
-  thresholdSetting.value = 40
+  thresholdSetting.value = 75
   val minDistanceSetting = IntRangeSetting("Min. distance", 1, 100)
-  minDistanceSetting.value = 25
+  minDistanceSetting.value = 30
   val partialDCTBlockSizeSetting = IntRangeSetting("Partial DCT block size", 2, 16)
   partialDCTBlockSizeSetting.value = 3
   val blockSizeSetting = IntRangeSetting("Block size", 2, 16)
   blockSizeSetting.value = 16
-  
-  val settings = List(qualitySetting, blockSizeSetting, thresholdSetting,
+  val autoQualitySetting = BooleanSetting("Automatically detect JPEG quality")
+  autoQualitySetting.value = true
+
+  val settings = List(qualitySetting, autoQualitySetting, blockSizeSetting, thresholdSetting,
                       minDistanceSetting, partialDCTBlockSizeSetting)
 
   /**
-   * Represents the equivalent JPEG-quality that is to be used for the DCT transforms
+   * Represents the equivalent JPEG-quality that is to be used for the quantization of the DCT coefficients
    */
   private def quality = qualitySetting.value
 
@@ -68,10 +72,18 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
    */
   private def blockSize = blockSizeSetting.value
 
+  /**
+   * Detect JPEG quality automatically?
+   */
+  private def autoDetectQuality = autoQualitySetting.value
+  
   /** Stretches the quantization matrix according to a quality value */
   @inline private def createQTable(quality: Int, size: Int): Matrix[Float] = {
+    status("Creating quantization tables with quality " + quality.toString())
     //These magic numbers come from the standard JPEG algorithm
     val s = if(quality < 50) 5000f / quality else 200f - 2f * quality
+    //The "standard" luminance quantization table taken from the JPEG specification (Annex K1)
+    //We change the values according to the quality factor
     var coefficients = Array(
       16f,  11f,  10f,  16f,  24f,  40f,  51f,  61f,
       12f,  12f,  14f,  19f,  26f,  58f,  60f,  55f,
@@ -81,10 +93,24 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
       24f,  35f,  55f,  64f,  81f, 104f, 113f,  92f,
       49f,  64f,  78f,  87f, 103f, 121f, 120f, 101f,
       72f,  92f,  95f,  98f, 112f, 100f, 103f,  99f) map (x => (s * x + 50f) / 100f)
+    //The DC coefficient will change with the DCT block size
+    //Thus we need to change the DC quantization value accordingly
     coefficients(0) *= (size / 8)
+    //Make the 8x8 quantization table
     val quant8 = ImmutableMatrix[Float](8, 8, coefficients)
+    //Interpolate it to the "real" block size
     val interpolator = Interpolate(size, size)
     interpolator(quant8)
+  }
+
+  private def estimateQuality(qt: Seq[Seq[Int]]) : Int = {
+    val avY = (qt(0).sum - qt(0)(0)) / (qt(0).length - 1)
+    val avC = (qt(1).sum - qt(1)(0)) / (qt(1).length - 1)
+
+    val compression = (avY + 2 * avC) / 3
+    val conversion = (avY - avC).abs * 0.49 * 2
+
+    (100 - compression + conversion).toInt
   }
 
   /** Converts the given color matrix into a float matrix of grayscale values */
@@ -143,10 +169,14 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
   }
 
   /** Create quantized blocks for each cell in the input matrix */
-  def makeBlocks(in: Matrix[Matrix[Float]]): Array[Block] = {
+  def makeBlocks = for(qt <- quantTables; in <- fragments) yield {
     status("Splitting up the image into DCT blocks with size " + partialDCTBlockSize)
-    val quant = createQTable(quality, blockSize)
-
+    var quant = (if (autoDetectQuality == true && qt.length != 0){
+      createQTable(estimateQuality(qt), blockSize)
+    }
+    else {
+      createQTable(quality, blockSize)
+    })
     val coefficients = new Matrix[Float] {
       val width = blockSize
       val height = blockSize
@@ -240,6 +270,10 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
     ).toSet
   }
 
+  val quantTables = input.map(_.metadata.get("DQT").map { dqt =>
+      dqt.keySet.toSeq.sortBy(identity).map(key => dqt(key).split(',').map(_.toInt).toSeq)
+    }.getOrElse(Nil))
+
   /*
    * Process:
    * - Convert image to grayscale
@@ -251,8 +285,9 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
    * - Report the remaining shifts
    */
 
-  val result = input >- grayscale >- Fragmentize(blockSize, blockSize) >- makeBlocks >- sortBlocks >-
-  makeShifts >- groupShifts >- makeReport
+  val fragments = input >- grayscale >- Fragmentize(blockSize, blockSize)
+
+  val result = makeBlocks >- sortBlocks >- makeShifts >- groupShifts >- makeReport
 }
 
 /**

@@ -36,3 +36,6 @@ GRTAGS
 GSYMS
 GTAGS
 
+# netbeans project config
+nb-configuration.xml
+
