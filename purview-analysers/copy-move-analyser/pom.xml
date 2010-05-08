@@ -16,7 +16,7 @@
     <dependencies>
         <dependency>
             <groupId>org.purview</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>purview-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

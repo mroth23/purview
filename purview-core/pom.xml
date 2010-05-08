@@ -8,7 +8,7 @@
         <version>1.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>core</artifactId>
+    <artifactId>purview-core</artifactId>
 
     <name>Purview - Core library</name>
     <description>Provides the Purview core library used as a base for other components</description>
