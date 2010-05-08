@@ -7,6 +7,7 @@ import com.trolltech.qt.gui.QIcon
 import com.trolltech.qt.gui.QLabel
 import com.trolltech.qt.gui.QMessageBox
 import com.trolltech.qt.gui.QProgressBar
+import com.trolltech.qt.gui.QTextEdit
 import com.trolltech.qt.gui.QVBoxLayout
 import com.trolltech.qt.gui.QWidget
 import org.purview.qtui.meta.Analysis
@@ -30,7 +31,9 @@ object AnalysisView extends QDockWidget {
   }
 
   def mkWidget(analysis: Option[Analysis]) = new QWidget(this) {
-    private val statusLabel = new QLabel(this)
+    private val statusLabel = new QTextEdit(this) {
+      setReadOnly(true)
+    }
     private val analyserLabel = new QLabel(this)
     private val progressBar = new QProgressBar(this) {
       setRange(0, 100)
@@ -64,7 +67,7 @@ object AnalysisView extends QDockWidget {
       subProgressBar.setValue((progress * 100).toInt)
 
     private def setStatus(status: String) =
-      statusLabel.setText(status)
+      statusLabel.append(status)
 
     private def setAnalyser(analyser: String) =
       analyserLabel.setText(analyser)
