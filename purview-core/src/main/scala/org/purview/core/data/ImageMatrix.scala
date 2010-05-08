@@ -46,7 +46,7 @@ class ImageMatrix(val image: BufferedImage, val metadata: Map[String, Map[String
 
 package meta {
   object MetadataReaders {
-    val default: Seq[MetadataReader] = Seq(ExifMetadataReader)
+    val default: Seq[MetadataReader] = Seq(ExifMetadataReader, IptcMetadataReader, DQTMetadataReader, XmpMetadataReader)
   }
 
   trait MetadataReader {
