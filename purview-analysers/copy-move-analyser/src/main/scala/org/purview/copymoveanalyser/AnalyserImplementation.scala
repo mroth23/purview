@@ -77,9 +77,11 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings with Me
    */
   private def autoDetectQuality = autoQualitySetting.value
 
-  val quantTables = input.map(_.metadata.get("DQT").map { dqt =>
-      dqt.keySet.toSeq.sortBy(identity).map(key => dqt(key).split(',').map(_.toInt).toSeq)
-    }.getOrElse(Nil))
+  val quantTables = input.map{in =>
+      in.metadata.get("DQT").map { dqt =>
+        dqt.keySet.toSeq.sortBy(identity).map(key => dqt(key).split(',').map(_.toInt).toSeq)
+      }.getOrElse(Nil)
+    }
 
   /** Stretches the quantization matrix according to a quality value */
   @inline private def createQTable(q: Int, size: Int): Matrix[Float] = {
@@ -177,8 +179,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings with Me
     status("Splitting up the image into DCT blocks with size " + partialDCTBlockSize)
     var quant = (if (autoDetectQuality == true && qt.length != 0){
         createQTable(estimateQuality(qt), blockSize)
-      }
-                 else {
+      } else {
         createQTable(quality, blockSize)
       })
     val coefficients = new Matrix[Float] {
