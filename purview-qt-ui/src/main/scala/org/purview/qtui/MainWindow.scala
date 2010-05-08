@@ -32,6 +32,8 @@ object MainWindow extends QMainWindow {
   AnalysisView.hide()
   addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, ResultsView)
   ResultsView.hide()
+  addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, LogView)
+  LogView.hide()
 
   //A simple helper method for modifying something when it's constructed
   private def construct[A](what: A)(constructionBody: A => Any) = {
@@ -106,6 +108,16 @@ object MainWindow extends QMainWindow {
     setChecked(false)
     toggled.connect(ResultsView, "setVisible(boolean)")
     ResultsView.visibilityChanged.connect(this: QAction /*!!*/, "setChecked(boolean)")
+  }
+
+  private val showLogAction = new QAction(this) {
+    setText("&Log window")
+    setShortcut("Ctrl+L")
+    setIcon(LogView.windowIcon)
+    setCheckable(true)
+    setChecked(false)
+    toggled.connect(LogView, "setVisible(boolean)")
+    LogView.visibilityChanged.connect(this: QAction /*!!*/, "setChecked(boolean)")
   }
 
   private val aboutAction = new QAction(this) {
@@ -216,6 +228,7 @@ object MainWindow extends QMainWindow {
     setTitle("&Window")
     addAction(showAnalysisAction)
     addAction(showResultsAction)
+    addAction(showLogAction)
     addSeparator()
     addAction(zoomInAction)
     addAction(zoomOutAction)
