@@ -39,3 +39,6 @@ GTAGS
 # netbeans project config
 nb-configuration.xml
 
+# Crash logs
+hs_err_pid*.log
+
