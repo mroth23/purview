@@ -197,7 +197,7 @@ object MainWindow extends QMainWindow {
 
   private val analyserActions = for(analyser <- shallowAnalysers) yield
     new QAction(this) {
-      setIcon(analyser.iconResource.map(new QIcon(_)) getOrElse QIcon.fromTheme("system-run", new QIcon("classpath:icons/system-run.png")))
+      setIcon(analyser.iconResource.map(x => new QIcon("classpath:" + x)) getOrElse QIcon.fromTheme("system-run", new QIcon("classpath:icons/system-run.png")))
       setText("About \"" + analyser.name + "\"...")
       setToolTip(analyser.description)
       setData(analyser)
