@@ -11,6 +11,12 @@ object LogView extends QDockWidget {
   setWindowTitle("Log output")
   setWindowIcon(QIcon.fromTheme("utilities-log-viewer", new QIcon("classpath:icons/utilities-log-viewer.png")))
 
+  protected val logMessageArrived = new Signal1[String]
+
+  protected def appendMessage(message: String) = {
+    outputPane.append(message)
+  }
+
   private val outputPane = new QTextEdit {
     setReadOnly(true)
   }
@@ -29,7 +35,8 @@ object LogView extends QDockWidget {
     }
   }
 
-  System.setOut(new PrintStream(new InterceptorStream(outputPane.append, System.out), true, "UTF-8"))
-  System.setErr(new PrintStream(new InterceptorStream(x => outputPane.append("<em>" + x + "</em>"), System.err), true, "UTF-8"))
+  System.setOut(new PrintStream(new InterceptorStream(logMessageArrived.emit, System.out), true, "UTF-8"))
+  System.setErr(new PrintStream(new InterceptorStream(x => logMessageArrived.emit("<em>" + x + "</em>"), System.err), true, "UTF-8"))
+  logMessageArrived.connect(this, "appendMessage(String)")
   println("Started console output interceptor")
 }
