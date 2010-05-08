@@ -18,7 +18,7 @@ import scala.collection.mutable
 
 object ResultsView extends QDockWidget {
   setWindowTitle("Results")
-  setWindowIcon(new QIcon("classpath:icons/dialog-ok.png"))
+  setWindowIcon(QIcon.fromTheme("dialog-ok", new QIcon("classpath:icons/dialog-ok.png")))
   setAllowedAreas(Qt.DockWidgetArea.LeftDockWidgetArea, Qt.DockWidgetArea.RightDockWidgetArea)
 
   private val treeForResults = new mutable.WeakHashMap[Option[Map[Metadata, Seq[ReportEntry]]], QTreeWidget]
@@ -47,7 +47,7 @@ object ResultsView extends QDockWidget {
       for(analyser <- report.keySet.toSeq.sortWith(_.name < _.name)) yield {
         val analyserItem = new QTreeWidgetItem(this) {
           setText(0, analyser.name)
-          setIcon(0, new QIcon("classpath:icons/dialog-ok.png"))
+          setIcon(0, QIcon.fromTheme("dialog-ok", new QIcon("classpath:icons/dialog-ok.png")))
           setData(0, Qt.ItemDataRole.ToolTipRole, analyser.description)
         }
         for(entry <- report(analyser)) {
@@ -56,12 +56,12 @@ object ResultsView extends QDockWidget {
             setData(0, Qt.ItemDataRole.UserRole, entry)
             setText(0, entry.message)
             entry.level match {
-              case Debug =>       setIcon(0, new QIcon("classpath:icons/security-high.png"))
-              case Information => setIcon(0, new QIcon("classpath:icons/dialog-information.png"))
-              case Warning =>     setIcon(0, new QIcon("classpath:icons/dialog-warning.png"))
-              case Error =>       setIcon(0, new QIcon("classpath:icons/dialog-error.png"))
-              case Critical =>    setIcon(0, new QIcon("classpath:icons/security-low.png"))
-              case _ =>           setIcon(0, new QIcon("classpath:icons/security-medium.png"))
+              case Debug =>       setIcon(0, QIcon.fromTheme("security-high", new QIcon("classpath:icons/security-high.png")))
+              case Information => setIcon(0, QIcon.fromTheme("dialog-information", new QIcon("classpath:icons/dialog-information.png")))
+              case Warning =>     setIcon(0, QIcon.fromTheme("dialog-warning", new QIcon("classpath:icons/dialog-warning.png")))
+              case Error =>       setIcon(0, QIcon.fromTheme("dialog-error", new QIcon("classpath:icons/dialog-error.png")))
+              case Critical =>    setIcon(0, QIcon.fromTheme("security-low", new QIcon("classpath:icons/security-low.png")))
+              case _ =>           setIcon(0, QIcon.fromTheme("security-medium", new QIcon("classpath:icons/security-medium.png")))
             }
           }
         }

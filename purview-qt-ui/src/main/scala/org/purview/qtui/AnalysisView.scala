@@ -14,7 +14,7 @@ import scala.collection.mutable.WeakHashMap
 
 object AnalysisView extends QDockWidget {
   setWindowTitle("Analysis")
-  setWindowIcon(new QIcon("classpath:icons/preferences-system-session-services.png"))
+  setWindowIcon(QIcon.fromTheme("preferences-system-session-services", new QIcon("classpath:icons/preferences-system-session-services.png")))
   setAllowedAreas(Qt.DockWidgetArea.BottomDockWidgetArea, Qt.DockWidgetArea.TopDockWidgetArea)
 
   private val widgetForAnalysis = new WeakHashMap[Option[Analysis], QWidget]

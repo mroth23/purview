@@ -30,7 +30,7 @@ import org.purview.qtui.widgets.QDoubleSlider
 
 class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDialog(parent) {
   setWindowTitle("Configure analysers")
-  setWindowIcon(new QIcon("classpath:icons/configure.png"))
+  setWindowIcon(QIcon.fromTheme("configure", new QIcon("classpath:icons/configure.png")))
   setFixedSize(500, 300)
 
   private val orderedAnalysers = session.analysers.keySet.toSeq.sortWith(_.name < _.name)
@@ -129,7 +129,7 @@ class SettingsDialog(session: ImageSession, parent: QWidget = null) extends QDia
       (orderedAnalysers zip analyserCheckboxes).foreach(x => form.addRow(x._1.name, x._2))
       setLayout(form)
     }
-    addItem(selectAnalysersPage, new QIcon("classpath:icons/checkbox.png"), "Active analysers")
+    addItem(selectAnalysersPage, QIcon.fromTheme("checkbox", new QIcon("classpath:icons/checkbox.png")), "Active analysers")
     for {
       analyser <- orderedAnalysers
       page <- analyserPages.get(analyser)

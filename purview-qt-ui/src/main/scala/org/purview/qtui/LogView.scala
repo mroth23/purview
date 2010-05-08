@@ -9,7 +9,7 @@ import java.io.PrintStream
 
 object LogView extends QDockWidget {
   setWindowTitle("Log output")
-  setWindowIcon(new QIcon("classpath:icons/utilities-log-viewer.png"))
+  setWindowIcon(QIcon.fromTheme("utilities-log-viewer", new QIcon("classpath:icons/utilities-log-viewer.png")))
 
   private val outputPane = new QTextEdit {
     setReadOnly(true)
