@@ -79,6 +79,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings with Me
 
   val quantTables = input.map{in =>
       in.metadata.get("DQT").map { dqt =>
+        println("Parsing dqt: " + dqt)
         dqt.keySet.toSeq.sortBy(identity).map(key => dqt(key).split(',').map(_.toInt).toSeq)
       }.getOrElse(Nil)
     }

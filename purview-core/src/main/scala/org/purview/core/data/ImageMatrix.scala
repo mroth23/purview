@@ -104,7 +104,7 @@ package meta {
         val segmentReader = new JpegSegmentReader(file)
         val numberOfDQTSegments = segmentReader.getSegmentCount(JpegSegmentReader.SEGMENT_DQT)
         (for(i <- 0 until numberOfDQTSegments) yield
-          i.toString -> segmentReader.readSegment(JpegSegmentReader.SEGMENT_DQT, i).toSeq.mkString(",")
+          (i.toString -> segmentReader.readSegment(JpegSegmentReader.SEGMENT_DQT, i).map(_ & 0xff).toSeq.mkString(","))
         ).toMap
     }
   }
