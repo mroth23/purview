@@ -15,10 +15,14 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
   //"Exposing digital forgeries from JPEG Ghosts"
   //paper by Farid et al.
 
-  val setting = IntRangeSetting("A setting", 1, 100)
-  setting.value = 50 //default
+  val minQualitySetting = IntRangeSetting("Minimum quality", 1, 100)
+  minQualitySetting.value = 50 //default
+  val maxQualitySetting = IntRangeSetting("Maximum quality", 1, 100)
+  maxQualitySetting.value = 100 //default
+  val stepSizeSetting = IntRangeSetting("Step size", 1, 15)
+  stepSizeSetting.value = 5 //default
 
-  val settings = List(setting)
+  val settings = List(minQualitySetting, maxQualitySetting, stepSizeSetting)
 
-  def result = for(in <- input) yield Set(new ReportMessage(Information, "Ran the analyser with the setting " + setting.value))
+  def result = for(in <- input) yield Set(new ReportMessage(Information, "Ran the analyser with the setting "))
 }
