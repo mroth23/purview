@@ -49,7 +49,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
 
         val param = writer.getDefaultWriteParam
         param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT)
-        param.setCompressionQuality(q)
+        param.setCompressionQuality((q.toFloat) / 100f)
 
         writer.write(null, new IIOImage(rgb, null, null), param)
 
