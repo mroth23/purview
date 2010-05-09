@@ -72,6 +72,11 @@
             <artifactId>principal-component-analyser</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.purview</groupId>
+            <artifactId>jpeg-ghost-analyser</artifactId>
+			<version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -181,3 +186,4 @@
         </plugins>
     </build>
 </project>
+
