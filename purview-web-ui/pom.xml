@@ -38,38 +38,8 @@
         </dependency>
         <dependency>
             <groupId>org.purview</groupId>
-            <artifactId>bilinear-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>copy-move-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>error-level-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>luminance-gradient-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>metadata-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>nearest-neighbor-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>noop-analyser</artifactId>
-            <version>${project.version}</version>
+            <artifactId>purview-analysers</artifactId>
+			<version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>net.liftweb</groupId>
