@@ -44,13 +44,13 @@ object ResultsView extends QDockWidget {
     itemSelectionChanged.connect(this, "changeNode()")
 
     def mkTreeItem(report: Map[Metadata, Seq[ReportEntry]]) =
-      for(analyser <- report.keySet.toSeq.sortWith(_.name < _.name)) yield {
+      for(analyser <- report.keySet.toSeq.sortBy(_.name)) yield {
         val analyserItem = new QTreeWidgetItem(this) {
           setText(0, analyser.name)
           setIcon(0, QIcon.fromTheme("dialog-ok", new QIcon("classpath:icons/dialog-ok.png")))
           setData(0, Qt.ItemDataRole.ToolTipRole, analyser.description)
         }
-        for(entry <- report(analyser)) {
+        for(entry <- report(analyser).sortBy(_.level.name).sortBy(_.message)) {
           val reportItem = new QTreeWidgetItem(analyserItem) {
             setData(0, Qt.ItemDataRole.ToolTipRole, entry.level.name)
             setData(0, Qt.ItemDataRole.UserRole, entry)
