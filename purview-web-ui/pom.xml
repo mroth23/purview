@@ -16,6 +16,16 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.purview</groupId>
+            <artifactId>purview-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.purview</groupId>
+            <artifactId>purview-default-analysers</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>batik</groupId>
             <artifactId>batik-svggen</artifactId>
         </dependency>
@@ -28,48 +38,8 @@
             <artifactId>h2</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>purview-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>bilinear-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>copy-move-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>error-level-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>luminance-gradient-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>metadata-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>nearest-neighbor-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>noop-analyser</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>net.liftweb</groupId>

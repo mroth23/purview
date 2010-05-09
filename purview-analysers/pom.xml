@@ -22,6 +22,7 @@
         <module>metadata-analyser</module>
         <module>nearest-neighbor-analyser</module>
         <module>principal-component-analyser</module>
-    <module>jpeg-ghost-analyser</module>
-  </modules>
+        <module>jpeg-ghost-analyser</module>
+        <module>purview-default-analysers</module>
+    </modules>
 </project>
