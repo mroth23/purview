@@ -298,6 +298,21 @@
                         <nosuffix>true</nosuffix>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <configuration>
+                        <webResources>
+                            <resource>
+                                <directory>src/main/resources</directory>
+                                <excludes>
+                                    <exclude>**/*.js</exclude>
+                                    <exclude>**/*.css</exclude>
+                                </excludes>
+                            </resource>
+                        </webResources>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
