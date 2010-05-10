@@ -141,7 +141,7 @@ object ReportEntryRenderer {
     result
   }
 
-  private def shapeCommandsToGeneralPath(shape: Seq[ReportShapeCommand]) = {
+  private def shapeCommandsToGeneralPath(shape: Seq[ShapeCommand]) = {
     val path = new GeneralPath(PathIterator.WIND_NON_ZERO, shape.length)
     shape.foreach({
         case ShapeUseOddEvenFill =>

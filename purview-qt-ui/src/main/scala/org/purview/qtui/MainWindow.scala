@@ -25,13 +25,15 @@ object MainWindow extends QMainWindow {
     setObjectName("MainWindow")
 
   setWindowTitle("Purview 1.1-SNAPSHOT")
-  setWindowIcon(new QIcon("classpath:icons/purview.png"))
+  setWindowIcon(QIcon.fromTheme("purview", new QIcon("classpath:icons/purview.png")))
   setMinimumSize(800, 600)
 
   addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, AnalysisView)
   AnalysisView.hide()
   addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, ResultsView)
   ResultsView.hide()
+  addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, LogView)
+  LogView.hide()
 
   //A simple helper method for modifying something when it's constructed
   private def construct[A](what: A)(constructionBody: A => Any) = {
@@ -70,13 +72,13 @@ object MainWindow extends QMainWindow {
   private val openImageAction = new QAction(this) {
     setText("&Open Image...")
     setShortcut("Ctrl+N")
-    setIcon(new QIcon("classpath:icons/folder-image.png"))
+    setIcon(QIcon.fromTheme("folder-image", new QIcon("classpath:icons/folder-image.png")))
     triggered.connect(this, "selectImage()")
 
     private def selectImage() = if(fileDiag.exec() != 0) {
       val filename = fileDiag.selectedFiles.get(0)
       val sessionWidget = new ImageSessionWidget(new ImageSession(new File(filename)))
-      tabWidget.addTab(sessionWidget, new QIcon("classpath:icons/image-x-generic.png"), sessionWidget.windowTitle)
+      tabWidget.addTab(sessionWidget, QIcon.fromTheme("image-x-generic", new QIcon("classpath:icons/image-x-generic.png")), sessionWidget.windowTitle)
       updateToolbar()
     }
   }
@@ -84,7 +86,7 @@ object MainWindow extends QMainWindow {
   private val exitAction = new QAction(this) {
     setText("&Quit Purview")
     setShortcut("Ctrl+Q")
-    setIcon(new QIcon("classpath:icons/dialog-error.png"))
+    setIcon(QIcon.fromTheme("dialog-error", new QIcon("classpath:icons/dialog-error.png")))
     triggered.connect(QApplication.instance(), "quit()")
   }
 
@@ -108,9 +110,19 @@ object MainWindow extends QMainWindow {
     ResultsView.visibilityChanged.connect(this: QAction /*!!*/, "setChecked(boolean)")
   }
 
+  private val showLogAction = new QAction(this) {
+    setText("&Log window")
+    setShortcut("Ctrl+L")
+    setIcon(LogView.windowIcon)
+    setCheckable(true)
+    setChecked(false)
+    toggled.connect(LogView, "setVisible(boolean)")
+    LogView.visibilityChanged.connect(this: QAction /*!!*/, "setChecked(boolean)")
+  }
+
   private val aboutAction = new QAction(this) {
     setText("&About Purview...")
-    setIcon(new QIcon("classpath:icons/dialog-information.png"))
+    setIcon(QIcon.fromTheme("dialog-information", new QIcon("classpath:icons/dialog-information.png")))
     setShortcut("F1")
     triggered.connect(this, "showAboutDialog()")
     private def showAboutDialog() = QMessageBox.about(MainWindow.this, "About Purview", MainWindowTemplates.aboutText)
@@ -118,14 +130,14 @@ object MainWindow extends QMainWindow {
 
   private val aboutQtAction = new QAction(this) {
     setText("About &Qt...")
-    setIcon(new QIcon("classpath:icons/qt.png"))
+    setIcon(QIcon.fromTheme("qt", new QIcon("classpath:icons/qt.png")))
     triggered.connect(this, "showAboutQtDialog()")
     private def showAboutQtDialog() = QMessageBox.aboutQt(MainWindow.this)
   }
 
   private val analyseAction = new QAction(this) {
     setText("Analyse &image")
-    setIcon(new QIcon("classpath:icons/system-run.png"))
+    setIcon(QIcon.fromTheme("system-run", new QIcon("classpath:icons/system-run.png")))
     setShortcut("Ctrl+A")
     setEnabled(false)
     triggered.connect(this, "analyse()")
@@ -149,7 +161,7 @@ object MainWindow extends QMainWindow {
 
   private val configureAnalysersAction = new QAction(this) {
     setText("&Configure analysers...")
-    setIcon(new QIcon("classpath:icons/configure.png"))
+    setIcon(QIcon.fromTheme("configure", new QIcon("classpath:icons/configure.png")))
     setShortcut("Ctrl+C")
     setEnabled(false)
     triggered.connect(this, "configureAnalysers()")
@@ -159,7 +171,7 @@ object MainWindow extends QMainWindow {
   private val zoomInAction = new QAction(this) {
     setText("Zoom &in")
     setShortcut("Ctrl++")
-    setIcon(new QIcon("classpath:icons/zoom-in.png"))
+    setIcon(QIcon.fromTheme("zoom-in", new QIcon("classpath:icons/zoom-in.png")))
     setEnabled(false)
     triggered.connect(this, "zoomIn()")
     def zoomIn() = tabWidget.currentWidget.asInstanceOf[ImageSessionWidget].scale(1.25, 1.25)
@@ -168,7 +180,7 @@ object MainWindow extends QMainWindow {
   private val zoomOutAction = new QAction(this) {
     setText("Zoom &out")
     setShortcut("Ctrl+-")
-    setIcon(new QIcon("classpath:icons/zoom-out.png"))
+    setIcon(QIcon.fromTheme("zoom-out", new QIcon("classpath:icons/zoom-out.png")))
     setEnabled(false)
     triggered.connect(this, "zoomOut()")
     private def zoomOut() = tabWidget.currentWidget.asInstanceOf[ImageSessionWidget].scale(0.8, 0.8)
@@ -177,7 +189,7 @@ object MainWindow extends QMainWindow {
   private val zoomOrigAction = new QAction(this) {
     setText("O&riginal size")
     setShortcut("Ctrl+0")
-    setIcon(new QIcon("classpath:icons/zoom-original.png"))
+    setIcon(QIcon.fromTheme("zoom-original", new QIcon("classpath:icons/zoom-original.png")))
     setEnabled(false)
     triggered.connect(this, "zoomOrig()")
     private def zoomOrig() = tabWidget.currentWidget.asInstanceOf[ImageSessionWidget].resetTransform()
@@ -185,7 +197,7 @@ object MainWindow extends QMainWindow {
 
   private val analyserActions = for(analyser <- shallowAnalysers) yield
     new QAction(this) {
-      setIcon(new QIcon("classpath:" + (analyser.iconResource getOrElse "icons/system-run.png")))
+      setIcon(analyser.iconResource.map(x => new QIcon("classpath:" + x)) getOrElse QIcon.fromTheme("system-run", new QIcon("classpath:icons/system-run.png")))
       setText("About \"" + analyser.name + "\"...")
       setToolTip(analyser.description)
       setData(analyser)
@@ -216,6 +228,7 @@ object MainWindow extends QMainWindow {
     setTitle("&Window")
     addAction(showAnalysisAction)
     addAction(showResultsAction)
+    addAction(showLogAction)
     addSeparator()
     addAction(zoomInAction)
     addAction(zoomOutAction)

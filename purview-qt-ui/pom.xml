@@ -20,7 +20,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>net.sf.qtjambi</groupId>
+            <groupId>com.trolltech</groupId>
             <artifactId>qtjambi</artifactId>
         </dependency>
         <dependency>
@@ -29,60 +29,25 @@
         </dependency>
         <dependency>
             <groupId>org.purview</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>purview-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.purview</groupId>
-            <artifactId>bilinear-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>copy-move-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>error-level-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>luminance-gradient-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>metadata-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>nearest-neighbor-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>noop-analyser</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.purview</groupId>
-            <artifactId>principal-component-analyser</artifactId>
+            <artifactId>purview-default-analysers</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
 
     <profiles>
         <profile>
-            <id>internal-qt</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-        </profile>
-        <profile>
             <id>external-qt-linux64</id>
+            <activation>
+                <os>
+                    <name>Linux</name>
+                    <arch>amd64</arch>
+                </os>
+            </activation>
             <build>
                 <resources>
                     <resource>
@@ -101,6 +66,12 @@
         </profile>
         <profile>
             <id>external-qt-linux32</id>
+            <activation>
+                <os>
+                    <name>Linux</name>
+                    <arch>i386</arch>
+                </os>
+            </activation>
             <build>
                 <resources>
                     <resource>
@@ -152,7 +123,7 @@
                             <shadedClassifierName>distribution</shadedClassifierName>
                             <filters>
                                 <filter>
-                                    <artifact>net.sf.qtjambi:qtjambi-platform-linux*</artifact>
+                                    <artifact>com.trolltech:qtjambi-platform</artifact>
                                     <excludes>
                                         <exclude>${exclude.qt}</exclude>
                                         <exclude>${exclude.phonon}</exclude>
@@ -175,3 +146,5 @@
         </plugins>
     </build>
 </project>
+
+
