@@ -71,7 +71,7 @@ package meta {
             if tag != null
             if tag.getTagName != null
           } yield (tag.getTagName, tag.getDescription)
-          tags.toMap
+          tags.toSeq.toMap
         }
     }
   }
@@ -91,7 +91,7 @@ package meta {
             if tag != null
             if tag.getTagName != null
           } yield (tag.getTagName, tag.getDescription)
-          tags.toMap
+          tags.toSeq.toMap
         }
     }
   }

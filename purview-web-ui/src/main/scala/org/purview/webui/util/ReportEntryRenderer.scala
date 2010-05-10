@@ -22,7 +22,7 @@ import org.purview.core.report.ReportRectangle
 import org.purview.core.report.ReportRectangleMove
 import org.purview.core.report.ReportShape
 import org.purview.core.report.ReportShapeMove
-import org.purview.core.report.shape._
+import org.purview.core.data.shape._
 import scala.math._
 
 object ReportEntryRenderer {
