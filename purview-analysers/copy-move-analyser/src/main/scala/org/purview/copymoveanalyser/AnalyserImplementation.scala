@@ -31,17 +31,17 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings with Me
   override val iconResource = Some("icons/analysers/copy-move.png")
 
   val qualitySetting = IntRangeSetting("Quality", 0, 100)
-  qualitySetting.value = 85 //default
+  qualitySetting.value = 75 //default
   val thresholdSetting = IntRangeSetting("Threshold", 1, 1000)
-  thresholdSetting.value = 75
+  thresholdSetting.value = 30
   val minDistanceSetting = IntRangeSetting("Min. distance", 1, 100)
-  minDistanceSetting.value = 30
+  minDistanceSetting.value = 20
   val partialDCTBlockSizeSetting = IntRangeSetting("Partial DCT block size", 2, 16)
   partialDCTBlockSizeSetting.value = 3
   val blockSizeSetting = IntRangeSetting("Block size", 2, 16)
   blockSizeSetting.value = 16
   val autoQualitySetting = BooleanSetting("Automatically detect JPEG quality")
-  autoQualitySetting.value = true
+  autoQualitySetting.value = false
 
   val settings = List(qualitySetting, autoQualitySetting, blockSizeSetting, thresholdSetting,
                       minDistanceSetting, partialDCTBlockSizeSetting)
@@ -117,7 +117,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings with Me
     val compression = (avY + 2 * avC) / 3
     val conversion = (avY - avC).abs * 0.49 * 2
 
-    (100 - compression + conversion).toInt
+    (90 - compression + conversion).abs.toInt
   }
 
   /** Converts the given color matrix into a float matrix of grayscale values */
