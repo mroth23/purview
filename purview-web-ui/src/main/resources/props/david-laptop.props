@@ -1,0 +1,22 @@
+## Props file - Specifies global webapp settings
+
+## Database
+## ========
+
+## Defines the database driver to use. The default value is "org.h2.Driver".
+db.driver=com.mysql.jdbc.Driver
+
+## Defines the database URL to use. The default is "jdbc:h2:purview".
+db.url=jdbc:mysql://localhost:3306/purview
+
+## Defines database connection credentials. Uncomment only if necessary.
+db.user=purview_user
+db.password=abc123
+
+## Filesystem
+## ==========
+
+## Defines a file storage location for various binary files
+## (that obviously don't belong in the database). The default is to use a
+## temporary directory.
+filesystem.dir=/var/purview
