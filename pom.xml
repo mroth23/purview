@@ -5,7 +5,7 @@
     <groupId>org.purview</groupId>
     <artifactId>purview</artifactId>
     <packaging>pom</packaging>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1-webui-SNAPSHOT</version>
 
     <name>Purview</name>
     <description>A framework for detecting digital image forgery</description>
