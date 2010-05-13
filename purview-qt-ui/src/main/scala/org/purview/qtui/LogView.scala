@@ -35,8 +35,8 @@ object LogView extends QDockWidget {
     }
   }
 
-  System.setOut(new PrintStream(new InterceptorStream(logMessageArrived.emit, System.out), true, "UTF-8"))
-  System.setErr(new PrintStream(new InterceptorStream(x => logMessageArrived.emit("<em>" + x + "</em>"), System.err), true, "UTF-8"))
-  logMessageArrived.connect(this, "appendMessage(String)")
-  println("Started console output interceptor")
+  //System.setOut(new PrintStream(new InterceptorStream(logMessageArrived.emit, System.out), true, "UTF-8"))
+  //System.setErr(new PrintStream(new InterceptorStream(x => logMessageArrived.emit("<em>" + x + "</em>"), System.err), true, "UTF-8"))
+  //logMessageArrived.connect(this, "appendMessage(String)")
+  //println("Started console output interceptor")
 }
