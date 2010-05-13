@@ -11,7 +11,7 @@ sealed class EigenvalueDecomposition(inputMatrix: Matrix[Float]) {
   private val _vectors = new MutableArrayMatrix[Float](_matrixDimension, _matrixDimension) //aka: V
 
   def vectors: Matrix[Float] = _vectors
-
+  def values: Seq[Float] = _realEigenValues
   init()
 
   private def init() = {
