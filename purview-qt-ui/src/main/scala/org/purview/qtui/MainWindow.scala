@@ -83,6 +83,18 @@ object MainWindow extends QMainWindow {
     }
   }
 
+  private val saveReportAction = new QAction(this) {
+    setText("Save report image...")
+    setShortcut("Ctrl+S")
+    setIcon(QIcon.fromTheme("document-save-all", new QIcon("classpath:icons/document-save-all.png")))
+    triggered.connect(this, "saveImages()")
+
+    def saveImages() = {
+      val file = QFileDialog.getSaveFileName(MainWindow.this, "Save SVG", QDir.homePath, new QFileDialog.Filter("SVG files (*.svg)"))
+      Option(tabWidget.currentWidget.asInstanceOf[ImageSessionWidget]).foreach(_.saveImageTo(file))
+    }
+  }
+
   private val exitAction = new QAction(this) {
     setText("&Quit Purview")
     setShortcut("Ctrl+Q")
@@ -92,7 +104,7 @@ object MainWindow extends QMainWindow {
 
   private val showAnalysisAction = new QAction(this) {
     setText("&Analysis window")
-    setShortcut("Ctrl+S")
+    setShortcut("Ctrl+A")
     setIcon(AnalysisView.windowIcon)
     setCheckable(true)
     setChecked(false)
@@ -218,6 +230,7 @@ object MainWindow extends QMainWindow {
   private val menuFile = new QMenu(this) {
     setTitle("&File")
     addAction(openImageAction)
+    addAction(saveReportAction)
     addAction(analyseAction)
     addAction(configureAnalysersAction)
     addSeparator()
