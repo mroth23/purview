@@ -149,6 +149,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings with Me
     val h = input.height
     val result = new MutableArrayMatrix[Float](size, size)
     val pi = 3.141592653589793f
+    status("Computing partial DCT blocks")
 
     var v = 0
     while(v < size) {
