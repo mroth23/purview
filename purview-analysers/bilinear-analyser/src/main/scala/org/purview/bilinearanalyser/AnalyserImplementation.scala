@@ -66,9 +66,5 @@ class AnalyserImplementation extends HeatMapImageAnalyser with Settings {
     }
   }
 
-  private val gaussian5BlurKernel = Array[Float](0.0080f, 0.016f, 0.024f, 0.032f, 0.04f, 0.032f,  0.024f, 0.016f, 0.0080f)
-
-  override val convolve: Computation[Option[Array[Float]]] = Computation(Some(gaussian5BlurKernel))
-
   val heatmap = markBilinear
 }
