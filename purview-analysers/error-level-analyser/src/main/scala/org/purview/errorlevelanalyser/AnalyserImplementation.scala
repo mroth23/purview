@@ -83,13 +83,6 @@ class AnalyserImplementation extends HeatMapImageAnalyser
     }
   }
 
-  private val gaussian30Kernel =
-    (for(i <- -30 to 30) yield
-      (30 - abs(i)) / (30f * 30f * 30f)).toArray
-
-  override val convolve: Computation[Option[Array[Float]]] =
-    Computation(Some(gaussian30Kernel))
-
   private val errorMatrix = input >- MatrixToImage() >-
     introduceJPEGArtifacts >- ImageToMatrix()
 

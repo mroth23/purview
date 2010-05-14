@@ -33,8 +33,11 @@ trait HeatMapAnalyser[@specialized(Int, Float, Boolean) A, B <: Matrix[A]] exten
   /** The message to use for interesting heat map areas in the report */
   val message: String = "Interesting peak"
 
-  /** Should we convolve the result before scanning it? */
-  val convolve: Computation[Option[Array[Float]]] = Computation(None)
+  val gaussianStrength = 30
+  private val sigma = gaussianStrength / 3
+  private val gaussianKernel = (for(i <- -gaussianStrength to gaussianStrength) yield ((1 / sqrt(2 * Pi * sigma * sigma)) * exp(-((i * i) / (2 * sigma * sigma)))).toFloat).toArray
+
+  val convolve: Computation[Option[Array[Float]]] = Computation(Some(gaussianKernel))
 
   /**
    * If multiple heat regions are to be found, this specifies the maximum

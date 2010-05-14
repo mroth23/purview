@@ -90,10 +90,6 @@ class AnalyserImplementation extends HeatMapImageAnalyser with Settings {
   val computeDifferences = for(in <- input; imgs <- outputImagesAsColorMatrices) yield
     (for(img <- imgs) yield img zip in map (imgPair => abs(imgPair._1.weight - imgPair._2.weight)))
 
-  private val gaussian30Kernel = (-30 to 30) map (i => (30 - abs(i)) / (30f * 30f * 30f)) toArray
-
-  override val convolve: Computation[Option[Array[Float]]] = Computation(Some(gaussian30Kernel))
-
   val heatmap = for(in <- computeDifferences; orig <- input) yield {
     val imgsWithQuality = in zip range(qmin, qmax, qstep)
     val result = new MutableArrayMatrix[Float](orig.width, orig.height)
