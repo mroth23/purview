@@ -247,8 +247,9 @@
                             <arg>-target:jvm-${java.version}</arg>
                             <arg>-deprecation</arg>
                             <!--arg>-Yspecialize</arg-->
-                            <!--arg>-Yinline</arg-->
+                            <arg>-Yinline</arg>
                             <arg>-Ytailrecommend</arg>
+                            <arg>-optimise</arg>
                             <!--arg>-Ywarn-dead-code</arg-->
                             <!--arg>-Ywarn-shadowing</arg-->
                             <!--arg>-Xstrict-warnings</arg-->
