@@ -1,11 +1,12 @@
 package org.purview.bilinearanalyser
 
-import org.purview.core.analysis.HeatMapImageAnalyser
+import org.purview.core.analysis._
+import org.purview.core.analysis.settings._
 import org.purview.core.data._
 import org.purview.core.report.Warning
 import scala.math._
 
-class AnalyserImplementation extends HeatMapImageAnalyser {
+class AnalyserImplementation extends HeatMapImageAnalyser with Settings {
   val name = "Bilinear analyser"
   val description = "Finds bilinearly interpolated regions in an image"
   override val version = Some("1.3")
@@ -13,56 +14,59 @@ class AnalyserImplementation extends HeatMapImageAnalyser {
 
   override val iconResource = Some("icons/analysers/bilinear.png")
 
+  val thresholdSetting = new FloatRangeSetting("Epsilon threshold", 0, 1, 100)
+  thresholdSetting.value = 0.1f
+
+  val maxSizeFactorSetting = new IntRangeSetting("Max detected scale factor", 0, 16)
+  maxSizeFactorSetting.value = 4
+
   override val message = "Bilinearly scaled region"
   override val reportLevel = Warning
 
-  val markHorizBilinear = for(matrix <- input) yield {
-    status("Performing a vertical amplitude scan")
+  val settings = Seq(thresholdSetting)
 
-    @inline def cmp(color1: Color, color2: Color, e: Float) =
-      abs(color1.a - color2.a) < e && abs(color1.r - color2.r) < e &&
-      abs(color1.g - color2.g) < e && abs(color1.b - color2.b) < e
+  def thr = thresholdSetting.value
+  def maxSizeFactor = maxSizeFactorSetting.value
 
-    val slopify: Seq[Color] => Color = x => x(0) - x(1)
+  val markBilinear = for(matrix <- input) yield {
+    status("Performing an amplitude scan")
 
-    for((x, y, color) <- matrix.cells) yield {
-      val horiz = (0 to 16).map(_ + x).takeWhile(matrix.width  >)
-      val vert  = (0 to 16).map(_ + y).takeWhile(matrix.height >)
+    def mkSlopes(colors: List[Color], result: List[Color] = Nil): List[Color] = colors match {
+      case x :: (rem @ (y :: _)) =>
+        mkSlopes(rem, x - y :: result)
+      case _ => result
+    }
 
-      if(horiz.length > 2 && vert.length > 2) {
-        val streakRight = horiz            map (matrix(_, y))
-        val streakDown  = vert             map (matrix(x, _))
-        val streakDiag  = (horiz zip vert) map (t => matrix(t._1, t._2))
+    def getExtent(base: Color, read: Int => Color, max: Int): Float = {
+      val streak = for (extend <- 0 to max) yield read(extend)
+      val slopes = mkSlopes(streak.toList)
+      val first = slopes.head
 
-        val slopesRight = streakRight sliding 2 map slopify toSeq
-        val slopesDown  = streakDown  sliding 2 map slopify toSeq
-        val slopesDiag  = streakDiag  sliding 2 map slopify toSeq
-
-        val firstRight  = slopesRight.head
-        val firstDown   = slopesDown .head
-        val firstDiag   = slopesDiag .head
-
-        val rightLen = slopesRight.findIndexOf(x => cmp(firstRight, x, 1/255f))
-        val downLen  = slopesDown .findIndexOf(x => cmp(firstDown,  x, 1/255f))
-        val diagLen  = slopesDiag .findIndexOf(x => cmp(firstDiag,  x, 1/255f))
-
-        rightLen + downLen + diagLen
+      if(abs(first.a) > thr ||
+         abs(first.r) > thr ||
+         abs(first.g) > thr ||
+         abs(first.b) > thr) {
+        val numberOfNearSlopes = slopes.findIndexOf {x =>
+          !(abs(x.a - first.a) < thr &&
+            abs(x.r - first.r) < thr &&
+            abs(x.g - first.g) < thr &&
+            abs(x.b - first.b) < thr)
+        }
+        math.max(0f, numberOfNearSlopes.toFloat)
       } else 0f
     }
-  }
 
-  val markVertBilinear = for(matrix <- input) yield {
-    status("Performing a vertical amplitude scan")
-    for((x, y, color) <- matrix.cells) yield
-      if(y < matrix.height - 1)
-        matrix(x, y + 1).weight - color.weight
-    else
-      0f
+    for((x, y, color) <- matrix.cells) yield {
+      val ri = getExtent(color, v => matrix(x + v, y), min(maxSizeFactor, matrix.width - x -1))
+      val dn = getExtent(color, v => matrix(x, y + v), min(maxSizeFactor, matrix.height - y - 1))
+      val dg = getExtent(color, v => matrix(x + v, y + v), min(maxSizeFactor, min(matrix.height - y - 1, matrix.width - x - 1)))
+      ri + dn + dg
+    }
   }
 
   private val gaussian5BlurKernel = Array[Float](0.0080f, 0.016f, 0.024f, 0.032f, 0.04f, 0.032f,  0.024f, 0.016f, 0.0080f)
 
   override val convolve: Computation[Option[Array[Float]]] = Computation(Some(gaussian5BlurKernel))
 
-  val heatmap = markHorizBilinear
+  val heatmap = markBilinear
 }

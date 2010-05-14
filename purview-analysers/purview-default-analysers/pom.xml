@@ -17,6 +17,11 @@
             <artifactId>bilinear-analyser</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!--dependency>
+            <groupId>org.purview</groupId>
+            <artifactId>bilinear-em-analyser</artifactId>
+            <version>${project.version}</version>
+        </dependency-->
         <dependency>
             <groupId>org.purview</groupId>
             <artifactId>copy-move-analyser</artifactId>

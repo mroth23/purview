@@ -16,6 +16,7 @@
 
     <modules>
         <module>bilinear-analyser</module>
+        <!--module>bilinear-em-analyser</module-->
         <module>copy-move-analyser</module>
         <module>error-level-analyser</module>
         <module>luminance-gradient-analyser</module>
