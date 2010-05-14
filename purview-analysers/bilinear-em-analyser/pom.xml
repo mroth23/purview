@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>purview-analysers</artifactId>
+        <groupId>org.purview</groupId>
+        <version>1.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>bilinear-em-analyser</artifactId>
+
+    <name>Purview - Bilinear Expectation-Maximisation analyser module</name>
+    <description>Provides analyser modules for Purview</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.purview</groupId>
+            <artifactId>purview-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.scala-tools</groupId>
+                <artifactId>maven-scala-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+  </project>
