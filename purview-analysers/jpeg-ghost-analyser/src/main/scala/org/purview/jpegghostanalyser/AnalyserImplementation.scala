@@ -13,7 +13,7 @@ import org.purview.core.report._
 import org.purview.core.transforms._
 import scala.math._
 
-class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
+class AnalyserImplementation extends HeatMapImageAnalyser with Settings {
   val name = "JPEG Ghost Analyser"
   val description = "Finds JPEG ghosts in an image"
 
@@ -23,6 +23,8 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
   maxQualitySetting.value = 1.0f //default
   val stepSizeSetting = FloatRangeSetting("Step size", 0, 1, 100)
   stepSizeSetting.value = 0.05f //default
+
+  val thr = 0.01f
 
   val settings = List(minQualitySetting, maxQualitySetting, stepSizeSetting)
 
@@ -88,16 +90,21 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
   val computeDifferences = for(in <- input; imgs <- outputImagesAsColorMatrices) yield
     (for(img <- imgs) yield img zip in map (imgPair => abs(imgPair._1.weight - imgPair._2.weight)))
 
-  val makeHDR = for(in <- computeDifferences) yield
-    (for(matrix <- in) yield {
-      val max = matrix.max
-      matrix map (x => Color(1, x / max, x / max, x / max))
-    })
+  private val gaussian30Kernel = (-30 to 30) map (i => (30 - abs(i)) / (30f * 30f * 30f)) toArray
 
-  val createReport = for(in <- makeHDR) yield {
+  override val convolve: Computation[Option[Array[Float]]] = Computation(Some(gaussian30Kernel))
+
+  val heatmap = for(in <- computeDifferences; orig <- input) yield {
     val imgsWithQuality = in zip range(qmin, qmax, qstep)
-    (for((img, quality) <- imgsWithQuality) yield new ReportImage(Information, "Output at quality " + (quality * 100).toInt, 0, 0, img)).toSet[ReportEntry]
-  }
+    val result = new MutableArrayMatrix[Float](orig.width, orig.height)
 
-  val result = createReport
+    for((img, quality) <- imgsWithQuality) {
+      img.cells.foreach { tmp =>
+        val (x, y, v) = tmp
+        if(result(x, y) < qmin && v > thr)
+          result(x, y) = quality
+      }
+    }
+    result: Matrix[Float]
+  }
 }

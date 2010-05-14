@@ -87,6 +87,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings with Me
   /** Stretches the quantization matrix according to a quality value */
   @inline private def createQTable(q: Int, size: Int): Matrix[Float] = {
     status("Creating quantization tables with quality " + q.toString())
+    println("Creating quantization tables with quality " + q.toString())
     //These magic numbers come from the standard JPEG algorithm
     val s = if(q < 50) 5000f / q else 200f - 2f * q
     //The "standard" luminance quantization table taken from the JPEG specification (Annex K1)

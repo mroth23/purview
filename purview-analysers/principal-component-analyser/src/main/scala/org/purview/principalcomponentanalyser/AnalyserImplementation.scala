@@ -88,6 +88,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] {
     for(img1 <- image1; img2 <- image2; img3 <- image3; eigVl <- eigenValues) yield {
       val sum = eigVl.sum
       val perc = eigVl.map(_ / sum)
+      //XXX: The eigenvalues are sorted the wrong way here (or is it a bug?)
       Set(new ReportImage(Information, "Principal component #1 (" + round(perc(2) * 100f) + "%)", 0, 0, img1),
           new ReportImage(Information, "Principal component #2 (" + round(perc(1) * 100f) + "%)", 0, 0, img2),
           new ReportImage(Information, "Principal component #3 (" + round(perc(0) * 100f) + "%)", 0, 0, img3))

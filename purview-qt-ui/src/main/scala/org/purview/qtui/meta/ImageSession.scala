@@ -10,7 +10,7 @@ case class ImageSession(imageFile: File) extends QSignalEmitter {
   val reportEntryChanged = new Signal1[Option[ReportEntry]]
 
   val matrix = ImageMatrix.fromFile(imageFile)
-  var analysers = SessionUtils.createAnalyserInstances[ImageMatrix]().map(_ -> true).toMap
+  var analysers = SessionUtils.createAnalyserInstances[ImageMatrix]().map(_ -> false).toMap
 
   @volatile private var _reportEntry: Option[ReportEntry] = None
   def reportEntry = _reportEntry
