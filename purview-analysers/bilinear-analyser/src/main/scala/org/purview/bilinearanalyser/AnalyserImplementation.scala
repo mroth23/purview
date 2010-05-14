@@ -3,6 +3,7 @@ package org.purview.bilinearanalyser
 import org.purview.core.analysis._
 import org.purview.core.analysis.settings._
 import org.purview.core.data._
+import org.purview.core.transforms.LinearConvolve
 import org.purview.core.report.Warning
 import scala.math._
 
@@ -66,5 +67,8 @@ class AnalyserImplementation extends HeatMapImageAnalyser with Settings {
     }
   }
 
-  val heatmap = markBilinear
+  val extp = Array.fill(5)(1f)
+  val extpltd =  markBilinear >- LinearConvolve(extp)
+
+  val heatmap = extpltd
 }
