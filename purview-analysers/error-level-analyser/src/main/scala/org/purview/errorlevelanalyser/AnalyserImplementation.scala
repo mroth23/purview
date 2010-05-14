@@ -24,13 +24,10 @@ class AnalyserImplementation extends HeatMapImageAnalyser
 
   val qualitySetting = new FloatRangeSetting("Quality level", 0, 1, 100)
   qualitySetting.value = 0.2f //default
-  val thresholdSetting = new FloatRangeSetting("Threshold", 0, 1, 100)
-  thresholdSetting.value = 0.1f //default
 
   private def quality: Float = qualitySetting.value
-  private def artifactThreshold: Float = thresholdSetting.value
-
-  val settings = List(qualitySetting, thresholdSetting)
+  
+  val settings = List(qualitySetting)
 
   override val message = "Noticeable compression artifact"
   override val reportLevel = Warning
@@ -97,11 +94,7 @@ class AnalyserImplementation extends HeatMapImageAnalyser
     introduceJPEGArtifacts >- ImageToMatrix()
 
   val diff = for(in <- input; artifacts <- errorMatrix) yield
-    in.zip(artifacts).map(x => {
-        //div by 2 because of sqrt(4); we want to average the color:
-        val w = (x._1 - x._2).weight / 2
-        if(w > artifactThreshold) w else 0
-      })
+    in.zip(artifacts).map(x => (x._1 - x._2).weight / 2)
 
   val heatmap = diff
 }

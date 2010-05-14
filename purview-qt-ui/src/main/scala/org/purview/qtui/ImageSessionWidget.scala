@@ -68,6 +68,24 @@ case class ImageSessionWidget(imageSession: ImageSession) extends QGraphicsView 
     imageSession.analysis.foreach(_.reportEntryChanged ::= currentReportEntry_=)
   }
 
+  def saveImageTo(file: String) = _currentReportEntry match {
+    case Some(entry) =>
+      import com.trolltech.qt.svg.QSvgGenerator
+      val generator = new QSvgGenerator
+      generator.setFileName(file)
+      generator.setSize(sceneRect.size.toSize)
+      generator.setViewBox(sceneRect)
+      generator.setTitle("Purview - " + imageSession.imageFile.getName)
+      generator.setDescription("Generated from " + entry.message)
+
+      import com.trolltech.qt.gui.QPainter
+      val painter = new QPainter
+      painter.begin(generator)
+      sessionScene.render(painter)
+      painter.end()
+    case None => //TODO: notify user
+  }
+
   val srcColor = QColor.blue
   val transpSrcColor = srcColor.clone
   transpSrcColor.setAlphaF(srcColor.alphaF / 2)

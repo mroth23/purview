@@ -15,6 +15,7 @@ import org.purview.core.report.ReportShape
 import org.purview.core.transforms.LinearConvolve
 import org.purview.core.transforms.ShapeToReportShape
 import scala.collection.mutable.Queue
+import scala.math._
 
 /**
  * A HeatMapAnalyser is an Analyser that analyses a Matrix and outputs a heat
@@ -172,6 +173,14 @@ trait HeatMapAnalyser[@specialized("Int, Float, Boolean") A, B <: Matrix[A]] ext
     entries.toSet
   }
 
+  def getColor(f: Float) : Color = {
+    val pi = Pi.toFloat
+    val b = cos(f * pi).toFloat
+    val g = cos((f - 1f / 2f) * pi).toFloat
+    val r = cos((f - 1f) * pi).toFloat
+    Color(0.9f, r,  g, b)
+  }
+
   /** The generated result report */
   lazy val result: Computation[Set[ReportEntry]] = for {
     raw <- heatmap
@@ -180,11 +189,11 @@ trait HeatMapAnalyser[@specialized("Int, Float, Boolean") A, B <: Matrix[A]] ext
   } yield report + { //The unconvoluted input image
     val max = Matrix.sequence(raw).max //TODO: this has already been calculated before, OPTIMIZE!
     new ReportImage(Information, "Raw output", 0, 0,
-                    raw.map { x => Color(1, x / max, x / max, x / max)})
+                    raw.map { x => getColor(x / max)})
   } + { //The convoluted input image
     val max = Matrix.sequence(conv).max
     new ReportImage(Information, "Convoluted output", 0, 0,
-                    conv.map { x => Color(0.9f, x / max, x / max, x / max)})
+                    conv.map { x => getColor(x / max)})
   }
 }
 

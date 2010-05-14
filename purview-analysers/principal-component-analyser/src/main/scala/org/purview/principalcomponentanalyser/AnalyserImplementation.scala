@@ -59,8 +59,11 @@ class AnalyserImplementation extends Analyser[ImageMatrix] {
       value3 = b(x, y)
     } yield (value1, value2, value3)
 
-  val eigenVectors = for(matrix <- covarianceMatrix) yield
-    new EigenvalueDecomposition(matrix).vectors
+  val eigenDecomposition = for(matrix <- covarianceMatrix) yield
+    new EigenvalueDecomposition(matrix)
+
+  val eigenValues = eigenDecomposition.map(_.values)
+  val eigenVectors = eigenDecomposition.map(_.vectors)
 
   @inline private def dotProduct(vector1: (Float, Float, Float), vector2: (Float, Float, Float)) =
     vector1._1 * vector2._1 + vector1._2 * vector2._2 + vector1._3 * vector2._3
@@ -82,8 +85,11 @@ class AnalyserImplementation extends Analyser[ImageMatrix] {
   val image3 = for(component <- principalComponent3) yield image(component)
 
   val result: Computation[Set[ReportEntry]] =
-    for(img1 <- image1; img2 <- image2; img3 <- image3) yield
-      Set(new ReportImage(Information, "Principal component #1", 0, 0, img1),
-          new ReportImage(Information, "Principal component #2", 0, 0, img2),
-          new ReportImage(Information, "Principal component #3", 0, 0, img3))
+    for(img1 <- image1; img2 <- image2; img3 <- image3; eigVl <- eigenValues) yield {
+      val sum = eigVl.sum
+      val perc = eigVl.map(_ / sum)
+      Set(new ReportImage(Information, "Principal component #1 (" + round(perc(2) * 100f) + "%)", 0, 0, img1),
+          new ReportImage(Information, "Principal component #2 (" + round(perc(1) * 100f) + "%)", 0, 0, img2),
+          new ReportImage(Information, "Principal component #3 (" + round(perc(0) * 100f) + "%)", 0, 0, img3))
+      }
 }
