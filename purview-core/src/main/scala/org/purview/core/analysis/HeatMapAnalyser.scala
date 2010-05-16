@@ -109,33 +109,36 @@ trait HeatMapAnalyser[@specialized(Int, Float, Boolean) A, B <: Matrix[A]] exten
     /** A standard flood-fill algorithm */
     @inline def floodFrom(x: Int, y: Int, heatArea: Area): Unit = {
       //Cells to be filled
-      val queue = new Queue[(Int, Int)]
+      val queueX = new Queue[Int]
+      val queueY = new Queue[Int]
 
       //"Drop" the flooder at the current point
-      queue.enqueue((x, y))
+      queueX.enqueue(x)
+      queueY.enqueue(y)
 
       while(!queue.isEmpty) {
         //Take the next position to fill
-        val pos = queue.dequeue()
-        
-        if(free(pos._1, pos._2)) {
+        val x = queueX.dequeue()
+        val y = queueY.dequeue()
+
+        if(free(x, y)) {
           //Fill the cell
-          include(pos._1, pos._2, heatArea)
+          include(x, y, heatArea)
 
           //Go to the left and right and find all empty cells
           var minus, plus = pos._1
-          while(minus > 1 && free(minus - 1, pos._2)) minus -= 1
-          while(plus < width - 1 && free(plus + 1, pos._2)) plus += 1
+          while(minus > 1 && free(minus - 1, y)) minus -= 1
+          while(plus < width - 1 && free(plus + 1, y)) plus += 1
 
           //Fill all cells in the same row
           while(minus <= plus) {
-            include(minus, pos._2, heatArea)
+            include(minus, y, heatArea)
 
             //Is the cell above or below available too? Check it later
-            if(pos._2 > 1 && free(minus, pos._2 - 1))
-              queue.enqueue((minus, pos._2 - 1))
-            if(pos._2 < height - 1 && free(minus, pos._2 + 1))
-              queue.enqueue((minus, pos._2 + 1))
+            if(pos._2 > 1 && free(minus, y - 1))
+              queue.enqueue((minus, y - 1))
+            if(pos._2 < height - 1 && free(minus, y + 1))
+              queue.enqueue((minus, y + 1))
 
             minus += 1
           }
