@@ -5,7 +5,7 @@
     <parent>
         <artifactId>purview</artifactId>
         <groupId>org.purview</groupId>
-        <version>1.1-SNAPSHOT</version>
+        <version>1.2</version>
     </parent>
 
     <artifactId>purview-analyser-archetype</artifactId>

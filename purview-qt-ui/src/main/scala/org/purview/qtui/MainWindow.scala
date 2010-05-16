@@ -24,7 +24,7 @@ object MainWindow extends QMainWindow {
   if(objectName.isEmpty)
     setObjectName("MainWindow")
 
-  setWindowTitle("Purview 1.1-SNAPSHOT")
+  setWindowTitle("Purview 1.2")
   setWindowIcon(QIcon.fromTheme("purview", new QIcon("classpath:icons/purview.png")))
   setMinimumSize(800, 600)
 
