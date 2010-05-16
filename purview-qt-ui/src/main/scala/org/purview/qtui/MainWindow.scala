@@ -43,12 +43,6 @@ object MainWindow extends QMainWindow {
 
   private val shallowAnalysers = SessionUtils.createAnalyserInstances[ImageMatrix]
 
-  private val fileDiag = construct(new QFileDialog(this)) { dialog =>
-    dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
-    dialog.setNameFilter(ImageIO.getReaderFileSuffixes.mkString("Image files (*.", " *.", ")"))
-    dialog.setDirectory(QDir.homePath)
-  }
-
   private val tabWidget = new QTabWidget(this) {
     currentChanged.connect(this, "changeSession(int)")
     tabCloseRequested.connect(this, "closeTab(int)")
@@ -75,8 +69,9 @@ object MainWindow extends QMainWindow {
     setIcon(QIcon.fromTheme("folder-image", new QIcon("classpath:icons/folder-image.png")))
     triggered.connect(this, "selectImage()")
 
-    private def selectImage() = if(fileDiag.exec() != 0) {
-      val filename = fileDiag.selectedFiles.get(0)
+    private def selectImage() = {
+      val filename = QFileDialog.getSaveFileName(MainWindow.this, "Open image", QDir.homePath,
+                                                 new QFileDialog.Filter(ImageIO.getReaderFileSuffixes.mkString("Image files (*.", " *.", ")")))
       val sessionWidget = new ImageSessionWidget(new ImageSession(new File(filename)))
       tabWidget.addTab(sessionWidget, QIcon.fromTheme("image-x-generic", new QIcon("classpath:icons/image-x-generic.png")), sessionWidget.windowTitle)
       updateToolbar()
