@@ -18,10 +18,10 @@ import scala.collection.mutable.Queue
 import scala.math._
 
 /**
- * A HeatMapAnalyser is an Analyser that analyses a Matrix and outputs a heat
- * map as its result. The heat map is a Matrix of Floats, where regions with high
- * values indicate things to report.
- */
+* A HeatMapAnalyser is an Analyser that analyses a Matrix and outputs a heat
+* map as its result. The heat map is a Matrix of Floats, where regions with high
+* values indicate things to report.
+*/
 trait HeatMapAnalyser[@specialized(Int, Float, Boolean) A, B <: Matrix[A]] extends Analyser[B] {
 
   /** The computation that generates the heat map */
@@ -40,24 +40,24 @@ trait HeatMapAnalyser[@specialized(Int, Float, Boolean) A, B <: Matrix[A]] exten
   val convolve: Computation[Option[Array[Float]]] = Computation(Some(gaussianKernel))
 
   /**
-   * If multiple heat regions are to be found, this specifies the maximum
-   * distance ratio that other regions may be from the strongest region.
-   * So, if the strongest region has value <pre>x</pre>, all regions
-   * <pre>r</pre> will be included in the report that satisfy:<br/>
-   * <pre>abs(max - r) &lt; max * maxDeviationTolerance</pre>
-   */
+* If multiple heat regions are to be found, this specifies the maximum
+* distance ratio that other regions may be from the strongest region.
+* So, if the strongest region has value <pre>x</pre>, all regions
+* <pre>r</pre> will be included in the report that satisfy:<br/>
+* <pre>abs(max - r) &lt; max * maxDeviationTolerance</pre>
+*/
   val maxDeviationTolerance: Float = 0.1f
 
   /**
-   * Specifies the minimum size a heat map region must have for it
-   * to be accepted.
-   */
+* Specifies the minimum size a heat map region must have for it
+* to be accepted.
+*/
   val minRegionSize: Int = 8
 
   /**
-   * Specifies the minimum value a peak in the heat map must have
-   * for it to be accepted.
-   */
+* Specifies the minimum value a peak in the heat map must have
+* for it to be accepted.
+*/
   val threshold: Float = 0
 
   /** Should nearby peaks be treated as the same peak region? */
@@ -73,9 +73,9 @@ trait HeatMapAnalyser[@specialized(Int, Float, Boolean) A, B <: Matrix[A]] exten
   private lazy val convolvedMaxValue = for(in <- convolvedHeatmap) yield Matrix.sequence(in).max
 
   /**
-   * A matrix that has 'true' cells for "heated" areas and 'false'
-   * for other areas
-   */
+* A matrix that has 'true' cells for "heated" areas and 'false'
+* for other areas
+*/
   private lazy val maximi =
     for {
       in <- convolvedHeatmap
@@ -109,36 +109,33 @@ trait HeatMapAnalyser[@specialized(Int, Float, Boolean) A, B <: Matrix[A]] exten
     /** A standard flood-fill algorithm */
     @inline def floodFrom(x: Int, y: Int, heatArea: Area): Unit = {
       //Cells to be filled
-      val queueX = new Queue[Int]
-      val queueY = new Queue[Int]
+      val queue = new Queue[(Int, Int)]
 
       //"Drop" the flooder at the current point
-      queueX.enqueue(x)
-      queueY.enqueue(y)
+      queue.enqueue((x, y))
 
       while(!queue.isEmpty) {
         //Take the next position to fill
-        val x = queueX.dequeue()
-        val y = queueY.dequeue()
+        val pos = queue.dequeue()
 
-        if(free(x, y)) {
+        if(free(pos._1, pos._2)) {
           //Fill the cell
-          include(x, y, heatArea)
+          include(pos._1, pos._2, heatArea)
 
           //Go to the left and right and find all empty cells
           var minus, plus = pos._1
-          while(minus > 1 && free(minus - 1, y)) minus -= 1
-          while(plus < width - 1 && free(plus + 1, y)) plus += 1
+          while(minus > 1 && free(minus - 1, pos._2)) minus -= 1
+          while(plus < width - 1 && free(plus + 1, pos._2)) plus += 1
 
           //Fill all cells in the same row
           while(minus <= plus) {
-            include(minus, y, heatArea)
+            include(minus, pos._2, heatArea)
 
             //Is the cell above or below available too? Check it later
-            if(pos._2 > 1 && free(minus, y - 1))
-              queue.enqueue((minus, y - 1))
-            if(pos._2 < height - 1 && free(minus, y + 1))
-              queue.enqueue((minus, y + 1))
+            if(pos._2 > 1 && free(minus, pos._2 - 1))
+              queue.enqueue((minus, pos._2 - 1))
+            if(pos._2 < height - 1 && free(minus, pos._2 + 1))
+              queue.enqueue((minus, pos._2 + 1))
 
             minus += 1
           }
@@ -172,7 +169,7 @@ trait HeatMapAnalyser[@specialized(Int, Float, Boolean) A, B <: Matrix[A]] exten
   } yield {
     val entries = for {
       region <- regions
-      if region.getBounds.width  >= minRegionSize
+      if region.getBounds.width >= minRegionSize
       if region.getBounds.height >= minRegionSize
     } yield
       new ReportShape(reportLevel, HeatMapAnalyser.this.message, ShapeToReportShape()(region))
@@ -184,7 +181,7 @@ trait HeatMapAnalyser[@specialized(Int, Float, Boolean) A, B <: Matrix[A]] exten
     val b = cos(f * pi).toFloat
     val g = cos((f - 1f / 2f) * pi).toFloat
     val r = cos((f - 1f) * pi).toFloat
-    Color(0.9f, r,  g, b)
+    Color(0.9f, r, g, b)
   }
 
   /** The generated result report */
