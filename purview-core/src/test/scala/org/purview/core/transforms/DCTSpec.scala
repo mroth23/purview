@@ -6,14 +6,14 @@ import org.specs.SpecificationWithJUnit
 class DCTSpec extends SpecificationWithJUnit {
   "A discrete cosine transform" should {
     "be reversible" in {
-      val data = ImmutableMatrix(8,8, Array(-76d,-73d,-67d,-62d,-58d,-67d,-64d,-55d,
-                                            -65d,-69d,-73d,-38d,-19d,-43d,-59d,-56d,
-                                            -66d,-69d,-60d,-15d, 16d,-24d,-62d,-55d,
-                                            -65d,-70d,-57d, -6d, 26d,-22d,-58d,-59d,
-                                            -61d,-67d,-60d,-24d, -2d,-40d,-60d,-58d,
-                                            -49d,-63d,-68d,-58d,-51d,-60d,-70d,-53d,
-                                            -43d,-57d,-64d,-69d,-73d,-67d,-63d,-45d,
-                                            -41d,-49d,-59d,-60d,-63d,-52d,-50d,-34d))
+      val data = ImmutableMatrix(8,8, Array(-76f,-73f,-67f,-62f,-58f,-67f,-64f,-55f,
+                                            -65f,-69f,-73f,-38f,-19f,-43f,-59f,-56f,
+                                            -66f,-69f,-60f,-15f, 16f,-24f,-62f,-55f,
+                                            -65f,-70f,-57f, -6f, 26f,-22f,-58f,-59f,
+                                            -61f,-67f,-60f,-24f, -2f,-40f,-60f,-58f,
+                                            -49f,-63f,-68f,-58f,-51f,-60f,-70f,-53f,
+                                            -43f,-57f,-64f,-69f,-73f,-67f,-63f,-45f,
+                                            -41f,-49f,-59f,-60f,-63f,-52f,-50f,-34f))
       val dct  = DiscreteCosineTransform()
       val idct = InverseDiscreteCosineTransform()
       val reconstructed = idct(dct(data))

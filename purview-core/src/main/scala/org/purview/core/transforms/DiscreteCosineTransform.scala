@@ -42,7 +42,7 @@ case class DiscreteCosineTransform() extends Function1[Matrix[Float], Matrix[Flo
         while(y < h) {
           var x = 0
           while(x < w) {
-            sum += data(x, y) * (cos(pi * u * (2.0 * x + 1.0) / (w * 2)) * cos(pi * v * (2.0 * y + 1.0) / (h * 2))).toFloat
+            sum += data(x, y) * (cos(pi * u * (2.0 * x + 1.0) / (w * 2.0)) * cos(pi * v * (2.0 * y + 1.0) / (h * 2.0))).toFloat
             x += 1
           }
           y += 1
@@ -64,14 +64,14 @@ case class InverseDiscreteCosineTransform() extends Function1[Matrix[Float], Mat
     val width = bw
     val height = bh
 
-    private val Float = (sqrt(1f / bw) * sqrt(1f / bh)).toFloat
+    private val Double = (sqrt(1f / bw) * sqrt(1f / bh)).toFloat
     private val Sans = (sqrt(2f / bw) * sqrt(2f / bh )).toFloat
     private val SingleX = (sqrt(1f / bw) * sqrt(2f / bh)).toFloat
     private val SingleY = (sqrt(1f / bh) * sqrt(2f / bw)).toFloat
 
     //Don't actually store the matrix; select values on the fly
     def apply(x: Int, y: Int) = if(x == 0 && y == 0)
-      Float
+      Double
     else if(x == 0 && y != 0)
       SingleX
     else if(y == 0 && x != 0)
@@ -97,12 +97,12 @@ case class InverseDiscreteCosineTransform() extends Function1[Matrix[Float], Mat
         while(y < h) {
           var x = 0
           while(x < w) {
-            sum += (coeff(x, y) * data(x, y) * (cos(pi * u * (2.0 * x + 1.0) / (w * 2)) * cos(pi * v * (2.0 * y + 1.0) / (h * 2)))).toFloat
+            sum += (coeff(x, y) * data(x, y) * (cos(pi * x * (2.0 * u + 1.0) / (w * 2.0)) * cos(pi * y * (2.0 * v + 1.0) / (h * 2.0)))).toFloat
             x += 1
           }
           y += 1
         }
-        result(u, v) = sum
+        result(u, v) = sum.round
         u += 1
       }
       v += 1
