@@ -70,7 +70,7 @@ object MainWindow extends QMainWindow {
     triggered.connect(this, "selectImage()")
 
     private def selectImage() = {
-      val filename = QFileDialog.getSaveFileName(MainWindow.this, "Open image", QDir.homePath,
+      val filename = QFileDialog.getOpenFileName(MainWindow.this, "Open image", QDir.homePath,
                                                  new QFileDialog.Filter(ImageIO.getReaderFileSuffixes.mkString("Image files (*.", " *.", ")")))
       val sessionWidget = new ImageSessionWidget(new ImageSession(new File(filename)))
       tabWidget.addTab(sessionWidget, QIcon.fromTheme("image-x-generic", new QIcon("classpath:icons/image-x-generic.png")), sessionWidget.windowTitle)

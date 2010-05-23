@@ -33,6 +33,8 @@ trait HeatMapAnalyser[@specialized(Int, Float, Boolean) A, B <: Matrix[A]] exten
   /** The message to use for interesting heat map areas in the report */
   val message: String = "Interesting peak"
 
+  val colored: Boolean = true
+
   val gaussianStrength = 30
   private val sigma = gaussianStrength / 3
   private val gaussianKernel = (for(i <- -gaussianStrength to gaussianStrength) yield ((1 / sqrt(2 * Pi * sigma * sigma)) * exp(-((i * i) / (2 * sigma * sigma)))).toFloat).toArray
@@ -181,7 +183,7 @@ trait HeatMapAnalyser[@specialized(Int, Float, Boolean) A, B <: Matrix[A]] exten
     val b = cos(f * pi).toFloat
     val g = cos((f - 1f / 2f) * pi).toFloat
     val r = cos((f - 1f) * pi).toFloat
-    Color(0.9f, r, g, b)
+    if (colored)(Color(0.9f, r, g, b)) else (Color(0.9f, f, f, f))
   }
 
   /** The generated result report */
