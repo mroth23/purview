@@ -29,33 +29,30 @@ class AnalyserImplementation extends HeatMapImageAnalyser{
   val hpf =  extractGreen >- Convolve(highpassFilter)
 
   val res = for(matrix <- hpf) yield {
-    status("Calculating diagonal variance")
+    status("Calculating diagonal variances")
     
-    def getDiagonalVariance(xStart: Int, yMax: Int) : Float = {
-      var sum = 0f
-      var x = xStart
-      var y  = 0
-      var nd = 0
-      while(y < yMax && x >= 0)
-      {
-        sum += matrix(x,y)
-        x -= 1
-        y += 1
-        nd += 1
-      }
-      sum / nd.toFloat
+    def getDiagonalVariance(xStart: Int, yStart: Int, n: Int) : Float = {
+      val x = xStart
+      val y  = yStart
+      val sum = (for(i: Int <- -n to n) yield (matrix(x + i, y + i).abs)).sum.toFloat
+      sum / (2 * n + 1).toFloat
     }
 
-    def getDFT(diag: Seq[Float]) : Seq[Complex[Float]] = {
-      val dft = FastFourierTransform1D()
-      dft(diag.map(x => new Complex(x, 0)))
+//    def getDFT(diag: Seq[Float]) : Seq[Complex[Float]] = {
+//      val dft = FastFourierTransform1D()
+//      dft(diag.map(x => new Complex(x, 0)))
+//    }
+
+    val varianceMatrix = (for(i : Int <- 0 until matrix.width; j : Int <- 0 until matrix.height) yield (
+        getDiagonalVariance(i, j, 32)))
+
+    val result = matrix.cells.map {cell =>
+      val (x, y, cellValue) = cell
+      getDiagonalVariance(x, y, 32)
     }
 
-    
-
-    val result = matrix
-    result: Matrix[Float]
+    result
   }
 
-  val heatmap = hpf
+  val heatmap = res
 }
