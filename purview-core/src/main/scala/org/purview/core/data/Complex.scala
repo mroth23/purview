@@ -50,6 +50,11 @@ object Complex {
 case class Complex[A: Numeric](val real: A, val imag: A) {
   protected def arithmetic: Numeric[A] = implicitly
 
+  def toInt = Complex.numeric[A].toInt(this)
+  def toLong = Complex.numeric[A].toLong(this)
+  def toFloat = Complex.numeric[A].toFloat(this)
+  def toDouble = Complex.numeric[A].toDouble(this)
+
   def +(that: Complex[A]): Complex[A] =
     new Complex(arithmetic.plus(this.real, that.real), arithmetic.plus(this.imag, that.imag))
 
