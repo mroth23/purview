@@ -34,8 +34,15 @@ class AnalyserImplementation extends HeatMapImageAnalyser{
     def getDiagonalVariance(xStart: Int, yStart: Int, n: Int) : Float = {
       val x = xStart
       val y  = yStart
-      val sum = (for(i: Int <- -n to n) yield (matrix(x + i, y + i).abs)).sum.toFloat
+      val sum = (for(i: Int <- -n to n) yield getMatrixValue(x,y)).sum.toFloat
       sum / (2 * n + 1).toFloat
+    }
+
+    def getMatrixValue(x: Int, y: Int): Float = {
+      val xr = floor(x.toFloat / matrix.width.toFloat).abs.toInt
+      val yr = floor(y.toFloat / matrix.height.toFloat).abs.toInt
+
+      matrix((x - xr * matrix.width).abs, (y - yr * matrix.width).abs).abs
     }
 
 //    def getDFT(diag: Seq[Float]) : Seq[Complex[Float]] = {

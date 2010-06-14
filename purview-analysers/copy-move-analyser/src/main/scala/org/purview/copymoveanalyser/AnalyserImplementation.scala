@@ -33,18 +33,21 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings with Me
   val qualitySetting = IntRangeSetting("Quality", 0, 100)
   qualitySetting.value = 75 //default
   val thresholdSetting = IntRangeSetting("Threshold", 1, 1000)
-  thresholdSetting.value = 30
-  val minDistanceSetting = IntRangeSetting("Min. distance", 1, 100)
-  minDistanceSetting.value = 20
+  thresholdSetting.value = 50
+  val minDistanceSetting = IntRangeSetting("Min. distance", 1, 300)
+  minDistanceSetting.value = 25
   val partialDCTBlockSizeSetting = IntRangeSetting("Partial DCT block size", 2, 16)
   partialDCTBlockSizeSetting.value = 3
   val blockSizeSetting = IntRangeSetting("Block size", 2, 16)
   blockSizeSetting.value = 16
   val autoQualitySetting = BooleanSetting("Automatically detect JPEG quality")
   autoQualitySetting.value = false
+  val vectorQuantSetting = IntRangeSetting("Shift vector quantization factor", 1, 10)
+  vectorQuantSetting.value = 3
+  
 
   val settings = List(qualitySetting, autoQualitySetting, blockSizeSetting, thresholdSetting,
-                      minDistanceSetting, partialDCTBlockSizeSetting)
+                      minDistanceSetting, partialDCTBlockSizeSetting, vectorQuantSetting)
 
   /**
    * Represents the equivalent JPEG-quality that is to be used for the quantization of the DCT coefficients
@@ -77,12 +80,14 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings with Me
    */
   private def autoDetectQuality = autoQualitySetting.value
 
+  private def qVector = vectorQuantSetting.value
+
   val quantTables = input.map{in =>
-      in.metadata.get("DQT").map { dqt =>
-        //println("Got DQT: " + dqt)
-        dqt.keySet.toSeq.sortBy(identity).map(key => dqt(key).split(',').map(_.toInt).toSeq)
-      }.getOrElse(Nil)
-    }
+    in.metadata.get("DQT").map { dqt =>
+      //println("Got DQT: " + dqt)
+      dqt.keySet.toSeq.sortBy(identity).map(key => dqt(key).split(',').map(_.toInt).toSeq)
+    }.getOrElse(Nil)
+  }
 
   /** Stretches the quantization matrix according to a quality value */
   private def createQTable(q: Int, size: Int): Matrix[Float] = {
@@ -217,7 +222,6 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings with Me
   def makeShifts(blocks: Array[Block]): Seq[Shift] = {
     status("Calculating block shifts")
     val result = new ArrayBuffer[Shift](blocks.length / blockSize)
-    val minimumDistanceSquared = minDistance * minDistance
     //Go through each pair of blocks
     var i = 0
     while(i < blocks.length - 1) {
@@ -229,14 +233,14 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings with Me
       if((block1 compare block2) == 0) {
         //Use the upper-left-most block as the first block
         val shift = if(block1.y < block2.y)
-          new Shift(block1, block2)
+          new Shift(block1, block2, qVector)
         else if(block1.y == block2.y && block1.x < block2.x)
-          new Shift(block1, block2)
+          new Shift(block1, block2, qVector)
         else
-          new Shift(block2, block1)
+          new Shift(block2, block1, qVector)
 
         //Only add it if the shift is long enough
-        if(shift.lengthSquared > minimumDistanceSquared)
+        if(shift.polarVector._1 > minDistance)
           result += shift //TODO: optimize! Why create the shift if we can calculate the length beforehand?
       }
       i += 1
@@ -246,7 +250,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings with Me
 
   def groupShifts(shifts: Seq[Shift]): Map[(Int, Int), Seq[Shift]] = {
     status("Grouping shifts by displacement vector")
-    shifts.groupBy(_.vector).toMap
+    shifts.groupBy(_.polarVector).toMap
   }
 
   def makeReport(groupedShifts: Map[(Int, Int), Seq[Shift]]): Set[ReportEntry] = {
@@ -273,7 +277,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings with Me
         val areaTo = new Area
         rectsTo.foreach(areaTo.add)
 
-        new ReportShapeMove(Error, "This region was moved", ShapeToReportShape()(areaFrom), ShapeToReportShape()(areaTo))
+        new ReportShapeMove(Error, "This region was moved (θ = " + vector._1 + "°, mag = " + vector._2 + " px)", ShapeToReportShape()(areaFrom), ShapeToReportShape()(areaTo))
       }
     ).toSet
   }
@@ -346,11 +350,27 @@ sealed case class Block(values: Matrix[Float], x: Int, y: Int, size: Int) extend
 /**
  * Represents a shift from one block to another block
  */
-sealed case class Shift(from: Block, to: Block) {
-  val lengthSquared = (from.x - to.x) * (from.x - to.x) + (from.y - to.y) * (from.y - to.y)
-  val vector = {
-    val x1 = from.x - to.x
-    val y1 = from.y - to.y
-    if(y1 < 0) (-x1, -y1) else (x1, y1)
+sealed case class Shift(from: Block, to: Block, q: Int) {
+  val polarVector = {
+    val magnitude = (round(sqrt((from.x - to.x) * (from.x - to.x) + (from.y - to.y) * (from.y - to.y)) / q) * q).toInt
+    val angle =  {
+      val vecX = from.x - to.x
+      val vecY = from.y - to.y
+      val pi = Pi.toFloat
+      val asimuth = if(vecX > 0f && vecY >= 0f)
+        atan(vecY/vecX)
+      else if(vecX > 0f && vecY < 0f)
+        atan(vecY/vecX) + 2f * pi
+      else if (vecX < 0f)
+        atan(vecY/vecX) + pi
+      else if (vecX == 0f && vecY > 0f)
+        pi / 2f
+      else if (vecX == 0f && vecY < 0f)
+        (3f * pi) / 2f
+      else //x == 0 && y == 0
+        0f
+      (round((asimuth * (180f / pi)) / q) * q).toInt
+    }
+    (magnitude, angle)
   }
 }
