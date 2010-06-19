@@ -2,6 +2,7 @@ package org.purview.core.transforms;
 
 import edu.emory.mathcs.jtransforms.dct.FloatDCT_1D;
 import edu.emory.mathcs.jtransforms.dct.FloatDCT_2D;
+import org.purview.core.data.Complex;
 
 class JTransforms {
 
@@ -34,5 +35,9 @@ class JTransforms {
         FloatDCT_2D dct2d = new FloatDCT_2D(data.length, data[0].length);
         dct2d.inverse(data, scale);
         return data;
+    }
+
+    public Complex[] FFT1DForward(){
+        return null;
     }
 }
