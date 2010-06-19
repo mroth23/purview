@@ -26,6 +26,8 @@ import org.purview.core.report.ReportCircle
 import org.purview.core.report.ReportCircleMove
 import org.purview.core.report.ReportEntry
 import org.purview.core.report.ReportImage
+import org.purview.core.report.ReportPlot2D
+import org.purview.core.report.ReportPlot3D
 import org.purview.core.report.ReportRectangle
 import org.purview.core.report.ReportRectangleMove
 import org.purview.core.report.ReportShape
@@ -183,6 +185,10 @@ case class ImageSessionWidget(imageSession: ImageSession) extends QGraphicsView 
           group.addToGroup(target)
           group.addToGroup(arrow)
           Some(group)
+	  case ReportPlot3D(_, _, plotEntries) =>
+	    None
+	  case ReportPlot2D(_, _, plotEntries) =>
+	    None
         case _ =>
           None
       }
@@ -210,6 +216,17 @@ object ImageUtils {
 
   val ArrowWidth = 12f
   val ArrowAngle = toRadians(20)
+
+  def getDimetric2DCoordinate(x: Float, y: Float, z: Float) : (Float, Float) = {
+    val pi = Pi.toFloat
+    val cos7 = cos(7f * (pi / 180f)).toFloat
+    val cos42 = cos(42f * (pi / 180f)).toFloat
+    val sin7 = sin(7f * (pi / 180f)).toFloat
+    val sin42 = sin(42f * (pi / 180f)).toFloat
+    val x2 = x * cos7 + ((z * cos42) / 2)
+    val y2 = y + ((z * sin42) / 2) - x * sin7
+    (x2,y2)
+  }
 
   def makeArrow(p1: QPointF, p2: QPointF): QPainterPath = {
     val p = new QPainterPath

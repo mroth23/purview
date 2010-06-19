@@ -40,4 +40,6 @@ sealed case class ReportShapeMove(level: ReportLevel, message: String,
                                   sourceShapeEntries: Seq[ShapeCommand],
                                   shapeEntries: Seq[ShapeCommand]) extends ReportEntry
 
-sealed case class ReportPlot(level: ReportLevel, message: String, plotEntries: Seq[PlotEntry]) extends ReportEntry
+sealed case class ReportPlot3D(level: ReportLevel, message: String, plotEntries: Seq[PlotEntry]) extends ReportEntry
+
+sealed case class ReportPlot2D(level: ReportLevel, message: String, plotEntries: Seq[PlotEntry]) extends ReportEntry

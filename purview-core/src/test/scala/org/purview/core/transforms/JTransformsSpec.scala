@@ -2,17 +2,17 @@ package org.purview.core.transforms
 
 import org.purview.core.data.ImmutableMatrix
 import org.specs.SpecificationWithJUnit
-
 class JTransformsSpec extends SpecificationWithJUnit {
-  "A 1D discrete cosine transform" should {
-    "be reversible" in {
-      val data = Array(-76f,-73f,-67f,-62f,-58f,-67f,-64f,-55f)
-      val dct = JTransformsForwardDCT1D()
-      val idct = JTransformsInverseDCT1D()
-      val reconstructed = idct(dct(data))
-      data zip reconstructed forall (x => x._1 must_== x._2)
-    }
-  }
+
+//  "A 1D discrete cosine transform" should {
+//    "be reversible" in {
+//      val data = Array(-76f,-73f,-67f,-62f,-58f,-67f,-64f,-55f)
+//      val dct = JTransformsForwardDCT1D()
+//      val idct = JTransformsInverseDCT1D()
+//      val reconstructed = idct(dct(data))
+//      data zip reconstructed forall (x => x._1 must_== x._2)
+//    }
+//  }
 
 //    "A 2D discrete cosine transform" should {
 //    "be reversible" in {

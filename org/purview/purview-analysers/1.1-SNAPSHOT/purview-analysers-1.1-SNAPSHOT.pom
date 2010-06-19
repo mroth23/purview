@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>purview</artifactId>
+        <groupId>org.purview</groupId>
+        <version>1.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>purview-analysers</artifactId>
+    <packaging>pom</packaging>
+
+    <name>Purview - Analysers</name>
+    <description>A set of analysers that are being shipped with Purview</description>
+
+    <modules>
+        <module>bilinear-analyser</module>
+        <module>copy-move-analyser</module>
+        <module>error-level-analyser</module>
+        <module>luminance-gradient-analyser</module>
+        <module>metadata-analyser</module>
+        <module>nearest-neighbor-analyser</module>
+        <module>noop-analyser</module>
+  </modules>
+</project>

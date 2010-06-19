@@ -21,28 +21,30 @@ object ReportPersistance {
   }
 
   def serializeEntries(entries: Set[ReportEntry]): NodeSeq = (entries map {entry =>
-    val xml = (entry match {
-        case ReportMessage(_, _) =>
-          (<entry type="message"/>)
-        case ReportImage(_, _, x, y, image) =>
-          (<entry type="image" x={x.toString} y={y.toString}>{serializeImage(image)}</entry>)
-        case ReportRectangle(_, _, x, y, width, height) =>
-          (<entry type="rectangle" x={x.toString} y={y.toString} width={width.toString} height={height.toString}/>)
-        case ReportCircle(_, _, x, y, radius) =>
-          (<entry type="circle" x={x.toString} y={y.toString} radius={radius.toString}/>)
-        case ReportRectangleMove(_, _, srcX, srcY, tgtX, tgtY, w, h) =>
-          (<entry type="rectangle-move" width={w.toString} height={h.toString}><source x={srcX.toString} y={srcY.toString}/><target x={tgtX.toString} y={tgtY.toString}/></entry>)
-        case ReportCircleMove(_, _, srcX, srcY, tgtX, tgtY, radius) =>
-          (<entry type="circle-move" radius={radius.toString}><source x={srcX.toString} y={srcY.toString}/><target x={tgtX.toString} y={tgtY.toString}/></entry>)
-        case ReportShape(_, _, entries) =>
-          (<entry type="shape">{serializeShapeEntries(entries)}</entry>)
-        case ReportShapeMove(_, _, sourceEntries, targetEntries) =>
-          (<entry type="shape-move"><source>{serializeShapeEntries(sourceEntries)}</source><target>{serializeShapeEntries(targetEntries)}</target></entry>)
-        case ReportPlot(_, _, entries) =>
-          (<entry type="plot">{serializePlotEntries(entries)}</entry>)
-      })
-    xml % new UnprefixedAttribute("message", entry.message, new UnprefixedAttribute("level", serializeReportLevel(entry.level), xml.attributes))
-  }).toSeq
+	val xml = (entry match {
+	    case ReportMessage(_, _) =>
+		(<entry type="message"/>)
+	    case ReportImage(_, _, x, y, image) =>
+		(<entry type="image" x={x.toString} y={y.toString}>{serializeImage(image)}</entry>)
+	    case ReportRectangle(_, _, x, y, width, height) =>
+		(<entry type="rectangle" x={x.toString} y={y.toString} width={width.toString} height={height.toString}/>)
+	    case ReportCircle(_, _, x, y, radius) =>
+		(<entry type="circle" x={x.toString} y={y.toString} radius={radius.toString}/>)
+	    case ReportRectangleMove(_, _, srcX, srcY, tgtX, tgtY, w, h) =>
+		(<entry type="rectangle-move" width={w.toString} height={h.toString}><source x={srcX.toString} y={srcY.toString}/><target x={tgtX.toString} y={tgtY.toString}/></entry>)
+	    case ReportCircleMove(_, _, srcX, srcY, tgtX, tgtY, radius) =>
+		(<entry type="circle-move" radius={radius.toString}><source x={srcX.toString} y={srcY.toString}/><target x={tgtX.toString} y={tgtY.toString}/></entry>)
+	    case ReportShape(_, _, entries) =>
+		(<entry type="shape">{serializeShapeEntries(entries)}</entry>)
+	    case ReportShapeMove(_, _, sourceEntries, targetEntries) =>
+		(<entry type="shape-move"><source>{serializeShapeEntries(sourceEntries)}</source><target>{serializeShapeEntries(targetEntries)}</target></entry>)
+	    case ReportPlot3D(_, _, entries) =>
+		(<entry type="plot3d">{serializePlotEntries(entries)}</entry>)
+	    case ReportPlot2D(_, _, entries) =>
+		(<entry type="plot2d">{serializePlotEntries(entries)}</entry>)
+	  })
+	xml % new UnprefixedAttribute("message", entry.message, new UnprefixedAttribute("level", serializeReportLevel(entry.level), xml.attributes))
+    }).toSeq
 
   private def serializeReportLevel(level: ReportLevel): String = level match {
     case Debug => "debug"
@@ -87,58 +89,65 @@ object ReportPersistance {
   }
 
   def serializePlotEntries(entries: Seq[PlotEntry]): NodeSeq = entries map {
-    case PlotPoint(x, y, z, color) =>
-      (<entry type="point" x={x.toString} y={y.toString} z={z.toString} a={color.a.toString} r={color.r.toString} g={color.g.toString} b={color.b.toString}/>)
-    case PlotVector(xDir, yDir, zDir, color) =>
-      (<entry type="vector" xd={xDir.toString} yd={yDir.toString} zd={zDir.toString} a={color.a.toString} r={color.r.toString} g={color.g.toString} b={color.b.toString}/>)
+    case PlotPoint3D(x, y, z, color) =>
+      (<entry type="point3d" x={x.toString} y={y.toString} z={z.toString} a={color.a.toString} r={color.r.toString} g={color.g.toString} b={color.b.toString}/>)
+    case PlotVector3D(xDir, yDir, zDir, color) =>
+      (<entry type="vector3d" xd={xDir.toString} yd={yDir.toString} zd={zDir.toString} a={color.a.toString} r={color.r.toString} g={color.g.toString} b={color.b.toString}/>)
+    case PlotPoint2D(x, y, color) =>
+      (<entry type="point3d" x={x.toString} y={y.toString} a={color.a.toString} r={color.r.toString} g={color.g.toString} b={color.b.toString}/>)
+    case PlotVector2D(xDir, yDir, color) =>
+      (<entry type="vector3d" xd={xDir.toString} yd={yDir.toString} a={color.a.toString} r={color.r.toString} g={color.g.toString} b={color.b.toString}/>)
+
   }
 
   def deserializeReport(data: Elem): Map[Metadata, Set[ReportEntry]] =
     deserializeAnalyserResults(data).toMap
 
   def deserializeAnalyserResults(d: NodeSeq): Set[(Metadata, Set[ReportEntry])] = ((d\"metadata") map {data =>
-    val meta = new Metadata {
-      val name = (data\"@name").text
-      val description = (data\"@description").text
-      override val version = (data\"@version").headOption.map(_.text)
-      override val author = (data\"@author").headOption.map(_.text)
-      override val iconResource = (data\"@icon-resource").headOption.map(_.text)
-    }
-    val entries = deserializeEntries(data)
+	val meta = new Metadata {
+	  val name = (data\"@name").text
+	  val description = (data\"@description").text
+	  override val version = (data\"@version").headOption.map(_.text)
+	  override val author = (data\"@author").headOption.map(_.text)
+	  override val iconResource = (data\"@icon-resource").headOption.map(_.text)
+	}
+	val entries = deserializeEntries(data)
 
-    (meta, entries)
-  }).toSet
+	(meta, entries)
+    }).toSet
 
   def deserializeEntries(d: NodeSeq): Set[ReportEntry] = ((d\"entry") map {data =>
-    @inline def attr(label: String) = (data\("@"+label)).text
-    @inline def fattr(label: String) = attr(label).toFloat
-    val message = attr("message")
-    val level = deserializeReportLevel(attr("level"))
-    (data\"@type").text match {
-      case "message" => ReportMessage(level, message)
-      case "image" => ReportImage(level, message, fattr("x"), fattr("y"), deserializeImage(data))
-      case "rectangle" => ReportRectangle(level, message, fattr("x"), fattr("y"), fattr("width"), fattr("height"))
-      case "circle" => ReportRectangle(level, message, fattr("x"), fattr("y"), fattr("width"), fattr("height"))
-      case "rectangle-move" =>
-        val source = data\"source"
-        val target = data\"target"
-        ReportRectangleMove(level, message, (source\"@x").text.toFloat, (source\"@y").text.toFloat,
-                            (target\"@x").text.toFloat, (target\"@y").text.toFloat,
-                            fattr("width"), fattr("height"))
-      case "circle-move" =>
-        val source = data\"source"
-        val target = data\"target"
-        ReportCircleMove(level, message, (source\"@x").text.toFloat, (source\"@y").text.toFloat,
-                         (target\"@x").text.toFloat, (target\"@y").text.toFloat,
-                         fattr("radius"))
-      case "shape" =>
-        ReportShape(level, message, deserializeShapeEntries(data))
-      case "shape-move" =>
-        ReportShapeMove(level, message, deserializeShapeEntries(data\"source"), deserializeShapeEntries(data\"target"))
-      case "plot" =>
-        ReportPlot(level, message, deserializePlotEntries(data))
-    }
-  }).toSet
+	@inline def attr(label: String) = (data\("@"+label)).text
+	@inline def fattr(label: String) = attr(label).toFloat
+	val message = attr("message")
+	val level = deserializeReportLevel(attr("level"))
+	(data\"@type").text match {
+	  case "message" => ReportMessage(level, message)
+	  case "image" => ReportImage(level, message, fattr("x"), fattr("y"), deserializeImage(data))
+	  case "rectangle" => ReportRectangle(level, message, fattr("x"), fattr("y"), fattr("width"), fattr("height"))
+	  case "circle" => ReportRectangle(level, message, fattr("x"), fattr("y"), fattr("width"), fattr("height"))
+	  case "rectangle-move" =>
+	    val source = data\"source"
+	    val target = data\"target"
+	    ReportRectangleMove(level, message, (source\"@x").text.toFloat, (source\"@y").text.toFloat,
+					(target\"@x").text.toFloat, (target\"@y").text.toFloat,
+					fattr("width"), fattr("height"))
+	  case "circle-move" =>
+	    val source = data\"source"
+	    val target = data\"target"
+	    ReportCircleMove(level, message, (source\"@x").text.toFloat, (source\"@y").text.toFloat,
+				   (target\"@x").text.toFloat, (target\"@y").text.toFloat,
+				   fattr("radius"))
+	  case "shape" =>
+	    ReportShape(level, message, deserializeShapeEntries(data))
+	  case "shape-move" =>
+	    ReportShapeMove(level, message, deserializeShapeEntries(data\"source"), deserializeShapeEntries(data\"target"))
+	  case "plot3d" =>
+	    ReportPlot3D(level, message, deserializePlotEntries(data))
+	  case "plot2d" =>
+	    ReportPlot2D(level, message, deserializePlotEntries(data))
+	}
+    }).toSet
 
   private def deserializeReportLevel(data: String): ReportLevel = data match {
     case "debug" => Debug
@@ -188,8 +197,10 @@ object ReportPersistance {
   def deserializePlotEntries(data: NodeSeq): Seq[PlotEntry] = (data\"entry") map { entry =>
     @inline def fattr(label: String) = (entry\("@" + label)).text.toFloat
     (entry\"@type").text match {
-      case "point" => new PlotPoint(fattr("x"), fattr("y"), fattr("z"), Color(fattr("a"), fattr("r"), fattr("g"), fattr("b")))
-      case "vector" => new PlotVector(fattr("xd"), fattr("yd"), fattr("zd"), Color(fattr("a"), fattr("r"), fattr("g"), fattr("b")))
+      case "point3d" => new PlotPoint3D(fattr("x"), fattr("y"), fattr("z"), Color(fattr("a"), fattr("r"), fattr("g"), fattr("b")))
+      case "vector3d" => new PlotVector3D(fattr("xd"), fattr("yd"), fattr("zd"), Color(fattr("a"), fattr("r"), fattr("g"), fattr("b")))
+	case "point2d" => new PlotPoint2D(fattr("x"), fattr("y"), Color(fattr("a"), fattr("r"), fattr("g"), fattr("b")))
+      case "vector2d" => new PlotVector2D(fattr("xd"), fattr("yd"), Color(fattr("a"), fattr("r"), fattr("g"), fattr("b")))
     }
   }
 }
