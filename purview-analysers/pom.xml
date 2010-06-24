@@ -26,5 +26,6 @@
         <module>jpeg-ghost-analyser</module>
         <module>purview-default-analysers</module>
     <module>snr-analyser</module>
+    <module>autocfa-analyser</module>
   </modules>
 </project>

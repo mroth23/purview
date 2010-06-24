@@ -16,6 +16,7 @@ import org.purview.core.report.Error
 import org.purview.core.report.ReportEntry
 import org.purview.core.report.ReportShapeMove
 import org.purview.core.transforms.Fragmentize
+import org.purview.core.transforms.JTransforms2D
 import org.purview.core.transforms.ShapeToReportShape
 import org.purview.core.transforms.Interpolate
 import scala.collection.mutable.ArrayBuffer
@@ -88,7 +89,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] with Settings with Me
       dqt.keySet.toSeq.sortBy(identity).map(key => dqt(key).split(',').map(_.toInt).toSeq)
     }.getOrElse(Nil)
   }
-
+  
   /** Stretches the quantization matrix according to a quality value */
   private def createQTable(q: Int, size: Int): Matrix[Float] = {
     status("Creating quantization tables with quality " + q.toString())

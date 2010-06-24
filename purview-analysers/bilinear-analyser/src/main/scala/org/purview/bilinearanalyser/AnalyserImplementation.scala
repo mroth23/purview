@@ -3,9 +3,8 @@ package org.purview.bilinearanalyser
 import org.purview.core.analysis._
 import org.purview.core.analysis.settings._
 import org.purview.core.data._
-import org.purview.core.transforms.Convolve
 import org.purview.core.report.Warning
-import org.purview.core.transforms.FastFourierTransform1D
+import org.purview.core.transforms._
 import scala.math._
 
 class AnalyserImplementation extends HeatMapImageAnalyser{
@@ -25,7 +24,7 @@ class AnalyserImplementation extends HeatMapImageAnalyser{
     }
   }
 
-  val highpassFilter = new ImmutableMatrix[Float](3,3, Array(0, 1, 0, 1, -4, 1, 0, 1, 0))
+  val highpassFilter = new ImmutableMatrix[Float](3, 3, Array(0, 1, 0, 1, -4, 1, 0, 1, 0))
   val hpf =  extractGreen >- Convolve(highpassFilter)
 
   val res = for(matrix <- hpf) yield {
@@ -45,12 +44,22 @@ class AnalyserImplementation extends HeatMapImageAnalyser{
       matrix((x - xr * matrix.width).abs, (y - yr * matrix.width).abs).abs
     }
 
-//    def getDFT(diag: Seq[Float]) : Seq[Complex[Float]] = {
-//      val dft = FastFourierTransform1D()
-//      dft(diag.map(x => new Complex(x, 0)))
-//    }
+    def getDFT(diag: Seq[Float]) : Seq[Complex[Float]] = {
+      val dft = new JTransforms1D(diag.length)
+	var data = new Array[Float](diag.length * 2)
+	for(i: Int <- 0 to diag.length){
+	  data(i * 2) = diag(i)
+	  data(i * 2 + 1) = 0f
+	}
+      var transformed = dft.DCT1DForward(data, true)
+	var result = new Array[Complex[Float]](diag.length)
+	for(i: Int <- 0 to transformed.length){
+	  result(i) = new Complex(transformed(i * 2), transformed(i * 2 + 1))
+	}
+	result
+    }
 
-    val varianceMatrix = (for(i : Int <- 0 until matrix.width; j : Int <- 0 until matrix.height) yield (
+    val varianceMatrix = (for(i : Int <- 0 to matrix.width; j : Int <- 0 to matrix.height) yield (
         getDiagonalVariance(i, j, 32)))
 
     val result = matrix.cells.map {cell =>
