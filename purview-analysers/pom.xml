@@ -15,17 +15,16 @@
     <description>A set of analysers that are being shipped with Purview</description>
 
     <modules>
+        <module>autocfa-analyser</module>
         <module>bilinear-analyser</module>
-        <!--module>bilinear-em-analyser</module-->
         <module>copy-move-analyser</module>
         <module>error-level-analyser</module>
+        <module>jpeg-ghost-analyser</module>
         <module>luminance-gradient-analyser</module>
         <module>metadata-analyser</module>
         <module>nearest-neighbor-analyser</module>
         <module>principal-component-analyser</module>
-        <module>jpeg-ghost-analyser</module>
         <module>purview-default-analysers</module>
-    <module>snr-analyser</module>
-    <module>autocfa-analyser</module>
+        <module>snr-analyser</module>
   </modules>
 </project>
