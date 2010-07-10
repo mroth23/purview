@@ -6,12 +6,12 @@ import org.purview.core.data._
 import org.purview.core.report._
 import org.purview.core.transforms._
 import scala.math._
-
+import scala.util.Sorting
 class AnalyserImplementation extends Analyser[ImageMatrix] {
   /* This module is based on A.C. Gallagher's paper 'Image Authentication by Detecting Traces of Demosaicing'
    * It automatically determines if an image is computer-generated (PRCG) or photograhpic (PIM).
    * First, the green channel of the image is highpass-filtered, then the variance of every diagonal is computed.
-   * This yields a discrete signal in space-domain (one variance value for every diagonal), which is fourier-transformed.
+   * The resulting function (one variance value for every diagonal) is then fourier-transformed.
    * If the image is real, there will be a large peak at a frequency of 0.5, and no significant other peaks.
    * Scaling can destroy or alter the peaks, and will also be detected by this analyser.
    * Many CG images aren't CFA interpolated and thus lack the typical periodic pattern. 
@@ -35,51 +35,51 @@ class AnalyserImplementation extends Analyser[ImageMatrix] {
   val res = for(matrix <- filtered) yield {
 
     def getDiagonalVariances(w: Int, h: Int) : Array[Float] = {
-	  (for{
-		  x: Int <- 0 until w + h - 1
-		} yield {
+      (for{
+          x: Int <- 0 until w + h - 1
+        } yield {
 
-		  val diag = (for{
-			  n: Int <- 0 until h
-			  if x - n >= 0 && x - n < w
-			} yield {
-			  matrix(x - n, n).abs
-			})
-		  //as described in the paper, we don't calculate the actual variance here, but the mean of the pixels in the diagonal
-		  (diag.sum / diag.length).toFloat
-		}).toArray
-	}
+          val diag = (for{
+              n: Int <- 0 until h
+              if x - n >= 0 && x - n < w
+            } yield {
+              matrix(x - n, n).abs
+            })
+          //as described in the paper, we don't calculate the actual variance here, but the mean of the pixels in the diagonal
+          (diag.sum / diag.length).toFloat
+        }).toArray
+    }
 
-	def getDFTMagnitudes(diag: Seq[Float]) : Array[Float] = {
-	  val dft = new JTransforms1D(diag.length)
-	  var data = new Array[Float](diag.length * 2)
-	  for(i: Int <- 0 until diag.length){
-		data(i * 2) = diag(i)
-		data(i * 2 + 1) = 0f
-	  }
-	  var transformed = dft.FFT1DForward(data)
-	  var result = new Array[Float](diag.length)
-	  for(i: Int <- 0 until diag.length){
-		result(i) = sqrt(transformed(i * 2) * transformed(i * 2) + transformed(i * 2 + 1) * transformed(i * 2 + 1)).toFloat
-	  }
-	  result
-	}
+    def getDFTMagnitudes(diag: Seq[Float]) : Array[Float] = {
+      val dft = new JTransforms1D(diag.length)
+      var data = new Array[Float](diag.length * 2)
+      for(i: Int <- 0 until diag.length){
+        data(i * 2) = diag(i)
+        data(i * 2 + 1) = 0f
+      }
+      var transformed = dft.FFT1DForward(data)
+      var result = new Array[Float](diag.length)
+      for(i: Int <- 0 until diag.length){
+        result(i) = sqrt(transformed(i * 2) * transformed(i * 2) + transformed(i * 2 + 1) * transformed(i * 2 + 1)).toFloat
+      }
+      result
+    }
 
-	val variances = getDiagonalVariances(matrix.width, matrix.height)
-	
-	val magnitudes = getDFTMagnitudes(variances)
-	val magMean = (magnitudes.tail.sum) / (magnitudes.length - 1f)
+    val magnitudes = getDFTMagnitudes(getDiagonalVariances(matrix.width, matrix.height))
+    val sorted = magnitudes.clone
+    Sorting.quickSort(sorted)
 
-	val result = magnitudes.map(x => x - magMean)
-	//result.foreach(println)
-	//Another (easy) way to get a string of all the magnitudes:
-	//result.foldLeft("These are the FFT magnitudes:")((b,a) => b + a + ";\n")
-	(result, matrix)
+    val magMedian = sorted((sorted.length / 2).round)
+
+    val result = magnitudes.tail.map(x => x / magMedian) //.tail excludes the DC value
+    //result.foreach(x => println(x.round))
+
+    (result, matrix)
   }
 
   def makeReport(x: (Array[Float],Matrix[Float])): Set[ReportEntry] =
     Set(new ReportMessage(Information, "The analyser ran successfully"), 
-		new ReportImage(Information, "The highpass-filtered image", 0, 0, x._2.map(x => new Color(1, 0, (x / 255f), 0))))
+	new ReportImage(Information, "The highpass-filtered image", 0, 0, x._2.map(x => new Color(1, 0, (x / 255f), 0))))
 
   val result = res >- makeReport
 
