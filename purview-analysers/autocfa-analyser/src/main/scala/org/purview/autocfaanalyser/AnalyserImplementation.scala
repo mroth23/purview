@@ -16,7 +16,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] {
    * Scaling can destroy or alter the peaks, and will also be detected by this analyser.
    * Many CG images aren't CFA interpolated and thus lack the typical periodic pattern. 
    *     */
-  
+  //TODO: Add peak detection and graph output
   val name = "Automatic CFA analyser"
   val description = "Analyses the CFA pattern of the image"
 
@@ -72,7 +72,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] {
     val magMedian = sorted((sorted.length / 2).round)
 
     val result = magnitudes.tail.map(x => x / magMedian) //.tail excludes the DC value
-    //result.foreach(x => println(x.round))
+    result.foreach(x => println(x.round))
 
     (result, matrix)
   }

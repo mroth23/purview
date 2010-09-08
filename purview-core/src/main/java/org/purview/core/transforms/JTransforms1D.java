@@ -5,6 +5,8 @@ import edu.emory.mathcs.jtransforms.fft.FloatFFT_1D;
 
 public class JTransforms1D {
 
+
+    //TODO: Turn these into computations
     private FloatDCT_1D dct1d;
     private FloatFFT_1D fft1d;
 

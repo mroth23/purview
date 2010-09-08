@@ -18,6 +18,8 @@ class AnalyserImplementation extends HeatMapImageAnalyser{
   override val message = "Interpolated region"
   override val reportLevel = Warning
 
+
+  //This is broken and purely experimental.
   val extractGreen = for(matrix <- input) yield {
     for((x, y, color) <- matrix.cells) yield {
       color.g
