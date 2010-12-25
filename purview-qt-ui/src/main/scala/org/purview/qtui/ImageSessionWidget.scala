@@ -186,6 +186,7 @@ case class ImageSessionWidget(imageSession: ImageSession) extends QGraphicsView 
           group.addToGroup(arrow)
           Some(group)
 	  case ReportPlot3D(_, _, plotEntries) =>
+            //TODO: Add plotting
 	    None
 	  case ReportPlot2D(_, _, plotEntries) =>
 	    None
