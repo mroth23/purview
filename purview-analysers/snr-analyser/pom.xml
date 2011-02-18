@@ -7,11 +7,9 @@
         <version>2.0-SNAPSHOT</version>
     </parent>
 	
-    <artifactId>snr-analyser</artifactId>
-	
-	<name>Purview - Signal-to-noise ratio analyser</name>
+	<name>Purview - Local CFA Analyser</name>
     <description>Provides analyser modules for Purview</description>
-	
+
     <dependencies>
         <dependency>
             <groupId>org.purview</groupId>
@@ -32,5 +30,6 @@
             </plugin>
         </plugins>
     </build>
+    <artifactId>lcfa-analyser</artifactId>
 </project>
 

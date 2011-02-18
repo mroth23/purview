@@ -74,13 +74,18 @@ class AnalyserImplementation extends Analyser[ImageMatrix] {
     val result = magnitudes.tail.map(x => x / magMedian) //.tail excludes the DC value
     result.foreach(x => println(x.round))
 
-    //TODO: Add peak detection here
-
-    (result, matrix)
+    val max = result.max
+    val middle = (result.length / 2).round
+    val peak = Array(result(middle - 1), result(middle), result(middle + 1)).max / max
+    if(peak > 0.25)
+      (result, matrix, "real")
+    else
+      (result, matrix, "modified")
   }
 
-  def makeReport(x: (Array[Float],Matrix[Float])): Set[ReportEntry] =
-    Set(new ReportMessage(Information, "The analyser ran successfully"), 
+  def makeReport(x: (Array[Float],Matrix[Float],String)): Set[ReportEntry] =
+    Set(new ReportMessage(Information, "The analyser ran successfully"),
+        new ReportMessage(Information, "The image tested as " + x._3),
 	new ReportImage(Information, "The highpass-filtered image", 0, 0, x._2.map(x => new Color(1, 0, (x / 255f), 0))))
 
   val result = res >- makeReport
