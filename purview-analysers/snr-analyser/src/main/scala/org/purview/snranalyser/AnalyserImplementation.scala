@@ -8,13 +8,20 @@ import org.purview.core.report._
 import org.purview.core.transforms._
 import scala.math._
 import scala.util.Sorting
-class AnalyserImplementation extends Analyser[ImageMatrix] {
+class AnalyserImplementation extends Analyser[ImageMatrix] with Settings {
 
   val name = "Local CFA analyser"
   val description = "Analyses the CFA pattern of the image"
 
   override val version = Some("1.0")
   override val author = Some("Moritz Roth & David Flemström")
+
+  val blockSizeSetting = IntRangeSetting("Block size", 8, 64)
+  blockSizeSetting.value = 32
+
+
+  val settings = List(blockSizeSetting)
+
 
   val extractGreen = for(matrix <- input) yield {
     for((x, y, color) <- matrix.cells) yield {
@@ -25,7 +32,7 @@ class AnalyserImplementation extends Analyser[ImageMatrix] {
   val highpassFilter = new ImmutableMatrix[Float](3, 3, Array(0, 1, 0, 1, -4, 1, 0, 1, 0))
   val filtered =  extractGreen >- Convolve(highpassFilter)
 
-  val FragmentSize = 16
+  val FragmentSize = blockSizeSetting.value
 
   val fragments = filtered >- Fragmentize(FragmentSize, FragmentSize)
 
