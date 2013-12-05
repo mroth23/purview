@@ -6,8 +6,8 @@
         <groupId>org.purview</groupId>
         <version>2.0-SNAPSHOT</version>
     </parent>
-	
-	<name>Purview - Local CFA Analyser module</name>
+
+    <name>Purview - Local CFA Analyser module</name>
     <description>Provides analyser modules for Purview</description>
 
     <dependencies>
@@ -30,6 +30,5 @@
             </plugin>
         </plugins>
     </build>
-    <artifactId>lcfa-analyser</artifactId>
+    <artifactId>snr-analyser</artifactId>
 </project>
-

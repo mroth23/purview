@@ -20,8 +20,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.trolltech</groupId>
+            <groupId>net.sf.qtjambi</groupId>
             <artifactId>qtjambi</artifactId>
+            <version>4.6.3</version>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -146,5 +147,3 @@
         </plugins>
     </build>
 </project>
-
-
